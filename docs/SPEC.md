@@ -562,8 +562,8 @@ La palette nasce dal codice colore dei dischi olimpici (25 kg rosso, 20 blu, 15 
 
 ### Fase 0: scaffold
 
-- [ ] Progetto Vite + React + TypeScript strict con Bun; Tailwind v4 con i token di §11.2; Biome; Vitest
-- [ ] vite-plugin-pwa (`injectManifest`) con `src/sw.ts`, manifest e icone come in §10
+- [x] Progetto Vite + React + TypeScript strict con Bun; Tailwind v4 con i token di §11.2; Biome; Vitest
+- [x] vite-plugin-pwa (`injectManifest`) con `src/sw.ts`, manifest e icone come in §10
 - [ ] Deploy su Cloudflare Workers con soli asset statici e fallback SPA
 - [ ] Criterio: l'app si installa dalla Home dell'iPhone e si apre in modalità aereo
 

@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "gym-log",
+  "compatibility_date": "2026-10-02",
+  // Assets-only Worker: no "main" until Phase 2.
+  "assets": {
+    "directory": "./dist/",
+    "not_found_handling": "single-page-application"
+  }
+}
