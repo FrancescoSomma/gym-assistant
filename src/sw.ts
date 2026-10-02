@@ -53,6 +53,7 @@ self.addEventListener('fetch', (event) => {
       const cache = await caches.open(CACHE);
       const cached = await cache.match(request.mode === 'navigate' ? SHELL : request, {
         ignoreSearch: request.mode === 'navigate',
+        ignoreVary: true, // vite preview sends Vary: Origin; crossorigin assets carry an Origin the stored copy lacks
       });
       return cached ?? fetch(request);
     })(),

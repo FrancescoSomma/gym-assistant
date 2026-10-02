@@ -92,7 +92,9 @@
     *,
     *::before,
     *::after {
+      /* biome-ignore lint/complexity/noImportantStyles: must override utility and inline animation durations */
       transition-duration: 0s !important;
+      /* biome-ignore lint/complexity/noImportantStyles: must override utility and inline animation durations */
       animation-duration: 0s !important;
     }
   }
