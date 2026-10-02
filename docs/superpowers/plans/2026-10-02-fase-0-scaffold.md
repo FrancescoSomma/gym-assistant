@@ -94,11 +94,10 @@ bun --version                  # atteso: 1.2 o successiva
 node --version                 # atteso: v24.x (Vitest 5 richiede ^22.12 o ^24)
 ```
 
-- [ ] **Step 2: Inizializza git e sposta la specifica dove la cerca CLAUDE.md**
+- [ ] **Step 2: Sposta la specifica dove la cerca CLAUDE.md**
 
 ```bash
 cd /Users/francescosomma/Personale/gym-assistant
-git init -b main
 mkdir -p docs
 mv SPEC.md docs/SPEC.md
 ```
@@ -859,6 +858,8 @@ In `package.json`, dentro `scripts`:
 "deploy": "vite build && wrangler deploy",
 "deploy:preview": "vite build && wrangler deploy --name gym-log-preview"
 ```
+
+> **Rinviati (2026-10-03):** gli step 3–6 e la spunta delle voci 3 e 4 della roadmap si eseguono nel collaudo della Fase 1 (`2026-10-02-fase-1-mvp.md`, Task 22). Lo step 7 ha spuntato solo le voci 1 e 2.
 
 - [ ] **Step 3: Login e primo deploy di produzione**
 
