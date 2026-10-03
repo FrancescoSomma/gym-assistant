@@ -5,3 +5,9 @@ dev-dist
 .dev.vars
 *.log
 .DS_Store
+
+# Impeccable engine binary (re-downloaded on demand by the launcher)
+.claude/skills/impeccable/scripts/bin/
+
+# Impeccable design review captures (regenerated with bun run screens)
+.impeccable/review/

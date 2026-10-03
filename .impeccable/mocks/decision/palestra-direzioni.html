@@ -1,0 +1,489 @@
+<title>Palestra, tre direzioni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Barlow+Condensed:ital,wght@1,600;1,700&display=swap">
+<style>
+  :root {
+    --bg: #f1f3f4;
+    --fg: #15191d;
+    --muted: #59636c;
+    --line: #d3d9de;
+    --card: #ffffff;
+    --chip-ring: rgb(0 0 0 / 0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e1114;
+      --fg: #e7ebee;
+      --muted: #96a0a9;
+      --line: #283037;
+      --card: #161a1f;
+      --chip-ring: rgb(255 255 255 / 0.16);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e1114;
+    --fg: #e7ebee;
+    --muted: #96a0a9;
+    --line: #283037;
+    --card: #161a1f;
+    --chip-ring: rgb(255 255 255 / 0.16);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Archivo", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 28px 56px;
+  }
+  header.intro { max-width: 62ch; display: grid; gap: 8px; }
+  h1 {
+    margin: 0;
+    font-size: clamp(28px, 6vw, 40px);
+    line-height: 1.05;
+    font-stretch: 78%;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .intro p { margin: 0; color: var(--muted); }
+
+  .grid {
+    margin-top: 28px;
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    align-items: start;
+  }
+  .dir {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 16px 20px;
+    display: grid;
+    gap: 14px;
+  }
+  .kicker {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .dir h2 {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.1;
+    font-stretch: 80%;
+    font-weight: 800;
+  }
+  .thesis { margin: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .chip i {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--chip-ring);
+    display: inline-block;
+  }
+  .facts { margin: 0; display: grid; gap: 8px; font-size: 14px; }
+  .facts dt { font-weight: 700; }
+  .facts dd { margin: 0; color: var(--muted); }
+  .risk {
+    font-size: 14px;
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+    color: var(--muted);
+  }
+  .risk b { color: var(--fg); }
+
+  /* ---------- phone frames ---------- */
+  .phone {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 0 0 6px #0b0c0e, 0 0 0 7px #2a2d31;
+    font-variant-numeric: tabular-nums;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* La scheda */
+  .scheda {
+    --paper: #dde7ee;
+    --ink: #17212b;
+    --rule: rgb(23 33 43 / 0.22);
+    --faint: rgb(23 33 43 / 0.5);
+    --blue: #2453d6;
+    --hl: #f6d43a;
+    --green: #1f9a4f;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", system-ui, sans-serif;
+  }
+  .scheda .top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .scheda .top .x { font-size: 18px; width: 20px; }
+  .scheda .top .day { flex: 1; }
+  .scheda .top .num { font-stretch: 70%; font-weight: 700; font-size: 17px; }
+  .scheda .top .count { border-bottom: 1.5px solid var(--ink); }
+  .scheda .name {
+    padding: 6px 16px 0;
+    font-size: 25px;
+    line-height: 1.05;
+    font-stretch: 82%;
+    font-weight: 800;
+  }
+  .scheda .meta { padding: 4px 16px 0; font-size: 13px; color: var(--faint); }
+  .scheda .note { padding: 2px 16px 10px; font-size: 13px; }
+  .scheda table { width: 100%; border-collapse: collapse; }
+  .scheda th {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: right;
+    color: var(--faint);
+    padding: 4px 10px 4px 0;
+    border-top: 1px solid var(--ink);
+    border-bottom: 0.5px solid var(--rule);
+  }
+  .scheda th:first-child { text-align: left; padding-left: 16px; }
+  .scheda td {
+    border-bottom: 0.5px solid var(--rule);
+    padding: 7px 10px 7px 0;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .scheda td:first-child { text-align: left; padding-left: 16px; width: 40px; }
+  .scheda .setn { font-stretch: 70%; font-weight: 700; font-size: 18px; color: var(--faint); }
+  .scheda .prev { font-stretch: 72%; font-weight: 600; font-size: 15px; color: var(--faint); width: 64px; }
+  .scheda .today { font-stretch: 66%; font-weight: 800; font-size: 26px; line-height: 1; }
+  .scheda .today small { font-size: 13px; font-weight: 600; font-stretch: 85%; color: var(--faint); }
+  .scheda .warm .today { color: var(--faint); }
+  .scheda .mark { width: 34px; text-align: center; padding-right: 14px; }
+  .scheda .mark svg { width: 22px; height: 22px; display: block; margin-left: auto; }
+  .scheda mark {
+    background: var(--hl);
+    color: var(--ink);
+    padding: 0 5px;
+    border-radius: 3px 7px 4px 8px;
+  }
+  .scheda .ring { position: relative; display: inline-block; color: var(--blue); }
+  .scheda .ring svg { position: absolute; inset: -7px -9px; width: calc(100% + 18px); height: calc(100% + 14px); }
+  .scheda .editor { background: rgb(36 83 214 / 0.07); }
+  .scheda .editor td { border-bottom: 0.5px solid var(--rule); padding: 10px 16px 12px; }
+  .scheda .step { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .scheda .step:first-child { margin-top: 0; }
+  .scheda .step b {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: grid; place-items: center;
+    background: rgb(23 33 43 / 0.08);
+    font-size: 22px; font-weight: 500;
+  }
+  .scheda .step .v {
+    flex: 1; text-align: right;
+    font-stretch: 64%; font-weight: 800; font-size: 40px; line-height: 1;
+  }
+  .scheda .step .u { width: 26px; font-size: 13px; color: var(--faint); }
+  .scheda .confirm {
+    margin-top: 10px;
+    height: 48px; border-radius: 10px;
+    background: var(--blue); color: #fff;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 16px;
+  }
+  .scheda .timer {
+    background: var(--ink);
+    color: #eef3f6;
+    position: relative;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px 14px;
+    margin-top: 12px;
+  }
+  .scheda .timer::before {
+    content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 58%;
+    background: var(--paper);
+  }
+  .scheda .timer .lbl { font-size: 12px; opacity: 0.7; }
+  .scheda .timer .t { flex: 1; font-stretch: 62%; font-weight: 800; font-size: 46px; line-height: 1; }
+  .scheda .timer .a { font-size: 14px; font-weight: 700; }
+
+  /* Pedana di gara */
+  .pedana {
+    --arena: #0b0c0e;
+    --led: #f2f1ec;
+    --wood: #b8875a;
+    --blue: #2453d6;
+    --yellow: #f6d43a;
+    --dim: rgb(242 241 236 / 0.45);
+    background: var(--arena);
+    color: var(--led);
+    font-family: "Archivo", system-ui, sans-serif;
+  }
+  .pedana .top { display: flex; gap: 10px; padding: 14px 16px 10px; font-size: 13px; color: var(--dim); }
+  .pedana .top span:nth-child(2) { flex: 1; }
+  .pedana .lower { display: flex; margin: 0 12px; }
+  .pedana .lower .tab {
+    background: var(--wood); color: #1a120a;
+    font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700;
+    font-size: 18px; padding: 6px 10px; display: grid; place-items: center;
+  }
+  .pedana .lower .plate {
+    flex: 1; background: var(--led); color: #0b0c0e;
+    font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700;
+    font-size: 22px; line-height: 1.05; padding: 6px 10px;
+  }
+  .pedana .lower .plate small { display: block; font-family: "Archivo", sans-serif; font-style: normal; font-weight: 500; font-size: 11px; color: #444; }
+  .pedana .rows { margin: 12px 0 0; }
+  .pedana .row {
+    display: grid; grid-template-columns: 30px 1fr auto auto; align-items: center; gap: 10px;
+    padding: 8px 16px; border-bottom: 1px solid rgb(242 241 236 / 0.1);
+  }
+  .pedana .n { font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; font-size: 18px; color: var(--dim); }
+  .pedana .w { font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; font-size: 32px; line-height: 1; }
+  .pedana .w small { font-size: 16px; color: var(--dim); }
+  .pedana .rec .w { color: var(--yellow); }
+  .pedana .warm .w { color: var(--dim); font-size: 24px; }
+  .pedana .lights { display: flex; gap: 4px; }
+  .pedana .lights i { width: 9px; height: 9px; border-radius: 50%; background: var(--led); }
+  .pedana .lights.off i { background: transparent; box-shadow: inset 0 0 0 1.5px var(--dim); }
+  .pedana .cur { background: var(--blue); border-bottom: 0; }
+  .pedana .cur .n { color: var(--led); }
+  .pedana .cur-ed { background: #13161b; padding: 10px 16px 12px; }
+  .pedana .cur-ed .step { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .pedana .cur-ed .step b { width: 44px; height: 44px; border-radius: 4px; display: grid; place-items: center; background: rgb(242 241 236 / 0.1); font-size: 22px; font-weight: 500; }
+  .pedana .cur-ed .v { flex: 1; text-align: center; font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; font-size: 40px; line-height: 1; }
+  .pedana .cur-ed .confirm { margin-top: 10px; height: 48px; background: var(--led); color: #0b0c0e; display: grid; place-items: center; font-weight: 800; font-size: 16px; }
+  .pedana .clock { margin-top: 12px; display: flex; align-items: center; gap: 12px; padding: 10px 16px 14px; border-top: 3px solid var(--wood); }
+  .pedana .clock .lbl { font-size: 12px; color: var(--dim); }
+  .pedana .clock .t { flex: 1; font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; font-size: 52px; line-height: 1; }
+  .pedana .clock .a { font-size: 14px; font-weight: 700; }
+
+  /* Standard della categoria */
+  .canon {
+    --blue: #2453d6;
+    --green: #30a85a;
+    background: #000; color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+  .canon .top { display: flex; gap: 10px; padding: 14px 16px 8px; font-size: 14px; color: #8e8e93; }
+  .canon .top span:nth-child(2) { flex: 1; text-align: center; color: #fff; font-weight: 600; }
+  .canon .name { padding: 4px 16px 0; font-size: 22px; font-weight: 700; }
+  .canon .meta { padding: 2px 16px 10px; font-size: 13px; color: #8e8e93; }
+  .canon .card { margin: 0 12px; background: #1c1c1e; border-radius: 14px; overflow: hidden; }
+  .canon .hd, .canon .r { display: grid; grid-template-columns: 34px 1fr 62px 40px 30px; align-items: center; gap: 6px; padding: 9px 12px; }
+  .canon .hd { font-size: 11px; color: #8e8e93; font-weight: 600; }
+  .canon .r { border-top: 0.5px solid #38383a; font-size: 16px; font-weight: 600; }
+  .canon .r .p { color: #8e8e93; font-weight: 400; font-size: 13px; }
+  .canon .r.done { background: rgb(48 168 90 / 0.14); }
+  .canon .r .ok { width: 26px; height: 26px; border-radius: 7px; background: var(--green); display: grid; place-items: center; }
+  .canon .r .ok svg { width: 16px; height: 16px; }
+  .canon .r .box { width: 26px; height: 26px; border-radius: 7px; background: #3a3a3c; }
+  .canon .r .pill { background: #2c2c2e; border-radius: 6px; padding: 2px 0; text-align: center; }
+  .canon .r.cur .pill { box-shadow: inset 0 0 0 1.5px var(--blue); }
+  .canon .r.rec .pill { color: #f6d43a; }
+  .canon .confirm { margin: 12px 12px 0; height: 48px; border-radius: 12px; background: var(--blue); display: grid; place-items: center; font-weight: 600; }
+  .canon .timer { margin: 14px 12px 16px; display: flex; align-items: center; gap: 12px; background: #1c1c1e; border-radius: 999px; padding: 8px 10px 8px 8px; }
+  .canon .timer svg { width: 44px; height: 44px; }
+  .canon .timer .t { flex: 1; font-size: 26px; font-weight: 700; }
+  .canon .timer .a { font-size: 14px; color: var(--blue); font-weight: 600; padding: 0 6px; }
+
+  /* raises */
+  section.raises { margin-top: 36px; max-width: 760px; }
+  section.raises h2 { font-size: 22px; font-stretch: 82%; font-weight: 800; margin: 0 0 6px; }
+  section.raises > p { margin: 0 0 14px; color: var(--muted); }
+  .raises ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+  .raises li { display: grid; grid-template-columns: minmax(120px, 190px) 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }
+  .raises li b { font-weight: 700; }
+  .raises li span { color: var(--muted); }
+  @media (max-width: 520px) {
+    .raises li { grid-template-columns: 1fr; gap: 2px; }
+  }
+  .how { margin-top: 32px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); max-width: 760px; }
+  .how p { margin: 0; }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>Palestra, tre direzioni per il redesign</h1>
+    <p>La stessa schermata, Panca piana nella giornata A con la serie 2 da registrare e il recupero che scorre, disegnata nei tre mondi visivi. I dati sono di esempio.</p>
+  </header>
+
+  <div class="grid">
+    <!-- La scheda -->
+    <article class="dir">
+      <div class="kicker">Sorteggiata</div>
+      <h2>La scheda</h2>
+      <p class="thesis">La scheda di allenamento su cartoncino che ti danno in palestra. L'app stampa la griglia, tu scrivi i numeri, e le sessioni si accumulano in colonne come le settimane sulla scheda.</p>
+
+      <div class="phone scheda" role="img" aria-label="Schermata di allenamento nella direzione La scheda">
+        <div class="top"><span class="x">✕</span><span class="day">Giornata A</span><span class="num">24:13</span><span class="num count">3 di 6</span></div>
+        <div class="name">Panca piana con bilanciere</div>
+        <div class="meta">4 serie da 8–12, recupero 2 min</div>
+        <div class="note">Fermo al petto</div>
+        <table>
+          <thead><tr><th>Serie</th><th>29/9</th><th>Oggi</th><th></th></tr></thead>
+          <tbody>
+            <tr class="warm">
+              <td class="setn">R</td><td class="prev">60×10</td>
+              <td class="today">60 <small>× 10</small></td>
+              <td class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 13.2c1.6 1.2 2.9 2.6 4.1 4.3C11 12.4 14.6 8.3 19.6 5.6" fill="none" stroke="rgb(23 33 43 / 0.45)" stroke-width="2.4" stroke-linecap="round"/></svg></td>
+            </tr>
+            <tr>
+              <td class="setn">1</td><td class="prev">80×10</td>
+              <td class="today"><mark>82,5 <small>× 10</small></mark></td>
+              <td class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 13.2c1.6 1.2 2.9 2.6 4.1 4.3C11 12.4 14.6 8.3 19.6 5.6" fill="none" stroke="#1f9a4f" stroke-width="2.6" stroke-linecap="round"/></svg></td>
+            </tr>
+            <tr>
+              <td class="setn"><span class="ring">2<svg viewBox="0 0 40 30" aria-hidden="true"><path d="M30 4C21 0 6 4 4 14c-2 10 14 14 24 11 8-3 10-12 4-18" fill="none" stroke="#2453d6" stroke-width="2" stroke-linecap="round"/></svg></span></td>
+              <td class="prev">80×9</td>
+              <td class="today" style="color: var(--faint)">—</td>
+              <td class="mark"></td>
+            </tr>
+            <tr class="editor"><td colspan="4">
+              <div class="step"><b>−</b><span class="v">82,5</span><span class="u">kg</span><b>+</b></div>
+              <div class="step"><b>−</b><span class="v">9</span><span class="u">rip</span><b>+</b></div>
+              <div class="confirm">Conferma serie</div>
+            </td></tr>
+            <tr>
+              <td class="setn">3</td><td class="prev">80×8</td>
+              <td class="today" style="color: var(--faint)">82,5 <small>× 8</small></td><td class="mark"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="timer"><span class="lbl">Recupero</span><span class="t">1:42</span><span class="a">+15 s</span><span class="a">Salta</span></div>
+      </div>
+
+      <div class="chips">
+        <span class="chip"><i style="background:#dde7ee"></i>Cartoncino</span>
+        <span class="chip"><i style="background:#17212b"></i>Inchiostro</span>
+        <span class="chip"><i style="background:#2453d6"></i>Azione</span>
+        <span class="chip"><i style="background:#f6d43a"></i>Record</span>
+        <span class="chip"><i style="background:#1f9a4f"></i>Fatto</span>
+        <span class="chip"><i style="background:#121c26"></i>Di sera</span>
+      </div>
+      <dl class="facts">
+        <div><dt>Mossa firma</dt><dd>Le colonne delle sessioni: accanto a ogni serie c'è la colonna dell'ultima volta, in Oggi e nel dettaglio esercizio le ultime tre o quattro, e la colonna di oggi è quella che riempi.</dd></div>
+        <div><dt>Segni</dt><dd>Serie corrente cerchiata in blu, fatta spuntata in verde, saltata barrata, record evidenziato in giallo. Il segno si traccia quando confermi.</dd></div>
+        <div><dt>Carattere</dt><dd>Archivo variabile: largo per il testo, stretto e nero per i numeri.</dd></div>
+        <div><dt>Tema</dt><dd>Segue l'iPhone: cartoncino azzurro di giorno, blu notte di sera.</dd></div>
+      </dl>
+      <p class="risk"><b>Rischio:</b> fatta con timidezza sembra un modulo burocratico azzurrino; presa alla lettera diventa un costume di carta con righe da quaderno.</p>
+    </article>
+
+    <!-- Pedana di gara -->
+    <article class="dir">
+      <div class="kicker">La mia prima scelta</div>
+      <h2>Pedana di gara</h2>
+      <p class="thesis">La gara di pesistica olimpica: ogni serie è un tentativo sulla pedana, il recupero è l'orologio di gara, la grafica è quella della diretta TV.</p>
+
+      <div class="phone pedana" role="img" aria-label="Schermata di allenamento nella direzione Pedana di gara">
+        <div class="top"><span>✕</span><span>Giornata A</span><span>24:13</span><span>3 di 6</span></div>
+        <div class="lower">
+          <div class="tab">2/4</div>
+          <div class="plate">Panca piana con bilanciere<small>4 serie da 8–12, recupero 2 min</small></div>
+        </div>
+        <div class="rows">
+          <div class="row warm"><span class="n">R</span><span class="w">60 <small>×10</small></span><span></span><span class="lights"><i></i><i></i><i></i></span></div>
+          <div class="row rec"><span class="n">1</span><span class="w">82,5 <small>×10</small></span><span></span><span class="lights"><i></i><i></i><i></i></span></div>
+          <div class="row cur"><span class="n">2</span><span class="w">82,5 <small>×9</small></span><span></span><span class="lights off"><i></i><i></i><i></i></span></div>
+          <div class="cur-ed">
+            <div class="step"><b>−</b><span class="v">82,5 kg</span><b>+</b></div>
+            <div class="step"><b>−</b><span class="v">9 rip</span><b>+</b></div>
+            <div class="confirm">Conferma serie</div>
+          </div>
+          <div class="row"><span class="n">3</span><span class="w" style="color: var(--dim)">82,5 <small>×8</small></span><span></span><span class="lights off"><i></i><i></i><i></i></span></div>
+        </div>
+        <div class="clock"><span class="lbl">Recupero</span><span class="t">1:42</span><span class="a">+15 s</span><span class="a">Salta</span></div>
+      </div>
+
+      <div class="chips">
+        <span class="chip"><i style="background:#0b0c0e"></i>Arena</span>
+        <span class="chip"><i style="background:#f2f1ec"></i>Luce</span>
+        <span class="chip"><i style="background:#b8875a"></i>Pedana</span>
+        <span class="chip"><i style="background:#2453d6"></i>Azione</span>
+        <span class="chip"><i style="background:#f6d43a"></i>Record</span>
+      </div>
+      <dl class="facts">
+        <div><dt>Mossa firma</dt><dd>Le serie come tentativi con le tre luci dei giudici che si accendono alla conferma; il recupero come orologio di gara a tutta larghezza.</dd></div>
+        <div><dt>Carattere</dt><dd>Condensato corsivo da grafica TV per i numeri, grottesco per il testo.</dd></div>
+        <div><dt>Tema</dt><dd>Scuro, come un'arena con le luci sulla pedana.</dd></div>
+      </dl>
+      <p class="risk"><b>Rischio:</b> è anche la più vicina a dove arrivano quasi tutte le app di fitness: scura, sportiva, numeri luminosi. Efficace, ma familiare.</p>
+    </article>
+
+    <!-- Standard -->
+    <article class="dir">
+      <div class="kicker">Uscita convenzionale</div>
+      <h2>Lo standard della categoria</h2>
+      <p class="thesis">Quello che fanno le app di allenamento più note, eseguito alla perfezione: fondo nero, card arrotondate, un accento vivido, carattere di sistema.</p>
+
+      <div class="phone canon" role="img" aria-label="Schermata di allenamento nello standard della categoria">
+        <div class="top"><span>✕</span><span>Giornata A · 24:13</span><span>3 di 6</span></div>
+        <div class="name">Panca piana con bilanciere</div>
+        <div class="meta">4 serie da 8–12, recupero 2 min</div>
+        <div class="card">
+          <div class="hd"><span>Serie</span><span>Precedente</span><span>kg</span><span>Rip</span><span></span></div>
+          <div class="r done"><span>R</span><span class="p">60×10</span><span class="pill">60</span><span class="pill">10</span><span class="ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="r done rec"><span>1</span><span class="p">80×10</span><span class="pill">82,5</span><span class="pill">10</span><span class="ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="r cur"><span>2</span><span class="p">80×9</span><span class="pill">82,5</span><span class="pill">9</span><span class="box"></span></div>
+          <div class="r"><span>3</span><span class="p">80×8</span><span class="pill">82,5</span><span class="pill">8</span><span class="box"></span></div>
+          <div class="r"><span>4</span><span class="p">80×8</span><span class="pill">82,5</span><span class="pill">8</span><span class="box"></span></div>
+        </div>
+        <div class="confirm">Conferma serie</div>
+        <div class="timer">
+          <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="#3a3a3c" stroke-width="4"/><circle cx="22" cy="22" r="18" fill="none" stroke="#2453d6" stroke-width="4" stroke-dasharray="113" stroke-dashoffset="48" stroke-linecap="round" transform="rotate(-90 22 22)"/></svg>
+          <span class="t">1:42</span><span class="a">+15 s</span><span class="a">Salta</span>
+        </div>
+      </div>
+
+      <div class="chips">
+        <span class="chip"><i style="background:#000000"></i>Nero</span>
+        <span class="chip"><i style="background:#1c1c1e"></i>Card</span>
+        <span class="chip"><i style="background:#ffffff"></i>Testo</span>
+        <span class="chip"><i style="background:#2453d6"></i>Accento</span>
+      </div>
+      <dl class="facts">
+        <div><dt>Carattere</dt><dd>SF Pro di sistema.</dd></div>
+        <div><dt>Tema</dt><dd>Scuro o adattivo, come le app native.</dd></div>
+      </dl>
+      <p class="risk"><b>Rischio:</b> indistinguibile dalla concorrenza, per scelta. Se la scegli ti chiedo due o tre app da prendere come riferimento.</p>
+    </article>
+  </div>
+
+  <section class="raises">
+    <h2>Cosa ho preso dai sei concorrenti scartati</h2>
+    <p>Nessuno batte La scheda, ma da ognuno ho preso una disciplina e l'ho aggiunta alla direzione sorteggiata.</p>
+    <ol>
+      <li><b>Specimen tipografico</b><span>Gerarchia per solo contrasto di scala: peso e ripetizioni enormi, etichette piccole, nessun riquadro a fare il lavoro della tipografia.</span></li>
+      <li><b>Piastrelle Metro</b><span>Niente cromature: nessun bordo, ombra o riquadro che non porti un'informazione; solo il blu dello stato vivo si muove.</span></li>
+      <li><b>Mappa dello zoo</b><span>Colore a campiture intere: il cartoncino occupa tutta la superficie, non è un accento su grigio.</span></li>
+      <li><b>Copertina della cassetta</b><span>La somma deve tornare: ogni elenco dichiara il suo totale allineato a destra, come il minutaggio di un lato della cassetta.</span></li>
+      <li><b>Catalogo della fiera</b><span>Un solo vocabolario di segni in tutta l'app: cerchiata, spuntata, barrata, evidenziata.</span></li>
+      <li><b>Composizione a binario</b><span>Filetti sottilissimi e tre valori di inchiostro: la griglia è stampata, mai disegnata a mano.</span></li>
+    </ol>
+  </section>
+
+  <div class="how"><p>Per scegliere rispondi alla domanda in Claude Code. Puoi anche chiedere un nuovo giro, più prudente o più audace, oppure scrivere una correzione.</p></div>
+</div>
