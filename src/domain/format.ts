@@ -41,6 +41,10 @@ export function parseInteger(input: string): number | undefined {
   return /^\d+$/.test(text) ? Number(text) : undefined;
 }
 
+const list = new Intl.ListFormat('it', { type: 'conjunction' });
+/** "B", "B e C", "B, C e D". */
+export const formatList = (items: string[]): string => list.format(items);
+
 export const countLabel = (n: number, one: string, many: string): string =>
   `${number.format(n)} ${n === 1 ? one : many}`;
 

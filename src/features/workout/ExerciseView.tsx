@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { exerciseHistory, updateExercise } from '../../db/exercises';
 import type { WorkoutItem } from '../../db/sessions';
 import { addSet, applyWeight, type CompleteResult, completeSet } from '../../db/workout';
-import { formatNumber, formatSets, formatTarget, relativeDay } from '../../domain/format';
+import {
+  formatList,
+  formatNumber,
+  formatSets,
+  formatTarget,
+  relativeDay,
+} from '../../domain/format';
 import { computeRecords, isRecordSet } from '../../domain/records';
 import { firstPending, setLabel, suggestWeight, weightStep } from '../../domain/workout';
 import type { Settings } from '../../types';
@@ -70,7 +76,7 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
           {formatTarget({ ...se, sets: se.plannedSets }, tracking)}
         </p>
         {supersetWith && supersetWith.length > 0 && (
-          <p className="text-small text-steel">In superserie con {supersetWith.join(' e ')}</p>
+          <p className="text-small text-steel">In superserie con {formatList(supersetWith)}</p>
         )}
         {se.status === 'skipped' && (
           <p className="text-small text-steel">Saltato: completa una serie per riprenderlo.</p>

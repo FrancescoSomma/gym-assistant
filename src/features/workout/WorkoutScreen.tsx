@@ -54,7 +54,7 @@ export function WorkoutScreen() {
     : [];
   const goTo = (i: number) => {
     setIndex(i);
-    window.scrollTo(0, 0);
+    if (i !== current) window.scrollTo(0, 0); // a lone superset member stays where it is
   };
   const close = () => setSheet(null);
 

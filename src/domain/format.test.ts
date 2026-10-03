@@ -4,6 +4,7 @@ import {
   formatChange,
   formatClock,
   formatDateYear,
+  formatList,
   formatMegabytes,
   formatMonth,
   formatNumber,
@@ -56,6 +57,11 @@ describe('numbers', () => {
   it('pluralizes counts', () => {
     expect(countLabel(1, 'giornata', 'giornate')).toBe('1 giornata');
     expect(countLabel(3, 'giornata', 'giornate')).toBe('3 giornate');
+  });
+
+  it('lists names the Italian way', () => {
+    expect(formatList(['B'])).toBe('B');
+    expect(formatList(['B', 'C', 'D'])).toBe('B, C e D');
   });
 });
 
