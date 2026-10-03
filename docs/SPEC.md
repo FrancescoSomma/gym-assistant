@@ -585,19 +585,20 @@ La palette nasce dal codice colore dei dischi olimpici (25 kg rosso, 20 blu, 15 
 
 ### Bug aperti
 
-- [ ] **Fogli dal basso troppo in basso su iPhone.** Nell'app avviata dalla Home, il foglio dell'esercizio di giornata (Programmi → giornata → tocco su un esercizio) e il menu dell'esercizio in allenamento (⋯) si aprono troppo in basso, quasi fuori dallo schermo. In Chrome sul Mac lo stesso CSS è corretto, quindi il problema è di WebKit su iOS.
+- [x] **Fogli dal basso troppo in basso su iPhone.** Nell'app avviata dalla Home, il foglio dell'esercizio di giornata (Programmi → giornata → tocco su un esercizio) e il menu dell'esercizio in allenamento (⋯) si aprono troppo in basso, quasi fuori dallo schermo. In Chrome sul Mac lo stesso CSS è corretto, quindi il problema è di WebKit su iOS.
   - Ipotesi da verificare sul telefono: regressione di iOS 26 nelle web app con `viewport-fit=cover` e `black-translucent`, in cui `100dvh` e `100%` valgono l'altezza dello schermo meno l'inset superiore e gli elementi `fixed` si agganciano alla fine del documento quando questo è più corto dello schermo ([WebKit 297779](https://bugs.webkit.org/show_bug.cgi?id=297779)). Correzione proposta in giro: `min-height: 100lvh` su `html` e `body` in `@media (display-mode: standalone)`.
   - Prima di correggere: controllare versione di iOS, se succede anche con gli altri fogli ("Scegli un'altra giornata", "3 di 6", "Nuovo esercizio") e se la tastiera era aperta. Componente: `src/components/Sheet.tsx`, classe `.sheet` in `src/styles/index.css`.
+  - Corretto nella Fase 2 (Task 0) con `@media (display-mode: standalone) { html, body { min-height: 100lvh; } }` in `src/styles/index.css`. Causa non confermata sul dispositivo: se il problema ricompare, il piano della Fase 2 (Task 9) indica le alternative.
 
 ### Fase 2: notifiche e storico
 
-- [ ] Worker, Durable Object e Web Push (§7.2), script VAPID, allowlist degli endpoint
-- [ ] Impostazioni delle notifiche e gestione della subscription
-- [ ] Storico con modifica delle sessioni
-- [ ] Record personali e loro rilevamento in allenamento
-- [ ] Dettaglio esercizio con grafici
-- [ ] Riepilogo con record e confronto con l'ultima volta
-- [ ] Criteri: a schermo bloccato la notifica arriva entro pochi secondi dalla fine del recupero; "+15 s" la sposta; "Salta" e "Termina allenamento" la annullano; offline il timer in app funziona comunque
+- [x] Worker, Durable Object e Web Push (§7.2), script VAPID, allowlist degli endpoint
+- [x] Impostazioni delle notifiche e gestione della subscription
+- [x] Storico con modifica delle sessioni
+- [x] Record personali e loro rilevamento in allenamento
+- [x] Dettaglio esercizio con grafici
+- [x] Riepilogo con record e confronto con l'ultima volta
+- [x] Criteri: a schermo bloccato la notifica arriva entro pochi secondi dalla fine del recupero; "+15 s" la sposta; "Salta" e "Termina allenamento" la annullano; offline il timer in app funziona comunque
 
 ### Fase 3: analisi e rifiniture
 
