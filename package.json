@@ -9,13 +9,15 @@
     "preview": "vite preview",
     "deploy": "vite build && wrangler deploy",
     "deploy:preview": "vite build && wrangler deploy --name gym-log-preview",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.sw.json",
     "lint": "biome check .",
     "format": "biome check --write .",
     "check": "bun run typecheck && bun run lint && bun run test"
   },
   "dependencies": {
+    "dexie": "4.4.6",
+    "dexie-react-hooks": "4.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -25,6 +27,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19",
     "@vitejs/plugin-react": "6.1.1",
+    "fake-indexeddb": "6.2.5",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
     "vite": "8.3.2",
