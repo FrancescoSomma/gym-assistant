@@ -54,3 +54,9 @@ export function weeklyCounts(
     count: byWeek.get(weekStart)?.length ?? 0,
   }));
 }
+
+/** YYYY-MM-DD as local midnight; new Date('YYYY-MM-DD') would be UTC and can shift the day. */
+export function dateKeyToTs(key: string): number {
+  const [year = 0, month = 1, day = 1] = key.split('-').map(Number);
+  return new Date(year, month - 1, day).getTime();
+}

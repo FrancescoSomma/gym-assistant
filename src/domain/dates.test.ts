@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { lastWeekStarts, monthCells, startOfWeek, toDateKey, weeklyCounts } from './dates';
+import {
+  dateKeyToTs,
+  lastWeekStarts,
+  monthCells,
+  startOfWeek,
+  toDateKey,
+  weeklyCounts,
+} from './dates';
 
 describe('startOfWeek (Monday to Sunday, local time)', () => {
   it('puts Sunday night in the week that started the previous Monday', () => {
@@ -46,5 +53,12 @@ describe('weeklyCounts', () => {
     const now = new Date(2026, 9, 2, 18).getTime();
     const counts = weeklyCounts([now, now - 3_600_000, now - 7 * 86_400_000], now, 3);
     expect(counts.map((c) => c.count)).toEqual([0, 1, 2]);
+  });
+});
+
+describe('dateKeyToTs', () => {
+  it('reads YYYY-MM-DD as local midnight, so the day never shifts', () => {
+    expect(dateKeyToTs('2026-10-25')).toBe(new Date(2026, 9, 25).getTime());
+    expect(toDateKey(dateKeyToTs('2026-03-29'))).toBe('2026-03-29');
   });
 });
