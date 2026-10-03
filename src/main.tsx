@@ -2,11 +2,14 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
 import { ensureSeed } from './db/seed';
+import { unlockAudio } from './platform/sound';
 import { requestPersistentStorage } from './platform/storage';
 import { router } from './routes';
 import './styles/index.css';
 
 const root = createRoot(document.getElementById('root') as HTMLElement);
+
+document.addEventListener('pointerdown', unlockAudio, { capture: true, passive: true });
 
 ensureSeed()
   .then(() => {

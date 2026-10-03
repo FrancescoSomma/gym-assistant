@@ -10,6 +10,7 @@ import { resumeIndex } from '../../domain/workout';
 import { useWakeLock } from '../../platform/wakeLock';
 import { ExerciseView } from './ExerciseView';
 import { SessionSheet } from './SessionSheet';
+import { TimerBar } from './TimerBar';
 
 export function WorkoutScreen() {
   const { sessionId = '' } = useParams();
@@ -96,7 +97,7 @@ export function WorkoutScreen() {
             </button>
           )}
         </nav>
-        <div className="pb-[env(safe-area-inset-bottom)]" />
+        <TimerBar timer={settings.activeTimer} sound={settings.timerSound} item={item} />
       </footer>
 
       <SessionSheet
