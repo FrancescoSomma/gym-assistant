@@ -1,11 +1,13 @@
 import Dexie from 'dexie';
-import type { Exercise, SetLog } from '../types';
+import type { Exercise, MuscleGroup, SetLog } from '../types';
 import { db, uid } from './db';
 
 export type NewExercise = Pick<
   Exercise,
   'name' | 'muscleGroup' | 'equipment' | 'trackingType' | 'notes'
->;
+> & {
+  secondaryGroups?: MuscleGroup[];
+};
 export type ExercisePatch = Partial<
   Pick<
     Exercise,
@@ -48,7 +50,7 @@ export async function createExercise(input: NewExercise): Promise<string> {
     ...input,
     id,
     name: input.name.trim(),
-    secondaryGroups: [],
+    secondaryGroups: input.secondaryGroups ?? [],
     isBuiltIn: false,
     createdAt: now,
     updatedAt: now,

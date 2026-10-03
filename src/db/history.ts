@@ -1,3 +1,4 @@
+import type { GroupEntry } from '../domain/groups';
 import { computeRecords, type Records } from '../domain/records';
 import { summarize } from '../domain/stats';
 import type { Exercise, Session } from '../types';
@@ -101,4 +102,31 @@ export async function listTrainedExercises(): Promise<TrainedExercise[]> {
       return [{ exercise, lastAt, best: computeRecords(bySession, exercise.trackingType) }];
     })
     .sort((a, b) => b.lastAt - a.lastAt);
+}
+
+/** One entry per completed work set since `since`, with the exercise's current groups. */
+export async function listGroupEntries(since: number): Promise<GroupEntry[]> {
+  const sessions = await db.sessions
+    .where('startedAt')
+    .aboveOrEqual(since)
+    .filter((s) => s.status === 'completed')
+    .toArray();
+  const startedAt = new Map(sessions.map((s) => [s.id, s.startedAt]));
+  const sets = await db.setLogs
+    .where('sessionId')
+    .anyOf([...startedAt.keys()])
+    .filter((s) => s.completedAt !== undefined && !s.isWarmup)
+    .toArray();
+  const exercises = new Map((await db.exercises.toArray()).map((e) => [e.id, e]));
+  return sets.flatMap((s) => {
+    const exercise = exercises.get(s.exerciseId);
+    if (!exercise) return [];
+    return [
+      {
+        startedAt: startedAt.get(s.sessionId) ?? 0,
+        muscleGroup: exercise.muscleGroup,
+        secondaryGroups: exercise.secondaryGroups,
+      },
+    ];
+  });
 }

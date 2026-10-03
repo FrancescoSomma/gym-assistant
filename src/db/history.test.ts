@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createExercise } from './exercises';
-import { getSummaryContext, listHistory, listTrainedExercises } from './history';
+import { getSummaryContext, listGroupEntries, listHistory, listTrainedExercises } from './history';
 import { addDay, addDayExercise, createProgram } from './programs';
 import { getWorkout, startSession } from './sessions';
 import { completeSet, finishSession, updateSet } from './workout';
@@ -74,5 +74,15 @@ describe('listTrainedExercises', () => {
     const rows = await listTrainedExercises();
     expect(rows.map((r) => r.exercise.name)).toEqual(['Panca']);
     expect(rows[0]?.best.maxWeight).toBe(80);
+  });
+});
+
+describe('listGroupEntries', () => {
+  it('returns one entry per completed work set with the exercise groups', async () => {
+    const since = Date.now() - 1000;
+    await train(await benchDay(), 80, 10);
+    const entries = await listGroupEntries(since);
+    expect(entries).toHaveLength(3);
+    expect(entries[0]).toMatchObject({ muscleGroup: 'chest', secondaryGroups: [] });
   });
 });

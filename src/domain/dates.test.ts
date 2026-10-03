@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { startOfWeek, toDateKey } from './dates';
+import { lastWeekStarts, startOfWeek, toDateKey } from './dates';
 
 describe('startOfWeek (Monday to Sunday, local time)', () => {
   it('puts Sunday night in the week that started the previous Monday', () => {
@@ -18,5 +18,14 @@ describe('startOfWeek (Monday to Sunday, local time)', () => {
 describe('toDateKey', () => {
   it('uses the local calendar date', () => {
     expect(toDateKey(new Date(2026, 0, 5, 23, 59).getTime())).toBe('2026-01-05');
+  });
+});
+
+describe('lastWeekStarts', () => {
+  it('lists Monday midnights, oldest first, across the end of daylight saving time', () => {
+    expect(lastWeekStarts(new Date(2026, 9, 28, 12).getTime(), 2)).toEqual([
+      new Date(2026, 9, 19).getTime(),
+      new Date(2026, 9, 26).getTime(),
+    ]);
   });
 });

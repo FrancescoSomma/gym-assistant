@@ -68,6 +68,7 @@ function Form({ exercise, trackingLocked, defaultGroup, onDone }: FormProps) {
           equipment: exercise.equipment,
           trackingType: exercise.trackingType,
           notes: exercise.notes,
+          secondaryGroups: exercise.secondaryGroups,
         }
       : {
           name: '',
@@ -75,6 +76,7 @@ function Form({ exercise, trackingLocked, defaultGroup, onDone }: FormProps) {
           equipment: 'barbell',
           trackingType: 'weight_reps',
           notes: '',
+          secondaryGroups: [],
         },
   );
   const [busy, setBusy] = useState(false); // a double tap must not create two exercises
@@ -113,7 +115,14 @@ function Form({ exercise, trackingLocked, defaultGroup, onDone }: FormProps) {
         <select
           className="field"
           value={draft.muscleGroup}
-          onChange={(e) => setDraft({ ...draft, muscleGroup: e.target.value as MuscleGroup })}
+          onChange={(e) => {
+            const muscleGroup = e.target.value as MuscleGroup;
+            setDraft({
+              ...draft,
+              muscleGroup,
+              secondaryGroups: (draft.secondaryGroups ?? []).filter((g) => g !== muscleGroup),
+            });
+          }}
         >
           {Object.entries(MUSCLE_GROUPS).map(([key, label]) => (
             <option key={key} value={key}>
@@ -122,6 +131,35 @@ function Form({ exercise, trackingLocked, defaultGroup, onDone }: FormProps) {
           ))}
         </select>
       </label>
+      <fieldset>
+        <legend className="label">Gruppi secondari, contano mezza serie</legend>
+        <div className="flex flex-wrap gap-2">
+          {(Object.entries(MUSCLE_GROUPS) as [MuscleGroup, string][])
+            .filter(([key]) => key !== draft.muscleGroup)
+            .map(([key, label]) => {
+              const secondary = draft.secondaryGroups ?? [];
+              const on = secondary.includes(key);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  className="chip"
+                  aria-pressed={on}
+                  onClick={() =>
+                    setDraft({
+                      ...draft,
+                      secondaryGroups: on
+                        ? secondary.filter((g) => g !== key)
+                        : [...secondary, key],
+                    })
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
+        </div>
+      </fieldset>
       <label className="block">
         <span className="label">Attrezzo</span>
         <select

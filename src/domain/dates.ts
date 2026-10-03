@@ -14,3 +14,13 @@ export function toDateKey(ts: number): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+/** Monday 00:00 of the last `count` weeks, oldest first, the current week last. */
+export function lastWeekStarts(now: number, count: number): number[] {
+  const current = startOfWeek(now);
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(current);
+    d.setDate(d.getDate() - 7 * (count - 1 - i)); // calendar days: DST-safe
+    return d.getTime();
+  });
+}
