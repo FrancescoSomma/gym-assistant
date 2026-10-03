@@ -39,7 +39,7 @@ export function Sheet({ open, onClose, title, full = false, children }: Props) {
             <button
               type="button"
               aria-label="Chiudi"
-              className="flex size-11 items-center justify-center text-steel"
+              className="flex size-14 items-center justify-center text-steel"
               onClick={onClose}
             >
               <X />
