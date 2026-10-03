@@ -22,7 +22,11 @@ export function ProgressScreen() {
             const headline = headlineRecord(best, exercise.trackingType);
             return (
               <li key={exercise.id}>
-                <Link to={`/exercises/${exercise.id}`} className="row">
+                <Link
+                  to={`/exercises/${exercise.id}`}
+                  state={{ back: '/progress' }}
+                  className="row"
+                >
                   <span className="min-w-0 flex-1">
                     <span className="block truncate">{exercise.name}</span>
                     <span className="block text-small text-steel">

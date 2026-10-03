@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArchiveRestore, Trash2 } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
 import { Header } from '../../components/Header';
 import {
   deleteOrArchiveExercise,
@@ -24,6 +24,8 @@ const LIBRARY = '/programs?tab=exercises';
 export function ExerciseDetail() {
   const { exerciseId = '' } = useParams();
   const navigate = useNavigate();
+  // Opened from Progressi: the chevron goes back there, not to the library.
+  const back = (useLocation().state as { back?: string } | null)?.back ?? LIBRARY;
   const exercise = useLiveQuery(async () => (await getExercise(exerciseId)) ?? null, [exerciseId]);
   const inUse = useLiveQuery(() => isExerciseInUse(exerciseId), [exerciseId]);
   const history = useLiveQuery(() => exerciseHistory(exerciseId), [exerciseId]);
@@ -47,7 +49,7 @@ export function ExerciseDetail() {
     <>
       <Header
         title={exercise.name}
-        back={LIBRARY}
+        back={back}
         right={
           <button type="button" className="btn-text" onClick={() => setEditing(true)}>
             Modifica
