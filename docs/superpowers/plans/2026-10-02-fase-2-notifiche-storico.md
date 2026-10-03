@@ -2650,6 +2650,8 @@ Imposta un recupero di 30 s su un esercizio.
 
 Correggi una serie da Storico. In Progressi apri l'esercizio: il grafico riflette la correzione, e il tocco sul grafico mostra il valore.
 
+I fogli (esercizio di giornata, menu ⋯, '3 di 6', 'Nuovo esercizio') si aprono interi, in basso, anche dopo aver scritto in un campo
+
 - [ ] **Step 5: Produzione e checklist**
 
 ```bash
