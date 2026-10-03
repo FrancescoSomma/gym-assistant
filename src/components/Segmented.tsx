@@ -13,7 +13,7 @@ export function Segmented<T extends string>({ options, value, onChange }: Props<
           type="button"
           aria-pressed={key === value}
           onClick={() => onChange(key)}
-          className="min-h-11 flex-1 rounded-[9px] text-small font-semibold text-steel aria-pressed:bg-rubber aria-pressed:text-chalk"
+          className="min-h-11 flex-1 rounded-[9px] leading-tight text-small font-semibold text-steel aria-pressed:bg-rubber aria-pressed:text-chalk"
         >
           {label}
         </button>
