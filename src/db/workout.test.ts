@@ -6,11 +6,15 @@ import { addDay, addDayExercise, createProgram, updateDayExercise } from './prog
 import { getWorkout, startSession, type WorkoutItem } from './sessions';
 import { getSettings, setSetting } from './settings';
 import {
+  addSessionExercise,
   addSet,
   clearTimer,
   completeSet,
   deleteSet,
   extendTimer,
+  removeSessionExercise,
+  replaceExercise,
+  skipExercise,
   startTimer,
   updateSet,
 } from './workout';
@@ -170,5 +174,84 @@ describe('timer actions', () => {
     await clearTimer();
     expect(await extendTimer(15_000)).toBeNull();
     expect((await startTimer(bench.se.id))?.label).toBe('Panca, serie 1 di 3');
+  });
+});
+
+const dumbbellPress = () =>
+  createExercise({
+    name: 'Panca manubri',
+    muscleGroup: 'chest',
+    equipment: 'dumbbell',
+    trackingType: 'weight_reps',
+    notes: '',
+  });
+
+describe('skip, remove, add, replace (SPEC §6.5)', () => {
+  it('skips an exercise; completing one of its sets resumes it', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    await skipExercise(bench.se.id);
+    expect((await items(sessionId))[0].se.status).toBe('skipped');
+    await completeSet(bench.sets[0].id);
+    expect((await items(sessionId))[0].se.status).toBe('pending');
+  });
+
+  it('removes an exercise only while it has no completed sets', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    const [, pullup] = await items(sessionId);
+    expect(await removeSessionExercise(pullup.se.id)).toBe(true);
+    expect(await db.setLogs.where('sessionExerciseId').equals(pullup.se.id).count()).toBe(0);
+    await completeSet(bench.sets[0].id);
+    expect(await removeSessionExercise(bench.se.id)).toBe(false);
+    expect(await items(sessionId)).toHaveLength(1);
+  });
+
+  it('adds an exercise at the end with the default target and rest', async () => {
+    await setSetting('defaultRestSec', 75);
+    const sessionId = await setup();
+    const exerciseId = await dumbbellPress();
+    await addSessionExercise(sessionId, exerciseId);
+    const added = (await items(sessionId)).at(-1);
+    expect(added?.se).toMatchObject({
+      exerciseId,
+      order: 2,
+      plannedSets: 3,
+      repMin: 8,
+      repMax: 12,
+      restSec: 75,
+      status: 'pending',
+    });
+    expect(added?.se.dayExerciseId).toBeUndefined();
+    expect(added?.sets).toHaveLength(3);
+  });
+
+  it('replaces in place without completed work sets and regenerates the planned sets', async () => {
+    const sessionId = await setup();
+    const [bench] = await items(sessionId);
+    const exerciseId = await dumbbellPress();
+    expect(await replaceExercise(bench.se.id, exerciseId)).toBe('replaced');
+    const [after] = await items(sessionId);
+    expect(after.se).toMatchObject({
+      exerciseId,
+      replacedExerciseId: bench.exercise.id,
+      status: 'pending',
+    });
+    expect(after.sets).toHaveLength(3);
+    expect(after.sets.every((s) => s.exerciseId === exerciseId)).toBe(true);
+  });
+
+  it('closes the exercise and inserts the substitute right after it once work sets are done', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    await completeSet(bench.sets[0].id);
+    const exerciseId = await dumbbellPress();
+    expect(await replaceExercise(bench.se.id, exerciseId)).toBe('inserted');
+    const list = await items(sessionId);
+    expect(list.map((i) => i.exercise.name)).toEqual(['Panca', 'Panca manubri', 'Trazioni']);
+    expect(list[0].se.status).toBe('done');
+    expect(list[0].sets).toHaveLength(1);
+    expect(list[1].se).toMatchObject({ plannedSets: 2, replacedExerciseId: bench.exercise.id });
+    expect(await db.dayExercises.where('exerciseId').equals(exerciseId).count()).toBe(0); // program untouched
   });
 });

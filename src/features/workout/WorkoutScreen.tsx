@@ -1,23 +1,33 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import { useNow } from '../../components/useNow';
 import { getWorkout } from '../../db/sessions';
 import { getSettings } from '../../db/settings';
+import {
+  addSessionExercise,
+  removeSessionExercise,
+  replaceExercise,
+  skipExercise,
+} from '../../db/workout';
 import { formatClock } from '../../domain/format';
 import { resumeIndex } from '../../domain/workout';
 import { useWakeLock } from '../../platform/wakeLock';
+import { ExercisePicker } from '../library/ExercisePicker';
+import { ExerciseMenu } from './ExerciseMenu';
 import { ExerciseView } from './ExerciseView';
 import { SessionSheet } from './SessionSheet';
 import { TimerBar } from './TimerBar';
+
+type SheetName = 'list' | 'menu' | 'replace' | 'add';
 
 export function WorkoutScreen() {
   const { sessionId = '' } = useParams();
   const workout = useLiveQuery(async () => (await getWorkout(sessionId)) ?? null, [sessionId]);
   const settings = useLiveQuery(getSettings);
   const [index, setIndex] = useState<number | null>(null);
-  const [listOpen, setListOpen] = useState(false);
+  const [sheet, setSheet] = useState<SheetName | null>(null);
   const now = useNow(1000);
   useWakeLock();
 
@@ -38,6 +48,7 @@ export function WorkoutScreen() {
     setIndex(i);
     window.scrollTo(0, 0);
   };
+  const close = () => setSheet(null);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -57,7 +68,7 @@ export function WorkoutScreen() {
           type="button"
           aria-label="Elenco degli esercizi"
           className="num flex h-14 items-center px-3 text-title"
-          onClick={() => setListOpen(true)}
+          onClick={() => setSheet('list')}
         >
           {items.length > 0 ? `${current + 1} di ${items.length}` : '0 di 0'}
         </button>
@@ -65,18 +76,33 @@ export function WorkoutScreen() {
 
       <main className="flex-1 pb-4">
         {item ? (
-          <ExerciseView
-            key={item.se.id}
-            item={item}
-            settings={settings}
-            onExerciseDone={() => {
-              if (!isLast) goTo(current + 1);
-            }}
-          />
+          <>
+            <ExerciseView
+              key={item.se.id}
+              item={item}
+              settings={settings}
+              onMenu={() => setSheet('menu')}
+              onExerciseDone={() => {
+                if (!isLast) goTo(current + 1);
+              }}
+            />
+            {isLast && (
+              <div className="px-2">
+                <button type="button" className="btn-text min-h-14" onClick={() => setSheet('add')}>
+                  <Plus size={20} /> Aggiungi esercizio
+                </button>
+              </div>
+            )}
+          </>
         ) : (
-          <p className="px-4 pt-8 text-steel">
-            Nessun esercizio in questa sessione. Aggiungine uno per iniziare.
-          </p>
+          <div className="space-y-4 px-4 pt-8">
+            <p className="text-steel">
+              Nessun esercizio in questa sessione. Aggiungine uno per iniziare.
+            </p>
+            <button type="button" className="btn-secondary" onClick={() => setSheet('add')}>
+              <Plus size={20} /> Aggiungi esercizio
+            </button>
+          </div>
         )}
       </main>
 
@@ -101,13 +127,52 @@ export function WorkoutScreen() {
       </footer>
 
       <SessionSheet
-        open={listOpen}
-        onClose={() => setListOpen(false)}
+        open={sheet === 'list'}
+        onClose={close}
         items={items}
         current={current}
         onJump={(i) => {
           goTo(i);
-          setListOpen(false);
+          close();
+        }}
+      >
+        <div className="space-y-2 px-4 pt-4">
+          <button type="button" className="btn-secondary" onClick={() => setSheet('add')}>
+            <Plus size={20} /> Aggiungi esercizio
+          </button>
+        </div>
+      </SessionSheet>
+      <ExerciseMenu
+        item={item}
+        open={sheet === 'menu'}
+        onClose={close}
+        onReplace={() => setSheet('replace')}
+        onSkip={async () => {
+          if (item) await skipExercise(item.se.id);
+          close();
+          if (!isLast) goTo(current + 1);
+        }}
+        onRemove={async () => {
+          if (item) await removeSessionExercise(item.se.id);
+          close();
+        }}
+      />
+      <ExercisePicker
+        open={sheet === 'replace'}
+        onClose={close}
+        title="Sostituisci con"
+        initialGroup={item?.exercise.muscleGroup}
+        onPick={async (exerciseId) => {
+          if (item && (await replaceExercise(item.se.id, exerciseId)) === 'inserted')
+            goTo(current + 1);
+        }}
+      />
+      <ExercisePicker
+        open={sheet === 'add'}
+        onClose={close}
+        onPick={async (exerciseId) => {
+          await addSessionExercise(session.id, exerciseId);
+          goTo(items.length); // the new last exercise
         }}
       />
     </div>

@@ -1,7 +1,9 @@
 import type { SetValues } from '../domain/format';
+import { DEFAULT_TARGET } from '../domain/program';
 import { propagateWeight, warmupIndex } from '../domain/workout';
 import type { ActiveTimer, SessionExercise } from '../types';
 import { db, uid } from './db';
+import { insertPlannedSets, insertSessionExercise } from './sessions';
 import { getSettings, setSetting } from './settings';
 
 export interface CompleteResult {
@@ -146,3 +148,89 @@ export async function extendTimer(ms: number): Promise<ActiveTimer | null> {
 }
 
 export const clearTimer = (): Promise<void> => setSetting('activeTimer', null);
+
+export async function skipExercise(seId: string): Promise<void> {
+  await db.sessionExercises.update(seId, { status: 'skipped' });
+}
+
+/** SPEC §6.5: possible only while the exercise has no completed sets. */
+export async function removeSessionExercise(seId: string): Promise<boolean> {
+  return db.transaction('rw', [db.setLogs, db.sessionExercises], async () => {
+    const sets = await db.setLogs.where('sessionExerciseId').equals(seId).toArray();
+    if (sets.some((s) => s.completedAt !== undefined)) return false;
+    await db.setLogs.bulkDelete(sets.map((s) => s.id));
+    await db.sessionExercises.delete(seId);
+    return true;
+  });
+}
+
+export async function addSessionExercise(sessionId: string, exerciseId: string): Promise<string> {
+  return db.transaction(
+    'rw',
+    [db.sessions, db.sessionExercises, db.setLogs, db.exercises, db.settings],
+    async () => {
+      const existing = await db.sessionExercises.where('sessionId').equals(sessionId).toArray();
+      const exercise = await db.exercises.get(exerciseId);
+      const { defaultRestSec } = await getSettings();
+      return insertSessionExercise({
+        sessionId,
+        exerciseId,
+        order: Math.max(-1, ...existing.map((se) => se.order)) + 1,
+        plannedSets: DEFAULT_TARGET.sets,
+        repMin: DEFAULT_TARGET.repMin,
+        repMax: DEFAULT_TARGET.repMax,
+        ...(exercise?.trackingType === 'duration' ? { targetSec: DEFAULT_TARGET.targetSec } : {}),
+        restSec: defaultRestSec,
+      });
+    },
+  );
+}
+
+/**
+ * SPEC §6.5. Without completed work sets the exercise is swapped in place; otherwise it is
+ * closed and the substitute takes the remaining sets right after it. The program never changes.
+ */
+export async function replaceExercise(
+  seId: string,
+  exerciseId: string,
+): Promise<'replaced' | 'inserted'> {
+  return db.transaction('rw', [db.sessions, db.sessionExercises, db.setLogs], async () => {
+    const se = await db.sessionExercises.get(seId);
+    if (!se) throw new Error(`Session exercise ${seId} not found`);
+    const sets = await db.setLogs.where('sessionExerciseId').equals(seId).toArray();
+    const doneWork = sets.filter((s) => s.completedAt !== undefined && !s.isWarmup).length;
+
+    if (doneWork === 0) {
+      await db.setLogs.bulkDelete(sets.map((s) => s.id));
+      await db.sessionExercises.update(seId, {
+        exerciseId,
+        replacedExerciseId: se.replacedExerciseId ?? se.exerciseId,
+        status: 'pending',
+      });
+      await insertPlannedSets({ ...se, exerciseId });
+      return 'replaced';
+    }
+
+    await db.setLogs.bulkDelete(sets.filter((s) => s.completedAt === undefined).map((s) => s.id));
+    await db.sessionExercises.update(seId, { status: 'done' });
+    const later = await db.sessionExercises
+      .where('sessionId')
+      .equals(se.sessionId)
+      .filter((x) => x.order > se.order)
+      .toArray();
+    for (const x of later) await db.sessionExercises.update(x.id, { order: x.order + 1 });
+    await insertSessionExercise({
+      sessionId: se.sessionId,
+      exerciseId,
+      order: se.order + 1,
+      plannedSets: Math.max(1, se.plannedSets - doneWork),
+      repMin: se.repMin,
+      repMax: se.repMax,
+      targetSec: se.targetSec,
+      restSec: se.restSec,
+      replacedExerciseId: se.exerciseId,
+      supersetKey: se.supersetKey,
+    });
+    return 'inserted';
+  });
+}
