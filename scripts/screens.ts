@@ -125,24 +125,58 @@ interface CdpResult {
   data?: string;
 }
 
+/** A command gets this long to answer before its call is rejected (tab crash, hung renderer). */
+const COMMAND_TIMEOUT_MS = 8_000;
+
+type Send = (method: string, params?: Record<string, unknown>) => Promise<CdpResult>;
+
 let msgId = 0;
-function send(
-  ws: WebSocket,
-  method: string,
-  params: Record<string, unknown> = {},
-): Promise<CdpResult> {
-  return new Promise((resolveResult, reject) => {
-    const id = ++msgId;
-    const onMessage = (event: MessageEvent) => {
-      const msg = JSON.parse(event.data as string);
-      if (msg.id !== id) return;
-      ws.removeEventListener('message', onMessage);
-      if (msg.error) reject(new Error(msg.error.message));
-      else resolveResult(msg.result);
-    };
-    ws.addEventListener('message', onMessage);
-    ws.send(JSON.stringify({ id, method, params }));
+
+interface PendingCall {
+  resolve: (result: CdpResult) => void;
+  reject: (error: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+
+/**
+ * Wires one tab's websocket to a `send(method, params)` function. Every in-flight call gets its
+ * own timeout, and a disconnect (close/error) rejects every call still waiting — otherwise a
+ * crashed tab or a silently dropped socket would hang `await send(...)` forever, taking the whole
+ * script down with it instead of surfacing a FAIL for that one shot.
+ */
+function connectClient(ws: WebSocket): Send {
+  const pending = new Map<number, PendingCall>();
+
+  const failAll = (error: Error) => {
+    for (const { reject, timer } of pending.values()) {
+      clearTimeout(timer);
+      reject(error);
+    }
+    pending.clear();
+  };
+
+  ws.addEventListener('message', (event: MessageEvent) => {
+    const msg = JSON.parse(event.data as string);
+    const entry = pending.get(msg.id);
+    if (!entry) return;
+    clearTimeout(entry.timer);
+    pending.delete(msg.id);
+    if (msg.error) entry.reject(new Error(msg.error.message));
+    else entry.resolve(msg.result);
   });
+  ws.addEventListener('close', () => failAll(new Error('DevTools WebSocket closed unexpectedly.')));
+  ws.addEventListener('error', () => failAll(new Error('DevTools WebSocket error.')));
+
+  return (method, params = {}) =>
+    new Promise((resolve, reject) => {
+      const id = ++msgId;
+      const timer = setTimeout(() => {
+        pending.delete(id);
+        reject(new Error(`CDP call "${method}" timed out after ${COMMAND_TIMEOUT_MS} ms.`));
+      }, COMMAND_TIMEOUT_MS);
+      pending.set(id, { resolve, reject, timer });
+      ws.send(JSON.stringify({ id, method, params }));
+    });
 }
 
 /**
@@ -160,24 +194,25 @@ async function captureShot(
 ): Promise<void> {
   const target = await cdpHttp(port, '/json/new?about:blank', 'PUT');
   const ws = new WebSocket(target.webSocketDebuggerUrl);
+  const send = connectClient(ws);
   await new Promise((resolveOpen, reject) => {
     ws.onopen = () => resolveOpen(undefined);
     ws.onerror = () => reject(new Error('DevTools WebSocket connection failed.'));
   });
   try {
-    await send(ws, 'Page.enable');
-    await send(ws, 'Emulation.setDeviceMetricsOverride', {
+    await send('Page.enable');
+    await send('Emulation.setDeviceMetricsOverride', {
       width,
       height,
       deviceScaleFactor: 2,
       mobile: false,
     });
-    await send(ws, 'Page.navigate', { url: `${base}${path}` });
+    await send('Page.navigate', { url: `${base}${path}` });
 
     const deadline = Date.now() + 10_000;
     let rendered = false;
     while (Date.now() < deadline) {
-      const result = await send(ws, 'Runtime.evaluate', {
+      const result = await send('Runtime.evaluate', {
         expression: '(document.getElementById("root")?.innerText ?? "").trim().length',
       });
       if ((result.result?.value ?? 0) > 20) {
@@ -189,7 +224,7 @@ async function captureShot(
     if (!rendered) throw new Error('timed out waiting for content to render');
     await new Promise((r) => setTimeout(r, 300)); // let the final layout/paint settle
 
-    const shot = await send(ws, 'Page.captureScreenshot', {
+    const shot = await send('Page.captureScreenshot', {
       format: 'png',
       captureBeyondViewport: false,
     });
