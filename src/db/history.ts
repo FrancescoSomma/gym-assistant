@@ -1,6 +1,9 @@
+import { computeRecords, type Records } from '../domain/records';
 import { summarize } from '../domain/stats';
 import type { Session } from '../types';
 import { db } from './db';
+import { exerciseHistory } from './exercises';
+import { getWorkout, type Workout } from './sessions';
 
 export interface HistoryRow {
   session: Session;
@@ -35,4 +38,39 @@ export async function listHistory(): Promise<HistoryRow[]> {
         ...summarize(items),
       };
     });
+}
+
+export interface SummaryContext {
+  /** Last completed session of the same day before this one (SPEC §6.8). */
+  previous?: Workout;
+  /** Records by exercise id, from the sessions before this one. */
+  recordsBefore: Map<string, Records>;
+}
+
+export async function getSummaryContext(sessionId: string): Promise<SummaryContext | undefined> {
+  const workout = await getWorkout(sessionId);
+  if (!workout) return undefined;
+  const { session, items } = workout;
+  const earlier = await db.sessions
+    .where('dayId')
+    .equals(session.dayId)
+    .filter((s) => s.status === 'completed' && s.startedAt < session.startedAt)
+    .sortBy('startedAt');
+  const previousId = earlier.at(-1)?.id;
+
+  const recordsBefore = new Map<string, Records>();
+  for (const { exercise } of items) {
+    if (recordsBefore.has(exercise.id)) continue;
+    const before = (await exerciseHistory(exercise.id)).filter(
+      (h) => h.startedAt < session.startedAt,
+    );
+    recordsBefore.set(
+      exercise.id,
+      computeRecords(
+        before.map((h) => h.sets),
+        exercise.trackingType,
+      ),
+    );
+  }
+  return { previous: previousId ? await getWorkout(previousId) : undefined, recordsBefore };
 }

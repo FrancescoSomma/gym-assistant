@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createExercise } from './exercises';
-import { listHistory } from './history';
+import { getSummaryContext, listHistory } from './history';
 import { addDay, addDayExercise, createProgram } from './programs';
 import { getWorkout, startSession } from './sessions';
 import { completeSet, finishSession, updateSet } from './workout';
@@ -44,5 +44,25 @@ describe('listHistory', () => {
     expect(rows[0]).toMatchObject({ sets: 3, volume: 1980 });
     expect(rows[1]).toMatchObject({ sets: 3, volume: 2400 });
     expect(rows[0]?.durationMs).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('getSummaryContext', () => {
+  it('finds the previous session of the same day and the records before this one', async () => {
+    const day = await benchDay();
+    const first = await train(day, 80, 10);
+    const second = await train(day, 82.5, 10);
+
+    const context = await getSummaryContext(second);
+    expect(context?.previous?.session.id).toBe(first);
+    const [records] = [...(context?.recordsBefore.values() ?? [])];
+    expect(records?.maxWeight).toBe(80); // the second session itself is not "before"
+  });
+
+  it('has nothing to compare on the first session', async () => {
+    const first = await train(await benchDay(), 80, 10);
+    const context = await getSummaryContext(first);
+    expect(context?.previous).toBeUndefined();
+    expect([...(context?.recordsBefore.values() ?? [])]).toEqual([{}]);
   });
 });

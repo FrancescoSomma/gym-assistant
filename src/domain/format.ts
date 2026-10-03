@@ -101,3 +101,14 @@ export const formatMonth = (ts: number): string => monthYear.format(ts);
 
 const shortDate = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'short' });
 export const formatShortDate = (ts: number): string => shortDate.format(ts);
+
+const percentChange = new Intl.NumberFormat('it-IT', {
+  style: 'percent',
+  signDisplay: 'exceptZero',
+  maximumFractionDigits: 0,
+});
+
+/** (current − previous) / previous as "+5%"; undefined without a previous value. */
+export function formatChange(current: number, previous: number): string | undefined {
+  return previous > 0 ? percentChange.format((current - previous) / previous) : undefined;
+}

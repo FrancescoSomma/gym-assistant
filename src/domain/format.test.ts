@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   countLabel,
+  formatChange,
   formatClock,
   formatMegabytes,
   formatMonth,
@@ -122,5 +123,16 @@ describe('formatMonth', () => {
 describe('formatShortDate', () => {
   it('uses day and short month', () => {
     expect(formatShortDate(new Date(2026, 8, 23).getTime())).toBe('23 set');
+  });
+});
+
+describe('formatChange', () => {
+  it('shows a signed percentage', () => {
+    expect(formatChange(1050, 1000)).toBe('+5%');
+    expect(formatChange(880, 1000)).toBe('-12%');
+    expect(formatChange(1000, 1000)).toBe('0%');
+  });
+  it('is undefined without a previous value', () => {
+    expect(formatChange(500, 0)).toBeUndefined();
   });
 });
