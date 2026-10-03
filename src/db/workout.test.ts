@@ -19,6 +19,7 @@ import {
   removeSessionExercise,
   replaceExercise,
   setSessionNotes,
+  setTimerPushFailed,
   skipExercise,
   startTimer,
   updateSet,
@@ -337,5 +338,21 @@ describe('finishing and discarding (SPEC §4.3, §6.6, §6.7)', () => {
     const sessionId = await setup();
     await setSessionNotes(sessionId, "Spalla sinistra un po' rigida");
     expect((await db.sessions.get(sessionId))?.notes).toBe("Spalla sinistra un po' rigida");
+  });
+});
+
+describe('setTimerPushFailed', () => {
+  it('flags only the current timer', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    const { timer: first } = await completeSet(bench.sets[0].id);
+    await new Promise((resolve) => setTimeout(resolve, 2)); // distinct endAt values
+    const { timer: second } = await completeSet(bench.sets[1].id);
+    await setTimerPushFailed(first?.endAt ?? 0, true); // stale: a newer timer replaced it
+    expect((await getSettings()).activeTimer?.pushFailed).toBeUndefined();
+    await setTimerPushFailed(second?.endAt ?? 0, true);
+    expect((await getSettings()).activeTimer?.pushFailed).toBe(true);
+    await setTimerPushFailed(second?.endAt ?? 0, false);
+    expect((await getSettings()).activeTimer?.pushFailed).toBe(false);
   });
 });

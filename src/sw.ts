@@ -60,4 +60,32 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// Every push must show a notification, or Safari may revoke the subscription (SPEC §7.2).
+self.addEventListener('push', (event) => {
+  let data: { title?: string; body?: string } = {};
+  try {
+    data = event.data?.json() ?? {};
+  } catch {
+    // Not JSON: show the default text.
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? 'Recupero finito', {
+      body: data.body ?? '',
+      tag: 'rest-timer',
+      icon: '/icon-192.png',
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    (async () => {
+      const [client] = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      if (client) await client.focus();
+      else await self.clients.openWindow('/');
+    })(),
+  );
+});
+
 export {};

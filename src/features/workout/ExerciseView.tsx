@@ -7,6 +7,7 @@ import { addSet, completeSet } from '../../db/workout';
 import { formatSets, formatTarget, relativeDay } from '../../domain/format';
 import { firstPending, weightStep } from '../../domain/workout';
 import type { SetLog, Settings } from '../../types';
+import { syncRestPush } from './restPush';
 import { SetEditor, SetRow } from './SetRows';
 
 interface Props {
@@ -27,7 +28,8 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
   const label = (s: SetLog) => (s.isWarmup ? 'R' : String(workIds.indexOf(s.id) + 1));
 
   const confirm = async (setId: string) => {
-    const { exerciseDone } = await completeSet(setId);
+    const { exerciseDone, timer } = await completeSet(setId);
+    void syncRestPush(timer);
     setSelectedId(null);
     if (exerciseDone) onExerciseDone();
   };

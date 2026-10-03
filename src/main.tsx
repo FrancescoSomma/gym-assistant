@@ -2,6 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
 import { ensureSeed } from './db/seed';
+import { getSettings } from './db/settings';
+import { renewSubscription } from './platform/push';
 import { unlockAudio } from './platform/sound';
 import { requestPersistentStorage } from './platform/storage';
 import { router } from './routes';
@@ -14,6 +16,9 @@ document.addEventListener('pointerup', unlockAudio, { capture: true, passive: tr
 ensureSeed()
   .then(() => {
     void requestPersistentStorage();
+    void getSettings().then((settings) => {
+      if (settings.pushEnabled) void renewSubscription();
+    });
     root.render(
       <StrictMode>
         <RouterProvider router={router} />

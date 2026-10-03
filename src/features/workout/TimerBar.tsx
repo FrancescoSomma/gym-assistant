@@ -1,3 +1,4 @@
+import { BellOff } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useNow } from '../../components/useNow';
 import type { WorkoutItem } from '../../db/sessions';
@@ -6,6 +7,7 @@ import { formatClock, formatSeconds } from '../../domain/format';
 import { restState } from '../../domain/workout';
 import { beep } from '../../platform/sound';
 import type { ActiveTimer } from '../../types';
+import { syncRestPush } from './restPush';
 
 interface Props {
   timer: ActiveTimer | null;
@@ -30,6 +32,11 @@ export function TimerBar({ timer, sound, item }: Props) {
     if (sound && Date.now() - timer.endAt < 2000 && document.visibilityState === 'visible') beep();
   }, [timer, finished, sound]);
 
+  const stop = async () => {
+    await clearTimer();
+    void syncRestPush(null);
+  };
+
   if (!timer || !state) {
     if (!item) return <div className={SAFE_BOTTOM} />;
     return (
@@ -37,7 +44,11 @@ export function TimerBar({ timer, sound, item }: Props) {
         <span className="flex-1 text-small text-steel">
           Recupero {formatSeconds(item.se.restSec)}
         </span>
-        <button type="button" className="btn-text min-h-14" onClick={() => startTimer(item.se.id)}>
+        <button
+          type="button"
+          className="btn-text min-h-14"
+          onClick={async () => void syncRestPush(await startTimer(item.se.id))}
+        >
           Avvia recupero
         </button>
       </div>
@@ -48,7 +59,7 @@ export function TimerBar({ timer, sound, item }: Props) {
     return (
       <button
         type="button"
-        onClick={() => clearTimer()}
+        onClick={stop}
         className={`flex min-h-22 w-full items-center gap-3 bg-plate-green px-4 text-left text-rubber transition-colors ${SAFE_BOTTOM}`}
       >
         <span className="flex-1 font-semibold">Recupero finito</span>
@@ -69,10 +80,19 @@ export function TimerBar({ timer, sound, item }: Props) {
         <span className="num flex-1 pl-3 text-timer">
           {formatClock(Math.ceil(state.remainingMs / 1000) * 1000)}
         </span>
-        <button type="button" className="btn-text min-h-14" onClick={() => extendTimer(15_000)}>
+        {timer.pushFailed && (
+          <span role="img" aria-label="Notifica non programmata" className="text-steel">
+            <BellOff size={20} />
+          </span>
+        )}
+        <button
+          type="button"
+          className="btn-text min-h-14"
+          onClick={async () => void syncRestPush(await extendTimer(15_000))}
+        >
           +15 s
         </button>
-        <button type="button" className="btn-text min-h-14" onClick={() => clearTimer()}>
+        <button type="button" className="btn-text min-h-14" onClick={stop}>
           Salta
         </button>
       </div>

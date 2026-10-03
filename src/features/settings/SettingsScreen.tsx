@@ -8,6 +8,7 @@ import { formatMegabytes, formatNumber, parseWeight } from '../../domain/format'
 import { getStorageInfo, type StorageInfo } from '../../platform/storage';
 import { EQUIPMENT, type Equipment } from '../../types';
 import { BackupSection } from './BackupSection';
+import { NotificationsSection } from './NotificationsSection';
 
 const EQUIPMENT_ENTRIES = Object.entries(EQUIPMENT) as [Equipment, string][];
 
@@ -83,6 +84,8 @@ export function SettingsScreen() {
           <span className="text-steel">kg</span>
         </label>
       ))}
+
+      <NotificationsSection enabled={settings.pushEnabled} />
 
       <BackupSection lastBackupAt={settings.lastBackupAt} />
 

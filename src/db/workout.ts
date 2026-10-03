@@ -295,3 +295,13 @@ export async function replaceExercise(
     },
   );
 }
+
+/** Records whether the push for the timer ending at endAt was scheduled; ignores replaced timers. */
+export async function setTimerPushFailed(endAt: number, failed: boolean): Promise<void> {
+  await db.transaction('rw', db.settings, async () => {
+    const { activeTimer } = await getSettings();
+    if (activeTimer?.endAt === endAt) {
+      await setSetting('activeTimer', { ...activeTimer, pushFailed: failed });
+    }
+  });
+}

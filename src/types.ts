@@ -132,6 +132,8 @@ export interface ActiveTimer {
   /** Full length including "+15 s" extensions; drives the draining line. */
   durationMs: number;
   label: string;
+  /** True when scheduling the lock-screen notification failed (offline): shows an icon. */
+  pushFailed?: boolean;
 }
 
 export interface Settings {

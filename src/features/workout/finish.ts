@@ -6,6 +6,7 @@ import {
   hasCompletedSets,
 } from '../../db/workout';
 import { confirmAction } from '../../platform/confirm';
+import { syncRestPush } from './restPush';
 
 /**
  * SPEC §6.7: confirm when sets are left, then open the summary. atLastSet ends a stale session
@@ -20,6 +21,7 @@ export async function finishWorkout(
   if (!(await hasCompletedSets(sessionId))) {
     if (!confirmAction("Nessuna serie completata. Scartare l'allenamento?")) return false;
     await discardSession(sessionId);
+    void syncRestPush(null);
     navigate('/', { replace: true });
     return true;
   }
@@ -27,6 +29,7 @@ export async function finishWorkout(
   const left = pending === 1 ? '1 serie non completata' : `${pending} serie non completate`;
   if (pending > 0 && !confirmAction(`Hai ${left}. Termina comunque?`)) return false;
   await finishSession(sessionId, { atLastSet });
+  void syncRestPush(null);
   navigate(`/workout/${sessionId}/summary`, { replace: true });
   return true;
 }
@@ -41,6 +44,7 @@ export async function discardWorkout(
     return false;
   }
   await discardSession(sessionId);
+  void syncRestPush(null);
   navigate('/', { replace: true });
   return true;
 }
