@@ -7,6 +7,7 @@ import { getSettings, setSetting } from '../../db/settings';
 import { formatMegabytes, formatNumber, parseWeight } from '../../domain/format';
 import { getStorageInfo, type StorageInfo } from '../../platform/storage';
 import { EQUIPMENT, type Equipment } from '../../types';
+import { BackupSection } from './BackupSection';
 
 const EQUIPMENT_ENTRIES = Object.entries(EQUIPMENT) as [Equipment, string][];
 
@@ -82,6 +83,8 @@ export function SettingsScreen() {
           <span className="text-steel">kg</span>
         </label>
       ))}
+
+      <BackupSection lastBackupAt={settings.lastBackupAt} />
 
       <h2 className="section-title">Archiviazione</h2>
       <div className="row">

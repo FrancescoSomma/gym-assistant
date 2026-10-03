@@ -136,3 +136,10 @@ export async function getWorkout(sessionId: string): Promise<Workout | undefined
   });
   return { session, items };
 }
+
+export const lastCompletedSession = (): Promise<Session | undefined> =>
+  db.sessions
+    .orderBy('startedAt')
+    .reverse()
+    .filter((s) => s.status === 'completed')
+    .first();

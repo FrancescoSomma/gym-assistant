@@ -8,11 +8,14 @@ import {
   countCompletedSince,
   getActiveSession,
   getTodayPlan,
+  lastCompletedSession,
   startSession,
 } from '../../db/sessions';
 import { getSettings } from '../../db/settings';
+import { needsBackupReminder } from '../../domain/backup';
 import { startOfWeek } from '../../domain/dates';
-import { formatDate, formatSetsReps, formatTime } from '../../domain/format';
+import { formatDate, formatSetsReps, formatTime, relativeDay } from '../../domain/format';
+import { exportAndShare } from '../settings/exportBackup';
 
 export function TodayScreen() {
   const navigate = useNavigate();
@@ -20,9 +23,16 @@ export function TodayScreen() {
   const plan = useLiveQuery(getTodayPlan);
   const settings = useLiveQuery(getSettings);
   const weekCount = useLiveQuery(() => countCompletedSince(startOfWeek(Date.now())));
+  const lastWorkout = useLiveQuery(async () => (await lastCompletedSession()) ?? null);
   const [choosing, setChoosing] = useState(false);
   const [starting, setStarting] = useState(false);
-  if (active === undefined || plan === undefined || !settings || weekCount === undefined)
+  if (
+    active === undefined ||
+    plan === undefined ||
+    !settings ||
+    weekCount === undefined ||
+    lastWorkout === undefined
+  )
     return null;
 
   const start = async (dayId: string) => {
@@ -34,6 +44,11 @@ export function TodayScreen() {
   };
 
   const discs = Array.from({ length: Math.max(settings.weeklyGoal, weekCount) }, (_, i) => i + 1);
+  const remindBackup = needsBackupReminder(
+    settings.lastBackupAt,
+    lastWorkout ? (lastWorkout.endedAt ?? lastWorkout.startedAt) : undefined,
+    Date.now(),
+  );
 
   return (
     <>
@@ -113,6 +128,20 @@ export function TodayScreen() {
           ))}
         </div>
       </section>
+
+      {remindBackup && (
+        <section className="mx-4 mt-6 flex items-center gap-3 border-y border-steel/25 py-2">
+          <p className="flex-1 text-small">
+            {settings.lastBackupAt
+              ? `Ultimo backup ${relativeDay(settings.lastBackupAt)}.`
+              : 'Non hai ancora un backup.'}{' '}
+            I dati sono solo su questo iPhone.
+          </p>
+          <button type="button" className="btn-text" onClick={() => exportAndShare()}>
+            Esporta backup
+          </button>
+        </section>
+      )}
 
       <div className="mt-auto space-y-1 px-4 pt-6 pb-4">
         {active ? (
