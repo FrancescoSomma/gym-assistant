@@ -1,10 +1,19 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "gym-log",
+  "main": "./worker/index.ts",
   "compatibility_date": "2026-10-02",
-  // Assets-only Worker: no "main" until Phase 2.
   "assets": {
     "directory": "./dist/",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    // Only /api/* reaches the Worker; everything else is a static asset or the SPA fallback.
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "TIMER", "class_name": "TimerDO" }]
+  },
+  // Declarative Durable Object setup (replaces "migrations"); SQLite is required on the Free plan.
+  "exports": {
+    "TimerDO": { "type": "durable-object", "storage": "sqlite" }
   }
 }

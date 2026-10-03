@@ -10,7 +10,9 @@
     "deploy": "vite build && wrangler deploy",
     "deploy:preview": "vite build && wrangler deploy --name gym-log-preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.sw.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.sw.json && tsc --noEmit -p worker/tsconfig.json",
+    "types": "wrangler types",
+    "dev:worker": "vite build && wrangler dev",
     "lint": "biome check .",
     "format": "biome check --write .",
     "check": "bun run typecheck && bun run lint && bun run test"
