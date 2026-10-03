@@ -242,6 +242,7 @@ Se c'è una sessione in corso e l'utente è uscito dalla modalità allenamento, 
 | `/history` | Storico | 2 |
 | `/history/:sessionId` | Dettaglio sessione, modificabile | 2 |
 | `/progress` | Progressi | 2–3 |
+| `/progress/bodyweight` | Peso corporeo | 3 |
 | `/settings` | Impostazioni | 1 |
 
 ### 5.1 Oggi
@@ -345,7 +346,7 @@ Le serie di riscaldamento sono attenuate e marcate con R. Non avviano il timer e
 ### 7.1 Timer in app (Fase 1)
 
 - Stato salvato in `settings.activeTimer = { sessionExerciseId, endAt, label }`.
-- Si avvia alla conferma di una serie di lavoro, se `autoStartTimer` è attivo, anche dopo l'ultima serie di un esercizio. Durata: `restSec` della SessionExercise. Nelle superserie (Fase 3) parte solo a fine giro.
+- Si avvia alla conferma di una serie di lavoro, se `autoStartTimer` è attivo, anche dopo l'ultima serie di un esercizio. Durata: `restSec` della SessionExercise. Nelle superserie (Fase 3) parte solo a fine giro, con il recupero più lungo tra gli esercizi della superserie; una conferma a metà giro azzera il timer in corso.
 - Tempo rimanente = `max(0, endAt − Date.now())`, ricalcolato ogni 250 ms e a ogni `visibilitychange`. Mai decrementare un contatore.
 - Azioni: "+15 s" (`endAt += 15000`) e "Salta" (`activeTimer = null`). Una nuova conferma sostituisce il timer attivo.
 - Allo zero la barra diventa verde (`plate-green`) con "Recupero finito" e il tempo extra che scorre ("+0:12"), finché non confermi la serie successiva o la tocchi. Se `timerSound` è attivo suona un segnale breve via Web Audio, con il contesto audio sbloccato al primo tocco dell'utente. Nessuna vibrazione.
@@ -602,12 +603,12 @@ La palette nasce dal codice colore dei dischi olimpici (25 kg rosso, 20 blu, 15 
 
 ### Fase 3: analisi e rifiniture
 
-- [ ] Gruppi secondari negli esercizi e serie settimanali per gruppo
-- [ ] Costanza: calendario e obiettivo settimanale
-- [ ] Suggerimento di progressione (§8.6)
-- [ ] Superserie (`supersetKey`): esercizi alternati, timer solo a fine giro
-- [ ] Peso corporeo
-- [ ] Calcolatore dei dischi, con bilanciere da 20 kg di default
+- [x] Gruppi secondari negli esercizi e serie settimanali per gruppo
+- [x] Costanza: calendario e obiettivo settimanale
+- [x] Suggerimento di progressione (§8.6)
+- [x] Superserie (`supersetKey`): esercizi alternati, timer solo a fine giro
+- [x] Peso corporeo
+- [x] Calcolatore dei dischi, con bilanciere da 20 kg di default
 
 ## 13. Libreria esercizi iniziale
 
