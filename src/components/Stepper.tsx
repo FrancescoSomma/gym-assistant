@@ -1,6 +1,7 @@
 import { Minus, Plus } from 'lucide-react';
 import { type PointerEvent, useEffect, useRef, useState } from 'react';
 import { formatNumber, parseInteger, parseWeight } from '../domain/format';
+import { RollingNumber } from './RollingNumber';
 
 interface Props {
   /** Accessible name, e.g. "Peso". */
@@ -16,7 +17,7 @@ interface Props {
   decimal?: boolean;
   unit?: string;
   placeholder?: string;
-  /** lg: 56pt targets for workout mode. */
+  /** lg: 56pt targets and 44px values for workout mode. */
   size?: 'md' | 'lg';
   /**
    * Save every valid keystroke, not only on blur (workout mode: a forced close keeps what was
@@ -68,8 +69,13 @@ export function Stepper({
   // ± must not take the focus: the blur would save the draft after bump read the old value.
   const keepFocus = (e: PointerEvent) => e.preventDefault();
 
-  const height = size === 'lg' ? 'h-14' : 'h-11';
-  const button = `flex ${height} w-14 shrink-0 items-center justify-center rounded-control bg-steel/15 active:opacity-60 disabled:opacity-30`;
+  const lg = size === 'lg';
+  const box = lg ? 'h-14' : 'h-11';
+  const button = `flex ${box} ${lg ? 'w-14' : 'w-11'} shrink-0 items-center justify-center rounded-control bg-fondale text-luce transition-transform duration-120 ease-out active:scale-[0.94] disabled:opacity-30 disabled:active:scale-100`;
+  const text = lg ? 'text-value' : 'text-step';
+  const shown = value === undefined ? '' : formatNumber(value);
+  // At rest the digits roll on ± (RollingNumber over a transparent input); typing shows the input.
+  const rolling = draft === null && shown !== '';
 
   return (
     <div className="flex items-center gap-2">
@@ -83,29 +89,38 @@ export function Stepper({
       >
         <Minus />
       </button>
-      <label className={`flex ${height} min-w-0 flex-1 items-center`}>
+      <label className={`flex ${box} min-w-0 flex-1 items-center`}>
         <span className="sr-only">{label}</span>
-        <span className="flex w-full items-baseline gap-1">
-          <input
-            inputMode={decimal ? 'decimal' : 'numeric'}
-            enterKeyHint="done"
-            className={`num min-w-0 flex-1 bg-transparent outline-none placeholder:text-steel ${unit ? 'text-right' : 'text-center'} ${size === 'lg' ? 'text-value' : 'text-title'}`}
-            value={draft ?? (value === undefined ? '' : formatNumber(value))}
-            placeholder={placeholder}
-            onFocus={(e) => {
-              setDraft(e.currentTarget.value);
-              e.currentTarget.select();
-            }}
-            onChange={(e) => {
-              setDraft(e.currentTarget.value);
-              if (live) write(e.currentTarget.value);
-            }}
-            onBlur={commit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') e.currentTarget.blur();
-            }}
-          />
-          {unit && <span className="flex-1 text-small text-steel">{unit}</span>}
+        <span className="flex w-full items-baseline gap-1.5">
+          <span className="relative min-w-0 flex-1">
+            <input
+              inputMode={decimal ? 'decimal' : 'numeric'}
+              enterKeyHint="done"
+              className={`num w-full bg-transparent outline-none placeholder:text-fumo ${unit ? 'text-right' : 'text-center'} ${text} ${rolling ? 'text-transparent' : ''}`}
+              value={draft ?? shown}
+              placeholder={placeholder}
+              onFocus={(e) => {
+                setDraft(e.currentTarget.value);
+                e.currentTarget.select();
+              }}
+              onChange={(e) => {
+                setDraft(e.currentTarget.value);
+                if (live) write(e.currentTarget.value);
+              }}
+              onBlur={commit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.currentTarget.blur();
+              }}
+            />
+            {rolling && (
+              <span
+                className={`num pointer-events-none absolute inset-0 flex items-center ${unit ? 'justify-end' : 'justify-center'} ${text}`}
+              >
+                <RollingNumber value={value} text={shown} />
+              </span>
+            )}
+          </span>
+          {unit && <span className="label-text w-7 shrink-0 text-fumo">{unit}</span>}
         </span>
       </label>
       <button

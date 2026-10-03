@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
+import { MotionProvider } from './components/MotionProvider';
 import { ensureSeed } from './db/seed';
 import { getSettings } from './db/settings';
 import { renewSubscription } from './platform/push';
@@ -31,7 +32,9 @@ boot()
     });
     root.render(
       <StrictMode>
-        <RouterProvider router={router} />
+        <MotionProvider>
+          <RouterProvider router={router} />
+        </MotionProvider>
       </StrictMode>,
     );
   })
