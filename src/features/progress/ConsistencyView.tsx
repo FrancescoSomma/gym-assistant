@@ -53,6 +53,8 @@ export default function ConsistencyView() {
     shown.year === new Date(now).getFullYear() && shown.month === new Date(now).getMonth();
   const startedAts = sessions.map((s) => s.startedAt);
   const weeks = weeklyCounts(startedAts, now);
+  // One unit of headroom keeps the goal label above the line inside the chart.
+  const yMax = Math.max(goal, ...weeks.map((w) => w.count)) + 1;
   const shift = (delta: number) =>
     setShown(({ year, month }) => {
       const d = new Date(year, month + delta, 1);
@@ -139,8 +141,8 @@ export default function ConsistencyView() {
               <YAxis
                 width={24}
                 allowDecimals={false}
-                // One unit of headroom keeps the goal label above the line inside the chart.
-                domain={[0, Math.max(goal, ...weeks.map((w) => w.count)) + 1]}
+                domain={[0, yMax]}
+                tickCount={yMax + 1} // one tick per unit, else [0, 5] gives 0, 2, 4, 5
                 {...AXIS}
               />
               <ReferenceLine
