@@ -6,6 +6,7 @@ import { ExerciseDetail } from './features/library/ExerciseDetail';
 import { DayEditor } from './features/programs/DayEditor';
 import { ProgramEditor } from './features/programs/ProgramEditor';
 import { ProgramsScreen } from './features/programs/ProgramsScreen';
+import { ProgressScreen } from './features/progress/ProgressScreen';
 import { SettingsScreen } from './features/settings/SettingsScreen';
 import { TodayScreen } from './features/today/TodayScreen';
 import { SummaryScreen } from './features/workout/SummaryScreen';
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
       { path: 'programs/:programId/days/:dayId', Component: DayEditor },
       { path: 'history', Component: HistoryScreen },
       { path: 'history/:sessionId', Component: SessionDetail },
+      { path: 'progress', Component: ProgressScreen },
       { path: 'exercises/:exerciseId', Component: ExerciseDetail },
       { path: 'settings', Component: SettingsScreen },
     ],

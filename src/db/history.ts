@@ -1,6 +1,6 @@
 import { computeRecords, type Records } from '../domain/records';
 import { summarize } from '../domain/stats';
-import type { Session } from '../types';
+import type { Exercise, Session } from '../types';
 import { db } from './db';
 import { exerciseHistory } from './exercises';
 import { getWorkout, type Workout } from './sessions';
@@ -73,4 +73,32 @@ export async function getSummaryContext(sessionId: string): Promise<SummaryConte
     );
   }
   return { previous: previousId ? await getWorkout(previousId) : undefined, recordsBefore };
+}
+
+export interface TrainedExercise {
+  exercise: Exercise;
+  lastAt: number;
+  best: Records;
+}
+
+export async function listTrainedExercises(): Promise<TrainedExercise[]> {
+  const [sessions, setLogs, exercises] = await Promise.all([
+    db.sessions.where('status').equals('completed').toArray(),
+    db.setLogs.toArray(),
+    db.exercises.toArray(),
+  ]);
+  const completed = new Map(sessions.map((s) => [s.id, s]));
+  const valid = setLogs.filter(
+    (s) => completed.has(s.sessionId) && s.completedAt !== undefined && !s.isWarmup,
+  );
+  const byExercise = Map.groupBy(valid, (s) => s.exerciseId);
+  return exercises
+    .flatMap((exercise) => {
+      const sets = byExercise.get(exercise.id);
+      if (!sets) return [];
+      const lastAt = Math.max(...sets.map((s) => completed.get(s.sessionId)?.startedAt ?? 0));
+      const bySession = [...Map.groupBy(sets, (s) => s.sessionId).values()];
+      return [{ exercise, lastAt, best: computeRecords(bySession, exercise.trackingType) }];
+    })
+    .sort((a, b) => b.lastAt - a.lastAt);
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createExercise } from './exercises';
-import { getSummaryContext, listHistory } from './history';
+import { getSummaryContext, listHistory, listTrainedExercises } from './history';
 import { addDay, addDayExercise, createProgram } from './programs';
 import { getWorkout, startSession } from './sessions';
 import { completeSet, finishSession, updateSet } from './workout';
@@ -64,5 +64,15 @@ describe('getSummaryContext', () => {
     const context = await getSummaryContext(first);
     expect(context?.previous).toBeUndefined();
     expect([...(context?.recordsBefore.values() ?? [])]).toEqual([{}]);
+  });
+});
+
+describe('listTrainedExercises', () => {
+  it('lists only exercises with completed work sets, most recent first', async () => {
+    const day = await benchDay();
+    await train(day, 80, 10);
+    const rows = await listTrainedExercises();
+    expect(rows.map((r) => r.exercise.name)).toEqual(['Panca']);
+    expect(rows[0]?.best.maxWeight).toBe(80);
   });
 });

@@ -104,3 +104,19 @@ export function formatRecord(kind: RecordKind, value: number): string {
   if (kind === 'maxDuration') return formatSeconds(value);
   return `${formatNumber(Math.round(value * 10) / 10)} kg`;
 }
+
+/** The one number shown per exercise on the Progress list. */
+export function headlineRecord(
+  records: Records,
+  tracking: TrackingType,
+): { kind: RecordKind; value: number } | undefined {
+  const order: RecordKind[] =
+    tracking === 'weight_reps'
+      ? ['e1rm', 'maxWeight']
+      : tracking === 'bodyweight_reps'
+        ? ['maxReps']
+        : ['maxDuration'];
+  const kind = order.find((k) => records[k] !== undefined);
+  const value = kind && records[kind];
+  return kind && value !== undefined ? { kind, value } : undefined;
+}

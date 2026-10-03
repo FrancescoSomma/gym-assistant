@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { beatenRecords, computeRecords, formatRecord, isRecordSet, recordTable } from './records';
+import {
+  beatenRecords,
+  computeRecords,
+  formatRecord,
+  headlineRecord,
+  isRecordSet,
+  recordTable,
+} from './records';
 
 const set = (
   weightKg: number,
@@ -90,5 +97,25 @@ describe('beatenRecords and recordTable', () => {
     expect(formatRecord('maxVolume', 12345)).toBe('12.345 kg');
     expect(formatRecord('maxReps', 15)).toBe('15 rip');
     expect(formatRecord('maxDuration', 90)).toBe('1 min 30 s');
+  });
+});
+
+describe('headlineRecord', () => {
+  it('prefers the e1RM, then the load, for weighted exercises', () => {
+    expect(headlineRecord({ e1rm: 106, maxWeight: 90 }, 'weight_reps')).toEqual({
+      kind: 'e1rm',
+      value: 106,
+    });
+    expect(headlineRecord({ maxWeight: 40 }, 'weight_reps')).toEqual({
+      kind: 'maxWeight',
+      value: 40,
+    });
+  });
+  it('uses reps or duration otherwise', () => {
+    expect(headlineRecord({ maxReps: 15 }, 'bodyweight_reps')).toEqual({
+      kind: 'maxReps',
+      value: 15,
+    });
+    expect(headlineRecord({}, 'duration')).toBeUndefined();
   });
 });
