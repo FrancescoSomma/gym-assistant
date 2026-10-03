@@ -8,6 +8,7 @@ import type {
 } from '../types';
 import type { SetValues } from './format';
 import { isWorkSetDone, type LoggedSet } from './stats';
+import { hasWorkLeft, supersetNext, supersetRun } from './superset';
 
 export const STALE_SESSION_MS = 6 * 3_600_000;
 
@@ -51,10 +52,36 @@ export function canComplete(set: SetValues, tracking: TrackingType): boolean {
 export const firstPending = <T extends Pick<SetLog, 'completedAt'>>(sets: T[]): T | undefined =>
   sets.find((s) => s.completedAt === undefined);
 
-/** Exercise to show when (re)opening a workout: the first still pending, else the last. */
-export function resumeIndex(statuses: SessionExercise['status'][]): number {
-  const i = statuses.indexOf('pending');
-  return i === -1 ? Math.max(0, statuses.length - 1) : i;
+interface ResumeItem {
+  se: Pick<SessionExercise, 'status' | 'supersetKey'>;
+  sets: Pick<SetLog, 'isWarmup' | 'completedAt'>[];
+}
+
+/**
+ * Exercise to show when (re)opening a workout. Inside a superset it is where the last confirmed
+ * work set led (as completeSet decided); otherwise the first still pending, else the last.
+ */
+export function resumeIndex(items: ResumeItem[]): number {
+  let last = -1;
+  let lastAt = -Infinity;
+  items.forEach((item, i) => {
+    for (const s of item.sets) {
+      // >= : on a tie the later member wins, as it was confirmed after the earlier one.
+      if (!s.isWarmup && s.completedAt !== undefined && s.completedAt >= lastAt) {
+        last = i;
+        lastAt = s.completedAt;
+      }
+    }
+  });
+  const keys = items.map((item) => item.se.supersetKey);
+  const run = last === -1 ? [] : supersetRun(keys, last);
+  if (run.length >= 2) {
+    const hasWork = run.map((i) => hasWorkLeft(items[i].se.status, items[i].sets));
+    const { next } = supersetNext(hasWork, run.indexOf(last));
+    if (next !== null) return run[next];
+  }
+  const i = items.findIndex((item) => item.se.status === 'pending');
+  return i === -1 ? Math.max(0, items.length - 1) : i;
 }
 
 export const weightStep = (

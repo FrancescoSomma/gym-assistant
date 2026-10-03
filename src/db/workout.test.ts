@@ -121,7 +121,7 @@ describe('completeSet', () => {
     await completeSet(bench.sets[1].id);
     // A forced close loses React state only; the next start reads the same rows.
     const reopened = await items(sessionId);
-    expect(resumeIndex(reopened.map((i) => i.se.status))).toBe(0);
+    expect(resumeIndex(reopened)).toBe(0);
     expect(firstPending(reopened[0].sets)?.id).toBe(bench.sets[2].id);
     expect((await getSettings()).activeTimer?.sessionExerciseId).toBe(timer?.sessionExerciseId);
   });
@@ -439,6 +439,13 @@ describe('supersets', () => {
     const last = await nextSetOf(sessionId, 'B');
     expect(last.next).toBe(c.se.id);
     expect(last.timer).toBeTruthy();
+  });
+
+  it('after A1 a reopened workout resumes on B, where the round was going', async () => {
+    const sessionId = await supersetSetup(2, 2);
+    await nextSetOf(sessionId, 'A');
+    const reopened = await items(sessionId);
+    expect(reopened[resumeIndex(reopened)]?.exercise.name).toBe('B');
   });
 
   it('uneven superset: the longer member finishes alone and rests after each set', async () => {

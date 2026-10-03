@@ -41,10 +41,7 @@ export function WorkoutScreen() {
   if (session.status === 'completed')
     return <Navigate to={`/workout/${session.id}/summary`} replace />;
 
-  const current = Math.min(
-    index ?? resumeIndex(items.map((i) => i.se.status)),
-    Math.max(0, items.length - 1),
-  );
+  const current = Math.min(index ?? resumeIndex(items), Math.max(0, items.length - 1));
   const item = items[current];
   const isLast = current >= items.length - 1;
   const partners = item

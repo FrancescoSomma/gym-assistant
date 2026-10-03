@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { SessionExercise } from '../types';
 import {
   canComplete,
   firstPending,
@@ -78,10 +79,47 @@ describe('canComplete', () => {
 });
 
 describe('resuming after a forced close', () => {
+  /** An exercise whose work sets were completed at the given times (undefined = pending). */
+  const ex = (
+    status: SessionExercise['status'],
+    completedAts: (number | undefined)[],
+    supersetKey?: string,
+  ) => ({
+    se: { status, supersetKey },
+    sets: completedAts.map((completedAt) => ({ isWarmup: false, completedAt })),
+  });
+
   it('shows the first pending exercise, else the last one', () => {
-    expect(resumeIndex(['done', 'skipped', 'pending', 'pending'])).toBe(2);
-    expect(resumeIndex(['done', 'done'])).toBe(1);
+    expect(
+      resumeIndex([ex('done', [1]), ex('skipped', [undefined]), ex('pending', [undefined])]),
+    ).toBe(2);
+    expect(resumeIndex([ex('done', [1]), ex('done', [2])])).toBe(1);
     expect(resumeIndex([])).toBe(0);
+  });
+  it('after A1 the workout resumes on B, not on A2', () => {
+    const items = [
+      ex('pending', [1, undefined], 's'),
+      ex('pending', [undefined, undefined], 's'),
+      ex('pending', [undefined]),
+    ];
+    expect(resumeIndex(items)).toBe(1);
+  });
+  it('at the end of a round the workout resumes on the first member', () => {
+    const items = [
+      ex('pending', [1, undefined], 's'),
+      ex('pending', [2, undefined], 's'),
+      ex('pending', [undefined]),
+    ];
+    expect(resumeIndex(items)).toBe(0);
+  });
+  it('a finished superset goes on to the first pending exercise', () => {
+    const items = [ex('done', [1, 3], 's'), ex('done', [2, 4], 's'), ex('pending', [undefined])];
+    expect(resumeIndex(items)).toBe(2);
+  });
+  it('a warmup confirmed after A1 does not move the round', () => {
+    const b = ex('pending', [undefined, undefined], 's');
+    b.sets.unshift({ isWarmup: true, completedAt: 2 });
+    expect(resumeIndex([ex('pending', [1, undefined], 's'), b])).toBe(1);
   });
   it('the current set is the first one not completed', () => {
     const sets = [{ completedAt: 1 }, { completedAt: 2 }, {}, {}];

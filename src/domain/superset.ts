@@ -1,3 +1,5 @@
+import type { SessionExercise, SetLog } from '../types';
+
 /** Indices of the contiguous run that shares the key at `index` ([index] when it has none). */
 export function supersetRun(keys: (string | undefined)[], index: number): number[] {
   const key = keys[index];
@@ -48,3 +50,9 @@ export function toggleSupersetLink(
   }
   return result;
 }
+
+/** A member with work left in the round: pending work sets, and not skipped. */
+export const hasWorkLeft = (
+  status: SessionExercise['status'],
+  sets: Pick<SetLog, 'isWarmup' | 'completedAt'>[],
+): boolean => status !== 'skipped' && sets.some((s) => !s.isWarmup && s.completedAt === undefined);

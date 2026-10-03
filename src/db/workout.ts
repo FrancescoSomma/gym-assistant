@@ -1,6 +1,6 @@
 import type { SetValues } from '../domain/format';
 import { DEFAULT_TARGET } from '../domain/program';
-import { supersetNext, supersetRun } from '../domain/superset';
+import { hasWorkLeft, supersetNext, supersetRun } from '../domain/superset';
 import { propagateWeight, warmupIndex } from '../domain/workout';
 import type { ActiveTimer, SessionExercise } from '../types';
 import { db, uid } from './db';
@@ -343,11 +343,8 @@ async function supersetFlow(se: SessionExercise): Promise<{ next?: string; round
   const members = run.map((i) => siblings[i]);
   const sets = await db.setLogs.where('sessionId').equals(se.sessionId).toArray();
   // A skipped member has no work left: the round must not send the user back to it.
-  const hasWork = members.map(
-    (m) =>
-      m.status !== 'skipped' &&
-      sets.some((s) => s.sessionExerciseId === m.id && !s.isWarmup && s.completedAt === undefined),
-  );
+  const setsOf = Map.groupBy(sets, (s) => s.sessionExerciseId);
+  const hasWork = members.map((m) => hasWorkLeft(m.status, setsOf.get(m.id) ?? []));
   const { next, roundEnd } = supersetNext(
     hasWork,
     members.findIndex((m) => m.id === se.id),
