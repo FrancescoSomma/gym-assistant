@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { setSetting } from '../../db/settings';
-import { isStandalone, subscribePush } from '../../platform/push';
+import { cancelRestPush, isStandalone, subscribePush } from '../../platform/push';
 
 const ERRORS = {
   denied: 'Permesso negato. Riattivalo in Impostazioni di iOS, Notifiche, Palestra.',
   unsupported: 'Questo dispositivo non supporta le notifiche del timer.',
   'not-standalone': 'Apri Palestra dalla schermata Home per attivare le notifiche.',
+  failed: 'Non è stato possibile attivare le notifiche. Controlla la connessione e riprova.',
 } as const;
 
 export function NotificationsSection({ enabled }: { enabled: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const standalone = isStandalone();
+  // Turned off in iOS Settings after enabling: say so instead of showing "on" (SPEC §5.6).
+  const revoked =
+    enabled && typeof Notification !== 'undefined' && Notification.permission === 'denied';
 
   // Must stay a direct tap handler: iOS only shows the permission prompt in response to a tap.
   const enable = async () => {
@@ -31,13 +35,18 @@ export function NotificationsSection({ enabled }: { enabled: boolean }) {
           Le notifiche funzionano solo con Palestra aperta dalla schermata Home. In Safari tocca
           Condividi, poi “Aggiungi alla schermata Home”, e apri l'app da lì.
         </p>
+      ) : revoked ? (
+        <p className="px-4 text-small">{ERRORS.denied}</p>
       ) : enabled ? (
         <div className="row">
           <span className="flex-1">Avviso a fine recupero, anche a schermo bloccato</span>
           <button
             type="button"
             className="btn-text"
-            onClick={() => setSetting('pushEnabled', false)}
+            onClick={() => {
+              void cancelRestPush();
+              void setSetting('pushEnabled', false);
+            }}
           >
             Disattiva
           </button>

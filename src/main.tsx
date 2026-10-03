@@ -17,7 +17,7 @@ ensureSeed()
   .then(() => {
     void requestPersistentStorage();
     void getSettings().then((settings) => {
-      if (settings.pushEnabled) void renewSubscription();
+      if (settings.pushEnabled) void renewSubscription().catch(() => {}); // retried at next start
     });
     root.render(
       <StrictMode>

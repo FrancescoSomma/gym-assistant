@@ -26,12 +26,16 @@ async function currentSubscription(): Promise<PushSubscription | null> {
 
 /** SPEC §7.2 step 1. Call it straight from a tap handler: iOS asks only in response to a tap. */
 export async function subscribePush(): Promise<
-  'granted' | 'denied' | 'not-standalone' | 'unsupported'
+  'granted' | 'denied' | 'not-standalone' | 'unsupported' | 'failed'
 > {
   if (!isStandalone()) return 'not-standalone';
   if (!supported()) return 'unsupported';
   if ((await Notification.requestPermission()) !== 'granted') return 'denied';
-  await subscribe();
+  try {
+    await subscribe();
+  } catch {
+    return 'failed'; // push service or network error, or a bad public key
+  }
   return 'granted';
 }
 
