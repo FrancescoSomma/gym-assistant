@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router';
+import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { useNow } from '../../components/useNow';
 import { getWorkout } from '../../db/sessions';
 import { getSettings } from '../../db/settings';
@@ -17,6 +17,7 @@ import { useWakeLock } from '../../platform/wakeLock';
 import { ExercisePicker } from '../library/ExercisePicker';
 import { ExerciseMenu } from './ExerciseMenu';
 import { ExerciseView } from './ExerciseView';
+import { discardWorkout, finishWorkout } from './finish';
 import { SessionSheet } from './SessionSheet';
 import { TimerBar } from './TimerBar';
 
@@ -24,6 +25,7 @@ type SheetName = 'list' | 'menu' | 'replace' | 'add';
 
 export function WorkoutScreen() {
   const { sessionId = '' } = useParams();
+  const navigate = useNavigate();
   const workout = useLiveQuery(async () => (await getWorkout(sessionId)) ?? null, [sessionId]);
   const settings = useLiveQuery(getSettings);
   const [index, setIndex] = useState<number | null>(null);
@@ -117,7 +119,15 @@ export function WorkoutScreen() {
             <ChevronLeft /> Precedente
           </button>
           <span className="flex-1" />
-          {!isLast && (
+          {isLast ? (
+            <button
+              type="button"
+              className="inline-flex min-h-14 items-center rounded-control bg-plate-blue px-4 font-semibold text-chalk active:opacity-80"
+              onClick={() => finishWorkout(session.id, navigate)}
+            >
+              Termina allenamento
+            </button>
+          ) : (
             <button type="button" className="btn-text min-h-14" onClick={() => goTo(current + 1)}>
               Successivo <ChevronRight />
             </button>
@@ -139,6 +149,20 @@ export function WorkoutScreen() {
         <div className="space-y-2 px-4 pt-4">
           <button type="button" className="btn-secondary" onClick={() => setSheet('add')}>
             <Plus size={20} /> Aggiungi esercizio
+          </button>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => finishWorkout(session.id, navigate)}
+          >
+            Termina allenamento
+          </button>
+          <button
+            type="button"
+            className="btn-danger"
+            onClick={() => discardWorkout(session.id, navigate)}
+          >
+            <Trash2 size={20} /> Scarta allenamento
           </button>
         </div>
       </SessionSheet>

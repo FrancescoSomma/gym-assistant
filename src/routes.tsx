@@ -5,6 +5,7 @@ import { DayEditor } from './features/programs/DayEditor';
 import { ProgramEditor } from './features/programs/ProgramEditor';
 import { ProgramsScreen } from './features/programs/ProgramsScreen';
 import { TodayScreen } from './features/today/TodayScreen';
+import { SummaryScreen } from './features/workout/SummaryScreen';
 import { WorkoutScreen } from './features/workout/WorkoutScreen';
 
 export const router = createBrowserRouter([
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: 'exercises/:exerciseId', Component: ExerciseDetail },
     ],
   },
+  { path: 'workout/:sessionId/summary', Component: SummaryScreen },
   { path: 'workout/:sessionId', Component: WorkoutScreen },
   { path: '*', element: <Navigate to="/" replace /> },
 ]);

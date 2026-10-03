@@ -10,10 +10,14 @@ import {
   addSet,
   clearTimer,
   completeSet,
+  countPendingSets,
   deleteSet,
+  discardSession,
   extendTimer,
+  finishSession,
   removeSessionExercise,
   replaceExercise,
+  setSessionNotes,
   skipExercise,
   startTimer,
   updateSet,
@@ -253,5 +257,47 @@ describe('skip, remove, add, replace (SPEC §6.5)', () => {
     expect(list[0].sets).toHaveLength(1);
     expect(list[1].se).toMatchObject({ plannedSets: 2, replacedExerciseId: bench.exercise.id });
     expect(await db.dayExercises.where('exerciseId').equals(exerciseId).count()).toBe(0); // program untouched
+  });
+});
+
+describe('finishing and discarding (SPEC §4.3, §6.6, §6.7)', () => {
+  it('drops planned sets, completes the session and clears the timer', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    await completeSet(bench.sets[0].id);
+    expect(await countPendingSets(sessionId)).toBe(5); // 2 bench + 3 pull-ups
+    await finishSession(sessionId);
+    const session = await db.sessions.get(sessionId);
+    expect(session?.status).toBe('completed');
+    expect(session?.endedAt).toBeTypeOf('number');
+    expect(await db.setLogs.where('sessionId').equals(sessionId).count()).toBe(1);
+    expect((await getSettings()).activeTimer).toBeNull();
+  });
+
+  it('ends a stale session at its last completed set', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    const startedAt = (await db.sessions.get(sessionId))?.startedAt ?? 0;
+    await db.setLogs.update(bench.sets[0].id, { completedAt: startedAt + 60_000 });
+    await db.setLogs.update(bench.sets[1].id, { completedAt: startedAt + 300_000 });
+    await finishSession(sessionId, { atLastSet: true });
+    expect((await db.sessions.get(sessionId))?.endedAt).toBe(startedAt + 300_000);
+  });
+
+  it('discards the session with its exercises and sets', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    await completeSet(bench.sets[0].id);
+    await discardSession(sessionId);
+    expect(await db.sessions.count()).toBe(0);
+    expect(await db.sessionExercises.count()).toBe(0);
+    expect(await db.setLogs.count()).toBe(0);
+    expect((await getSettings()).activeTimer).toBeNull();
+  });
+
+  it('saves the session notes', async () => {
+    const sessionId = await setup();
+    await setSessionNotes(sessionId, "Spalla sinistra un po' rigida");
+    expect((await db.sessions.get(sessionId))?.notes).toBe("Spalla sinistra un po' rigida");
   });
 });

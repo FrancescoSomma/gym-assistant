@@ -149,6 +149,49 @@ export async function extendTimer(ms: number): Promise<ActiveTimer | null> {
 
 export const clearTimer = (): Promise<void> => setSetting('activeTimer', null);
 
+export const countPendingSets = (sessionId: string): Promise<number> =>
+  db.setLogs
+    .where('sessionId')
+    .equals(sessionId)
+    .filter((s) => s.completedAt === undefined)
+    .count();
+
+/** SPEC §6.7; with atLastSet (stale session, §6.6) endedAt is the last completed set. */
+export async function finishSession(sessionId: string, { atLastSet = false } = {}): Promise<void> {
+  await db.transaction('rw', [db.sessions, db.setLogs, db.settings], async () => {
+    const session = await db.sessions.get(sessionId);
+    if (!session) return;
+    const sets = await db.setLogs.where('sessionId').equals(sessionId).toArray();
+    await db.setLogs.bulkDelete(sets.filter((s) => s.completedAt === undefined).map((s) => s.id));
+    const lastSet = Math.max(session.startedAt, ...sets.map((s) => s.completedAt ?? 0));
+    await db.sessions.update(sessionId, {
+      status: 'completed',
+      endedAt: atLastSet ? lastSet : Date.now(),
+    });
+    await setSetting('activeTimer', null);
+  });
+}
+
+/** Deletes a session with its exercises and sets. Also used by history (Phase 2). */
+export async function discardSession(sessionId: string): Promise<void> {
+  await db.transaction(
+    'rw',
+    [db.sessions, db.sessionExercises, db.setLogs, db.settings],
+    async () => {
+      const session = await db.sessions.get(sessionId);
+      await db.setLogs.where('sessionId').equals(sessionId).delete();
+      await db.sessionExercises.where('sessionId').equals(sessionId).delete();
+      await db.sessions.delete(sessionId);
+      // Deleting an old session from history must not stop the rest timer of the current one.
+      if (session?.status === 'in_progress') await setSetting('activeTimer', null);
+    },
+  );
+}
+
+export async function setSessionNotes(sessionId: string, notes: string): Promise<void> {
+  await db.sessions.update(sessionId, { notes });
+}
+
 export async function skipExercise(seId: string): Promise<void> {
   await db.sessionExercises.update(seId, { status: 'skipped' });
 }
