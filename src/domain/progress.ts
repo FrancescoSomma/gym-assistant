@@ -47,3 +47,9 @@ export function periodStart(period: Period, now: number): number {
   d.setMonth(d.getMonth() - MONTHS[period]);
   return d.getTime();
 }
+
+const BODYWEIGHT_KG = { min: 20, max: 400 };
+
+/** A body weight worth saving: catches "805" typed for "80,5". */
+export const isPlausibleBodyweight = (kg: number | undefined): kg is number =>
+  kg !== undefined && kg >= BODYWEIGHT_KG.min && kg <= BODYWEIGHT_KG.max;

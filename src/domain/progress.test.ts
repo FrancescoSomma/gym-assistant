@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { exerciseSeries, periodStart } from './progress';
+import { exerciseSeries, isPlausibleBodyweight, periodStart } from './progress';
 
 const work = (weightKg: number, reps: number) => ({
   weightKg,
@@ -71,5 +71,20 @@ describe('periodStart', () => {
   });
   it('starts at zero for the whole history', () => {
     expect(periodStart('all', now)).toBe(0);
+  });
+});
+
+describe('isPlausibleBodyweight', () => {
+  it('accepts 20 to 400 kg', () => {
+    expect([20, 80.5, 400].map(isPlausibleBodyweight)).toEqual([true, true, true]);
+  });
+  it('rejects a forgotten comma, out-of-range values and empty input', () => {
+    expect([805, 19.9, 400.1, 0, undefined].map(isPlausibleBodyweight)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
   });
 });

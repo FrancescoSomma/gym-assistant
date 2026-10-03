@@ -5,6 +5,8 @@ import { Header } from '../../components/Header';
 import { deleteBodyweight, listBodyweights, saveBodyweight } from '../../db/bodyweights';
 import { dateKeyToTs, toDateKey } from '../../domain/dates';
 import { formatDateYear, formatNumber, parseWeight } from '../../domain/format';
+import { isPlausibleBodyweight } from '../../domain/progress';
+import { confirmAction } from '../../platform/confirm';
 
 const BodyweightChart = lazy(() => import('./BodyweightChart'));
 
@@ -15,7 +17,7 @@ export function BodyweightScreen() {
   const [kg, setKg] = useState('');
   if (!entries) return null;
   const value = parseWeight(kg);
-  const valid = value !== undefined && value > 0;
+  const valid = isPlausibleBodyweight(value);
 
   const save = async (event: FormEvent) => {
     event.preventDefault();
@@ -67,22 +69,27 @@ export function BodyweightScreen() {
         </p>
       ) : (
         <ul className="border-t border-steel/25">
-          {entries.map((entry) => (
-            <li key={entry.id} className="row">
-              <span className="flex-1 first-letter:uppercase">
-                {formatDateYear(dateKeyToTs(entry.date))}
-              </span>
-              <span className="num text-title">{formatNumber(entry.kg)} kg</span>
-              <button
-                type="button"
-                aria-label={`Elimina la misurazione di ${formatDateYear(dateKeyToTs(entry.date))}`}
-                className="-mr-2 flex size-11 items-center justify-center text-plate-red"
-                onClick={() => deleteBodyweight(entry.id)}
-              >
-                <Trash2 size={20} />
-              </button>
-            </li>
-          ))}
+          {entries.map((entry) => {
+            const day = formatDateYear(dateKeyToTs(entry.date));
+            return (
+              <li key={entry.id} className="row">
+                <span className="flex-1 first-letter:uppercase">{day}</span>
+                <span className="num text-title">{formatNumber(entry.kg)} kg</span>
+                <button
+                  type="button"
+                  aria-label={`Elimina la misurazione di ${day}`}
+                  className="-mr-2 flex size-11 items-center justify-center text-plate-red"
+                  onClick={() => {
+                    if (confirmAction(`Eliminare la misurazione di ${day}?`)) {
+                      void deleteBodyweight(entry.id);
+                    }
+                  }}
+                >
+                  <Trash2 size={20} />
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </>
