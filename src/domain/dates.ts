@@ -24,3 +24,33 @@ export function lastWeekStarts(now: number, count: number): number[] {
     return d.getTime();
   });
 }
+
+export interface CalendarCell {
+  key: string;
+  /** Day of the month; absent for the padding before day 1 and after the last day. */
+  day?: number;
+}
+
+/** A month laid out in Monday-first weeks (SPEC §8.1), padded to whole weeks. */
+export function monthCells(year: number, month: number): CalendarCell[] {
+  const offset = (new Date(year, month, 1).getDay() + 6) % 7;
+  const days = new Date(year, month + 1, 0).getDate();
+  const cells: CalendarCell[] = [
+    ...Array.from({ length: offset }, (_, i) => ({ key: `before-${i}` })),
+    ...Array.from({ length: days }, (_, i) => ({ key: `day-${i + 1}`, day: i + 1 })),
+  ];
+  const after = (7 - (cells.length % 7)) % 7;
+  return [...cells, ...Array.from({ length: after }, (_, i) => ({ key: `after-${i}` }))];
+}
+
+export function weeklyCounts(
+  startedAts: number[],
+  now: number,
+  weeks = 12,
+): { weekStart: number; count: number }[] {
+  const byWeek = Map.groupBy(startedAts, (ts) => startOfWeek(ts));
+  return lastWeekStarts(now, weeks).map((weekStart) => ({
+    weekStart,
+    count: byWeek.get(weekStart)?.length ?? 0,
+  }));
+}

@@ -8,13 +8,15 @@ import { listTrainedExercises } from '../../db/history';
 import { relativeDay } from '../../domain/format';
 import { formatRecord, headlineRecord, RECORD_LABELS } from '../../domain/records';
 
+const ConsistencyView = lazy(() => import('./ConsistencyView'));
 const GroupsView = lazy(() => import('./GroupsView'));
 
-type Tab = 'exercises' | 'groups';
+type Tab = 'exercises' | 'groups' | 'consistency';
 
 const TABS: [Tab, string][] = [
   ['exercises', 'Esercizi'],
   ['groups', 'Gruppi muscolari'],
+  ['consistency', 'Costanza'],
 ];
 
 export function ProgressScreen() {
@@ -35,6 +37,7 @@ export function ProgressScreen() {
       <Suspense fallback={null}>
         {tab === 'exercises' && <ExerciseProgress />}
         {tab === 'groups' && <GroupsView />}
+        {tab === 'consistency' && <ConsistencyView />}
       </Suspense>
     </>
   );

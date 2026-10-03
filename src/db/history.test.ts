@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { createExercise } from './exercises';
-import { getSummaryContext, listGroupEntries, listHistory, listTrainedExercises } from './history';
+import {
+  getSummaryContext,
+  listCompletedSessions,
+  listGroupEntries,
+  listHistory,
+  listTrainedExercises,
+} from './history';
 import { addDay, addDayExercise, createProgram } from './programs';
 import { getWorkout, startSession } from './sessions';
 import { completeSet, finishSession, updateSet } from './workout';
@@ -84,5 +90,15 @@ describe('listGroupEntries', () => {
     const entries = await listGroupEntries(since);
     expect(entries).toHaveLength(3);
     expect(entries[0]).toMatchObject({ muscleGroup: 'chest', secondaryGroups: [] });
+  });
+});
+
+describe('listCompletedSessions', () => {
+  it('returns completed sessions since a time', async () => {
+    const since = Date.now() - 1000;
+    const day = await benchDay();
+    await train(day, 80, 10);
+    await startSession(day); // in progress
+    expect(await listCompletedSessions(since)).toHaveLength(1);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lastWeekStarts, startOfWeek, toDateKey } from './dates';
+import { lastWeekStarts, monthCells, startOfWeek, toDateKey, weeklyCounts } from './dates';
 
 describe('startOfWeek (Monday to Sunday, local time)', () => {
   it('puts Sunday night in the week that started the previous Monday', () => {
@@ -27,5 +27,24 @@ describe('lastWeekStarts', () => {
       new Date(2026, 9, 19).getTime(),
       new Date(2026, 9, 26).getTime(),
     ]);
+  });
+});
+
+describe('monthCells', () => {
+  it('lays October 2026 out from Monday, padded to whole weeks', () => {
+    const cells = monthCells(2026, 9); // 1 October 2026 is a Thursday
+    expect(cells).toHaveLength(35);
+    expect(cells.slice(0, 4).map((c) => c.day)).toEqual([undefined, undefined, undefined, 1]);
+    expect(cells[33]?.day).toBe(31);
+    expect(cells[34]?.day).toBeUndefined();
+    expect(new Set(cells.map((c) => c.key)).size).toBe(35);
+  });
+});
+
+describe('weeklyCounts', () => {
+  it('counts workouts per week over the last weeks', () => {
+    const now = new Date(2026, 9, 2, 18).getTime();
+    const counts = weeklyCounts([now, now - 3_600_000, now - 7 * 86_400_000], now, 3);
+    expect(counts.map((c) => c.count)).toEqual([0, 1, 2]);
   });
 });

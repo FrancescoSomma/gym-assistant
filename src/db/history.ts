@@ -130,3 +130,10 @@ export async function listGroupEntries(since: number): Promise<GroupEntry[]> {
     ];
   });
 }
+
+export const listCompletedSessions = (since: number): Promise<Session[]> =>
+  db.sessions
+    .where('startedAt')
+    .aboveOrEqual(since)
+    .filter((s) => s.status === 'completed')
+    .toArray();
