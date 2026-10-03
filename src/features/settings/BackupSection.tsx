@@ -17,16 +17,28 @@ export function BackupSection({ lastBackupAt }: { lastBackupAt: number | null })
     const file = event.target.files?.[0];
     event.target.value = ''; // picking the same file again must fire onChange
     if (!file) return;
-    const result = parseBackup(await file.text());
-    setError(result.ok ? null : result.error);
-    setPending(result.ok ? result.backup : null);
+    try {
+      const result = parseBackup(await file.text());
+      setError(result.ok ? null : result.error);
+      setPending(result.ok ? result.backup : null);
+    } catch {
+      setPending(null);
+      setError('Impossibile leggere il file. Scegli un file esportato da Palestra.');
+    }
   };
 
   const replace = async () => {
     if (!pending) return;
-    await importBackup(pending);
-    setPending(null);
-    navigate('/', { replace: true });
+    try {
+      await importBackup(pending);
+      setPending(null);
+      navigate('/', { replace: true });
+    } catch {
+      setPending(null);
+      setError(
+        'Importazione non riuscita: i dati di questo iPhone non sono cambiati. Riprova o scegli un altro file esportato da Palestra.',
+      );
+    }
   };
 
   return (
