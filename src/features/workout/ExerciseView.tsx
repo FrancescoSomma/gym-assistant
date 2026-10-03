@@ -8,6 +8,7 @@ import { formatNumber, formatSets, formatTarget, relativeDay } from '../../domai
 import { computeRecords, isRecordSet } from '../../domain/records';
 import { firstPending, setLabel, suggestWeight, weightStep } from '../../domain/workout';
 import type { Settings } from '../../types';
+import { PlateSheet } from './PlateSheet';
 import { syncRestPush } from './restPush';
 import { SetEditor, SetRow } from './SetRows';
 
@@ -39,6 +40,7 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
     suggestion !== undefined &&
     sets.some((s) => !s.isWarmup && s.completedAt === undefined && (s.weightKg ?? 0) < suggestion);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [platesKg, setPlatesKg] = useState<number | null>(null);
   const selected = sets.find((s) => s.id === selectedId) ?? firstPending(sets);
 
   const confirm = async (setId: string) => {
@@ -116,6 +118,11 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
                 step={step}
                 onConfirm={() => confirm(set.id)}
                 onClose={() => setSelectedId(null)}
+                onShowPlates={
+                  exercise.equipment === 'barbell' && (set.weightKg ?? 0) > 0
+                    ? () => setPlatesKg(set.weightKg ?? 0)
+                    : undefined
+                }
               />
             ) : (
               <SetRow
@@ -142,6 +149,12 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
           <Plus size={20} /> Aggiungi riscaldamento
         </button>
       </div>
+
+      <PlateSheet
+        weightKg={platesKg ?? 0}
+        open={platesKg !== null}
+        onClose={() => setPlatesKg(null)}
+      />
     </>
   );
 }

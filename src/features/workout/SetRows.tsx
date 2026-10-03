@@ -83,6 +83,7 @@ interface EditorProps {
   onConfirm: () => void;
   onClose: () => void;
   onToggleWarmup?: () => void;
+  onShowPlates?: () => void;
 }
 
 /** Expanded row with 56pt steppers: the current set, or a completed one being corrected. */
@@ -95,6 +96,7 @@ export function SetEditor({
   onConfirm,
   onClose,
   onToggleWarmup,
+  onShowPlates,
 }: EditorProps) {
   const tracking = exercise.trackingType;
   const done = set.completedAt !== undefined;
@@ -112,14 +114,21 @@ export function SetEditor({
           {setName(set, label)}
           {done && ', completata'}
         </span>
-        <button
-          type="button"
-          aria-label="Elimina serie"
-          className="-mr-2 flex size-14 items-center justify-center text-steel"
-          onClick={remove}
-        >
-          <Trash2 size={20} />
-        </button>
+        <div className="flex items-center">
+          {onShowPlates && (
+            <button type="button" className="btn-text min-h-14 text-small" onClick={onShowPlates}>
+              Dischi
+            </button>
+          )}
+          <button
+            type="button"
+            aria-label="Elimina serie"
+            className="-mr-2 flex size-14 items-center justify-center text-steel"
+            onClick={remove}
+          >
+            <Trash2 size={20} />
+          </button>
+        </div>
       </div>
       <div className="mt-1 space-y-2">
         {tracking !== 'duration' && (
