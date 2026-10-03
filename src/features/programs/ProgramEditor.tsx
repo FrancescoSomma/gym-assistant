@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArchiveRestore, Copy, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { Header } from '../../components/Header';
 import { MoveButtons } from '../../components/MoveButtons';
@@ -28,15 +29,26 @@ export function ProgramEditor() {
   const counts = useLiveQuery(() => countDayExercises(programId), [programId]);
   const used = useLiveQuery(() => isProgramUsed(programId), [programId]);
   const settings = useLiveQuery(getSettings);
+  const [busy, setBusy] = useState(false);
 
   if (program === undefined || !days || !counts || used === undefined || !settings) return null;
   if (program === null) return <Navigate to="/programs" replace />;
   const active = settings.activeProgramId === program.id;
   const archived = program.archivedAt !== undefined;
 
-  const addAndOpen = async () =>
-    navigate(`/programs/${program.id}/days/${await addDay(program.id)}`);
-  const duplicate = async () => navigate(`/programs/${await duplicateProgram(program.id)}`);
+  // A double tap must not create two days or two copies.
+  const once = (action: () => Promise<void>) => async () => {
+    setBusy(true);
+    try {
+      await action();
+    } finally {
+      setBusy(false);
+    }
+  };
+  const addAndOpen = once(async () =>
+    navigate(`/programs/${program.id}/days/${await addDay(program.id)}`),
+  );
+  const duplicate = once(async () => navigate(`/programs/${await duplicateProgram(program.id)}`));
   const remove = async () => {
     const message = used
       ? `Archiviare ${program.name}? Gli allenamenti fatti restano nello storico.`
@@ -101,7 +113,7 @@ export function ProgramEditor() {
         ))}
       </ul>
       <div className="px-2 py-2">
-        <button type="button" className="btn-text" onClick={addAndOpen}>
+        <button type="button" className="btn-text" disabled={busy} onClick={addAndOpen}>
           <Plus size={20} /> Aggiungi giornata
         </button>
       </div>
@@ -121,7 +133,7 @@ export function ProgramEditor() {
             Attiva programma
           </button>
         )}
-        <button type="button" className="btn-secondary" onClick={duplicate}>
+        <button type="button" className="btn-secondary" disabled={busy} onClick={duplicate}>
           <Copy size={20} /> Duplica programma
         </button>
         {!archived &&

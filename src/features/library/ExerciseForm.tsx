@@ -77,16 +77,22 @@ function Form({ exercise, trackingLocked, defaultGroup, onDone }: FormProps) {
           notes: '',
         },
   );
+  const [busy, setBusy] = useState(false); // a double tap must not create two exercises
   const name = draft.name.trim();
 
   const save = async (event: FormEvent) => {
     event.preventDefault();
-    if (!name) return;
-    if (exercise) {
-      await updateExercise(exercise.id, { ...draft, name });
-      onDone(exercise.id);
-    } else {
-      onDone(await createExercise({ ...draft, name }));
+    if (!name || busy) return;
+    setBusy(true);
+    try {
+      if (exercise) {
+        await updateExercise(exercise.id, { ...draft, name });
+        onDone(exercise.id);
+      } else {
+        onDone(await createExercise({ ...draft, name }));
+      }
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -168,7 +174,7 @@ function Form({ exercise, trackingLocked, defaultGroup, onDone }: FormProps) {
           onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
         />
       </label>
-      <button type="submit" className="btn-primary" disabled={!name}>
+      <button type="submit" className="btn-primary" disabled={!name || busy}>
         {exercise ? 'Salva esercizio' : 'Crea esercizio'}
       </button>
     </form>

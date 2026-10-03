@@ -40,6 +40,7 @@ function ProgramList() {
   const navigate = useNavigate();
   const rows = useLiveQuery(listProgramRows);
   const settings = useLiveQuery(getSettings);
+  const [busy, setBusy] = useState(false); // a double tap must not create two programs
   if (!rows || !settings) return null;
 
   const isActive = (row: ProgramRow) => row.program.id === settings.activeProgramId;
@@ -64,7 +65,15 @@ function ProgramList() {
         <button
           type="button"
           className="btn-secondary"
-          onClick={async () => navigate(`/programs/${await createProgram()}`)}
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              navigate(`/programs/${await createProgram()}`);
+            } finally {
+              setBusy(false);
+            }
+          }}
         >
           <Plus size={20} /> Nuovo programma
         </button>
