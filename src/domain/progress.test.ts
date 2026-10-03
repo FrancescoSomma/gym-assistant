@@ -29,8 +29,19 @@ describe('exerciseSeries (SPEC §8.7)', () => {
     expect(points.map((p) => p.record)).toEqual([false, false, true]);
   });
 
-  it('skips sessions without an e1RM', () => {
-    expect(exerciseSeries([session('a', 100, [work(40, 15)])], 'weight_reps')).toEqual([]);
+  it('keeps sessions without an e1RM, with their volume and no value', () => {
+    const points = exerciseSeries(
+      [
+        session('a', 100, [work(80, 10)]),
+        session('b', 200, [work(40, 15)]),
+        session('c', 300, [work(85, 8)]),
+      ],
+      'weight_reps',
+    );
+    expect(points.map((p) => p.sessionId)).toEqual(['a', 'b', 'c']);
+    expect(points[1]).toMatchObject({ value: undefined, volume: 600, record: false });
+    // c is compared with a: the session without a value does not reset the best.
+    expect(points.map((p) => p.record)).toEqual([false, false, true]);
   });
 
   it('uses reps for bodyweight exercises and has no volume', () => {

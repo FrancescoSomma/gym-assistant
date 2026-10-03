@@ -13,7 +13,12 @@ import {
 import { AXIS, CHART, TooltipBox } from '../../components/chartTheme';
 import { Segmented } from '../../components/Segmented';
 import type { ExerciseSession } from '../../db/exercises';
-import { formatNumber, formatSeconds, formatShortDate } from '../../domain/format';
+import {
+  formatNumber,
+  formatSeconds,
+  formatShortDate,
+  formatShortDateYear,
+} from '../../domain/format';
 import { exerciseSeries, type Period, periodStart, type SeriesPoint } from '../../domain/progress';
 import { formatRecord, RECORD_LABELS, recordTable } from '../../domain/records';
 import type { TrackingType } from '../../types';
@@ -44,6 +49,11 @@ interface DotProps {
 const pointOf = (payload: unknown): SeriesPoint | undefined =>
   (payload as { payload?: SeriesPoint }[] | undefined)?.[0]?.payload;
 
+type ValuedPoint = SeriesPoint & { value: number };
+const hasValue = (p: SeriesPoint): p is ValuedPoint => p.value !== undefined;
+
+const TOO_FEW = "Servono almeno due sessioni in questo periodo per disegnare l'andamento.";
+
 export default function ExerciseCharts({
   history,
   tracking,
@@ -56,14 +66,17 @@ export default function ExerciseCharts({
   const points = exerciseSeries(history, tracking).filter((p) => p.startedAt >= from);
   const records = recordTable(history, tracking);
   const metric = METRIC[tracking];
-  const first = points[0];
-  const last = points[points.length - 1];
+  // The line skips sessions without a value (only sets above 12 reps); the bars keep them all.
+  const valued = points.filter(hasValue);
+  const first = valued[0];
+  const last = valued[valued.length - 1];
+  const lastVolume = points[points.length - 1]?.volume ?? 0;
 
   // Yellow means record and nothing else; the latest point gets a chalk end-dot; others none.
   const renderDot = ({ cx, cy, index, payload }: DotProps): ReactElement => {
     const fill = payload?.record
       ? CHART.yellow
-      : index === points.length - 1
+      : index === valued.length - 1
         ? CHART.chalk
         : undefined;
     if (cx === undefined || cy === undefined || !fill) return <g key={`dot-${index}`} />;
@@ -87,70 +100,77 @@ export default function ExerciseCharts({
         <Segmented options={PERIODS} value={period} onChange={setPeriod} />
       </div>
 
-      {!first || !last || points.length < 2 ? (
-        <p className="px-4 text-steel">
-          Servono almeno due sessioni in questo periodo per disegnare l'andamento.
-        </p>
+      {points.length < 2 ? (
+        <p className="px-4 text-steel">{TOO_FEW}</p>
       ) : (
         <>
           <div className="flex items-baseline justify-between px-4">
             <h3 className="text-small text-steel">{metric.title} per sessione</h3>
-            <p className="num text-title">{metric.format(last.value)}</p>
+            {last && <p className="num text-title">{metric.format(last.value)}</p>}
           </div>
-          <div
-            className="h-56 pr-4"
-            role="img"
-            aria-label={`${metric.title} per sessione, da ${metric.format(first.value)} a ${metric.format(last.value)}. I valori sono nella tabella dei dati.`}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={points} margin={{ top: 12, right: 8, bottom: 0, left: 0 }}>
-                <CartesianGrid vertical={false} stroke={CHART.grid} />
-                <XAxis
-                  dataKey="startedAt"
-                  type="number"
-                  scale="time"
-                  domain={['dataMin', 'dataMax']}
-                  tickFormatter={formatShortDate}
-                  minTickGap={32}
-                  {...AXIS}
-                />
-                <YAxis
-                  width={44}
-                  domain={['auto', 'auto']}
-                  tickFormatter={(v: number) => formatNumber(v)}
-                  {...AXIS}
-                />
-                <Tooltip
-                  cursor={{ stroke: CHART.steel, strokeWidth: 1 }}
-                  content={({ active, payload }) => {
-                    const p = pointOf(payload);
-                    return active && p ? (
-                      <TooltipBox
-                        value={metric.format(p.value)}
-                        label={`${formatShortDate(p.startedAt)}${p.record ? ', record' : ''}`}
-                      />
-                    ) : null;
-                  }}
-                />
-                <Line
-                  dataKey="value"
-                  stroke={CHART.chalk}
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  dot={renderDot}
-                  activeDot={{ r: 5, fill: CHART.chalk, stroke: CHART.surface, strokeWidth: 2 }}
-                  isAnimationActive={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          {!first || !last || valued.length < 2 ? (
+            <p className="px-4 pt-1 text-small text-steel">
+              {tracking === 'weight_reps'
+                ? 'Il massimale stimato si calcola su serie fino a 12 ripetizioni.'
+                : TOO_FEW}
+            </p>
+          ) : (
+            <div
+              className="h-56 pr-4"
+              role="img"
+              aria-label={`${metric.title} per sessione, da ${metric.format(first.value)} a ${metric.format(last.value)}. I valori sono nella tabella dei dati.`}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={valued} margin={{ top: 12, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid vertical={false} stroke={CHART.grid} />
+                  <XAxis
+                    dataKey="startedAt"
+                    type="number"
+                    scale="time"
+                    domain={['dataMin', 'dataMax']}
+                    tickFormatter={formatShortDate}
+                    minTickGap={32}
+                    {...AXIS}
+                  />
+                  <YAxis
+                    width={44}
+                    domain={['auto', 'auto']}
+                    tickFormatter={(v: number) => formatNumber(v)}
+                    {...AXIS}
+                  />
+                  <Tooltip
+                    cursor={{ stroke: CHART.steel, strokeWidth: 1 }}
+                    isAnimationActive={false}
+                    content={({ active, payload }) => {
+                      const p = pointOf(payload);
+                      return active && p?.value !== undefined ? (
+                        <TooltipBox
+                          value={metric.format(p.value)}
+                          label={`${formatShortDateYear(p.startedAt)}${p.record ? ', record' : ''}`}
+                        />
+                      ) : null;
+                    }}
+                  />
+                  <Line
+                    dataKey="value"
+                    stroke={CHART.chalk}
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    dot={renderDot}
+                    activeDot={{ r: 5, fill: CHART.chalk, stroke: CHART.surface, strokeWidth: 2 }}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
 
           {tracking === 'weight_reps' && (
             <>
               <div className="flex items-baseline justify-between px-4 pt-6">
                 <h3 className="text-small text-steel">Volume per sessione</h3>
-                <p className="num text-title">{formatNumber(last.volume)} kg</p>
+                <p className="num text-title">{formatNumber(lastVolume)} kg</p>
               </div>
               <div
                 className="h-44 pr-4"
@@ -169,12 +189,13 @@ export default function ExerciseCharts({
                     <YAxis width={44} tickFormatter={(v: number) => formatNumber(v)} {...AXIS} />
                     <Tooltip
                       cursor={{ fill: CHART.hover }}
+                      isAnimationActive={false}
                       content={({ active, payload }) => {
                         const p = pointOf(payload);
                         return active && p ? (
                           <TooltipBox
                             value={`${formatNumber(p.volume)} kg`}
-                            label={formatShortDate(p.startedAt)}
+                            label={formatShortDateYear(p.startedAt)}
                           />
                         ) : null;
                       }}
@@ -205,8 +226,8 @@ export default function ExerciseCharts({
                     {RECORD_LABELS[r.kind]}
                   </th>
                   <td className="num text-right text-title">{formatRecord(r.kind, r.value)}</td>
-                  <td className="w-20 pr-4 text-right text-small text-steel">
-                    {formatShortDate(r.startedAt)}
+                  <td className="w-20 pr-4 text-right text-small whitespace-nowrap text-steel">
+                    {formatShortDateYear(r.startedAt)}
                   </td>
                 </tr>
               ))}
@@ -237,8 +258,12 @@ export default function ExerciseCharts({
             <tbody>
               {[...points].reverse().map((p) => (
                 <tr key={p.sessionId} className="border-b border-steel/25">
-                  <td className="py-2 pl-4">{formatShortDate(p.startedAt)}</td>
-                  <td className="text-right">{metric.format(p.value)}</td>
+                  <td className="py-2 pl-4 whitespace-nowrap">
+                    {formatShortDateYear(p.startedAt)}
+                  </td>
+                  <td className="text-right">
+                    {p.value === undefined ? '–' : metric.format(p.value)}
+                  </td>
                   {tracking === 'weight_reps' && (
                     <td className="pr-4 text-right">{formatNumber(p.volume)} kg</td>
                   )}
