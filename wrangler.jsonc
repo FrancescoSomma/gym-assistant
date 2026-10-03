@@ -15,5 +15,11 @@
   // Declarative Durable Object setup (replaces "migrations"); SQLite is required on the Free plan.
   "exports": {
     "TimerDO": { "type": "durable-object", "storage": "sqlite" }
-  }
+  },
+  "vars": {
+    // Contact for the push services (RFC 8292). The owner may switch it to a mailto: address.
+    "VAPID_SUBJECT": "https://gym-log.fs-personal.workers.dev",
+    "VAPID_PUBLIC_KEY": "BF1U6GE8ggWWETHbXKJovkA8fmp5VZFvzVA0AIqBCUO8IdPt96glqiLaGDo5h5o8qm0RgXBO3qiETeTtkhHOXhA"
+  },
+  "secrets": { "required": ["VAPID_PRIVATE_KEY"] }
 }

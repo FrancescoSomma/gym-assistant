@@ -18,6 +18,7 @@
     "check": "bun run typecheck && bun run lint && bun run test"
   },
   "dependencies": {
+    "@block65/webcrypto-web-push": "2.0.0",
     "dexie": "4.4.6",
     "dexie-react-hooks": "4.4.0",
     "lucide-react": "1.50.0",
