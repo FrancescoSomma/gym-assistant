@@ -12,7 +12,13 @@ import {
   relativeDay,
 } from '../../domain/format';
 import { computeRecords, isRecordSet } from '../../domain/records';
-import { firstPending, setLabel, suggestWeight, weightStep } from '../../domain/workout';
+import {
+  firstPending,
+  offeredWeight,
+  setLabel,
+  suggestWeight,
+  weightStep,
+} from '../../domain/workout';
 import type { Settings } from '../../types';
 import { PlateSheet } from './PlateSheet';
 import { syncRestPush } from './restPush';
@@ -38,13 +44,12 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
     tracking,
   );
   const step = weightStep(exercise, settings.weightSteps);
-  const suggestion =
+  const suggestion = offeredWeight(
     tracking === 'weight_reps'
       ? suggestWeight(last?.sets, se.plannedSets, se.repMax, step)
-      : undefined;
-  const offerSuggestion =
-    suggestion !== undefined &&
-    sets.some((s) => !s.isWarmup && s.completedAt === undefined && (s.weightKg ?? 0) < suggestion);
+      : undefined,
+    sets,
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [platesKg, setPlatesKg] = useState<number | null>(null);
   const selected = sets.find((s) => s.id === selectedId) ?? firstPending(sets);
@@ -98,12 +103,12 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
             <p className="text-small text-steel tabular-nums">
               {relativeDay(last.startedAt)}: {formatSets(last.sets, tracking)}
             </p>
-            {offerSuggestion && suggestion !== undefined && (
+            {suggestion !== undefined && (
               <button
                 type="button"
                 className="chip min-h-14"
                 aria-label={`Aumenta a ${formatNumber(suggestion)} kg le serie da fare`}
-                onClick={() => applyWeight(se.id, suggestion)}
+                onClick={() => void applyWeight(se.id, suggestion)}
               >
                 Aumenta a {formatNumber(suggestion)} kg
               </button>

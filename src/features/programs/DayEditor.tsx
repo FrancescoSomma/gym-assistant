@@ -33,10 +33,7 @@ export function DayEditor() {
   const editing = items.find((item) => item.de.id === editingId) ?? null;
   const keys = items.map((item) => item.de.supersetKey);
   const editingIndex = items.findIndex((item) => item.de.id === editingId);
-  const linkedToNext =
-    editingIndex !== -1 &&
-    keys[editingIndex] !== undefined &&
-    keys[editingIndex] === keys[editingIndex + 1];
+  const linkedToNext = supersetRun(keys, editingIndex).includes(editingIndex + 1);
 
   const remove = async () => {
     if (

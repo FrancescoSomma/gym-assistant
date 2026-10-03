@@ -60,3 +60,10 @@ export function dateKeyToTs(key: string): number {
   const [year = 0, month = 1, day = 1] = key.split('-').map(Number);
   return new Date(year, month - 1, day).getTime();
 }
+
+/** How many timestamps fall in the given local calendar month (month 0-11). */
+export function countInMonth(timestamps: number[], year: number, month: number): number {
+  const start = new Date(year, month, 1).getTime();
+  const end = new Date(year, month + 1, 1).getTime();
+  return timestamps.filter((ts) => ts >= start && ts < end).length;
+}

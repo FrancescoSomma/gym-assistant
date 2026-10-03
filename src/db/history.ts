@@ -106,11 +106,7 @@ export async function listTrainedExercises(): Promise<TrainedExercise[]> {
 
 /** One entry per completed work set since `since`, with the exercise's current groups. */
 export async function listGroupEntries(since: number): Promise<GroupEntry[]> {
-  const sessions = await db.sessions
-    .where('startedAt')
-    .aboveOrEqual(since)
-    .filter((s) => s.status === 'completed')
-    .toArray();
+  const sessions = await listCompletedSessions(since);
   const startedAt = new Map(sessions.map((s) => [s.id, s.startedAt]));
   const sets = await db.setLogs
     .where('sessionId')

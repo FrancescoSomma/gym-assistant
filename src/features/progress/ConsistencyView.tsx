@@ -15,7 +15,13 @@ import {
 import { AXIS, CHART, TooltipBox } from '../../components/chartTheme';
 import { listCompletedSessions } from '../../db/history';
 import { getSettings } from '../../db/settings';
-import { lastWeekStarts, monthCells, toDateKey, weeklyCounts } from '../../domain/dates';
+import {
+  countInMonth,
+  lastWeekStarts,
+  monthCells,
+  toDateKey,
+  weeklyCounts,
+} from '../../domain/dates';
 import { countLabel, formatMonth, formatShortDate, formatShortDateYear } from '../../domain/format';
 
 const WEEKDAYS = [
@@ -45,10 +51,8 @@ export default function ConsistencyView() {
   const today = toDateKey(now);
   const isCurrentMonth =
     shown.year === new Date(now).getFullYear() && shown.month === new Date(now).getMonth();
-  const weeks = weeklyCounts(
-    sessions.map((s) => s.startedAt),
-    now,
-  );
+  const startedAts = sessions.map((s) => s.startedAt);
+  const weeks = weeklyCounts(startedAts, now);
   const shift = (delta: number) =>
     setShown(({ year, month }) => {
       const d = new Date(year, month + delta, 1);
@@ -105,11 +109,7 @@ export default function ConsistencyView() {
         </ol>
         <p className="pt-2 text-small text-steel">
           {countLabel(
-            sessions.filter(
-              (s) =>
-                s.startedAt >= monthStart &&
-                s.startedAt < new Date(shown.year, shown.month + 1, 1).getTime(),
-            ).length,
+            countInMonth(startedAts, shown.year, shown.month),
             'allenamento',
             'allenamenti',
           )}{' '}

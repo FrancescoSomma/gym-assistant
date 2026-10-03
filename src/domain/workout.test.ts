@@ -4,6 +4,7 @@ import {
   canComplete,
   firstPending,
   isStale,
+  offeredWeight,
   prefill,
   propagateWeight,
   restState,
@@ -183,5 +184,23 @@ describe('suggestWeight (SPEC §8.6, double progression)', () => {
   it('does not suggest without history or without load', () => {
     expect(suggestWeight(undefined, 3, 12, 2.5)).toBeUndefined();
     expect(suggestWeight([done(0, 12)], 1, 12, 2.5)).toBeUndefined();
+  });
+});
+
+describe('offeredWeight (SPEC §8.6, the chip)', () => {
+  const set = (weightKg: number | undefined, completedAt?: number, isWarmup = false) => ({
+    weightKg,
+    completedAt,
+    isWarmup,
+  });
+  it('offers the suggestion while a planned work set is still below it', () => {
+    expect(offeredWeight(82.5, [set(80, 1), set(80)])).toBe(82.5);
+    expect(offeredWeight(82.5, [set(undefined)])).toBe(82.5);
+  });
+  it('not once the planned work sets have it: completed sets and warmups do not count', () => {
+    expect(offeredWeight(82.5, [set(80, 1), set(82.5), set(60, undefined, true)])).toBeUndefined();
+  });
+  it('nothing to offer without a suggestion', () => {
+    expect(offeredWeight(undefined, [set(80)])).toBeUndefined();
   });
 });

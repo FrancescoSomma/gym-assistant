@@ -392,9 +392,12 @@ describe('applyWeight', () => {
   it('sets the weight of planned work sets only', async () => {
     const sessionId = await setup();
     const bench = await fillBench(sessionId);
+    await addSet(bench.se.id, true);
+    const [warmup] = (await items(sessionId))[0].sets;
+    await db.setLogs.update(warmup.id, { weightKg: 40 });
     await completeSet(bench.sets[0].id);
     await applyWeight(bench.se.id, 82.5);
-    expect((await items(sessionId))[0].sets.map((s) => s.weightKg)).toEqual([80, 82.5, 82.5]);
+    expect((await items(sessionId))[0].sets.map((s) => s.weightKg)).toEqual([40, 80, 82.5, 82.5]);
   });
 });
 

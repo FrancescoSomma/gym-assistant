@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  countInMonth,
   dateKeyToTs,
   lastWeekStarts,
   monthCells,
@@ -60,5 +61,17 @@ describe('dateKeyToTs', () => {
   it('reads YYYY-MM-DD as local midnight, so the day never shifts', () => {
     expect(dateKeyToTs('2026-10-25')).toBe(new Date(2026, 9, 25).getTime());
     expect(toDateKey(dateKeyToTs('2026-03-29'))).toBe('2026-03-29');
+  });
+});
+
+describe('countInMonth', () => {
+  it('counts only the timestamps of that local calendar month', () => {
+    const sept = new Date(2026, 8, 1).getTime();
+    const oct = new Date(2026, 9, 1).getTime();
+    expect(countInMonth([sept - 1, sept, oct - 1, oct], 2026, 8)).toBe(2);
+  });
+  it('December ends at the first of January', () => {
+    const jan = new Date(2027, 0, 1).getTime();
+    expect(countInMonth([jan - 1, jan], 2026, 11)).toBe(1);
   });
 });

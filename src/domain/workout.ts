@@ -127,3 +127,15 @@ export function suggestWeight(
   const top = Math.max(...work.map((s) => s.weightKg ?? 0));
   return top > 0 ? Math.round((top + stepKg) * 100) / 100 : undefined;
 }
+
+/** SPEC §8.6 chip: the suggestion is offered while some planned work set is still below it. */
+export function offeredWeight(
+  suggestion: number | undefined,
+  sets: Pick<SetLog, 'isWarmup' | 'completedAt' | 'weightKg'>[],
+): number | undefined {
+  if (suggestion === undefined) return undefined;
+  const below = sets.some(
+    (s) => !s.isWarmup && s.completedAt === undefined && (s.weightKg ?? 0) < suggestion,
+  );
+  return below ? suggestion : undefined;
+}
