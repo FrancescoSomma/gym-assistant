@@ -15,6 +15,7 @@ import {
   discardSession,
   extendTimer,
   finishSession,
+  hasCompletedSets,
   removeSessionExercise,
   replaceExercise,
   setSessionNotes,
@@ -245,6 +246,20 @@ describe('skip, remove, add, replace (SPEC §6.5)', () => {
     expect(after.sets.every((s) => s.exerciseId === exerciseId)).toBe(true);
   });
 
+  it('gives a duration substitute the default target time', async () => {
+    const sessionId = await setup();
+    const [bench] = await items(sessionId);
+    const plank = await createExercise({
+      name: 'Plank',
+      muscleGroup: 'abs',
+      equipment: 'bodyweight',
+      trackingType: 'duration',
+      notes: '',
+    });
+    await replaceExercise(bench.se.id, plank);
+    expect((await items(sessionId))[0].se.targetSec).toBe(30);
+  });
+
   it('keeps a completed warmup by inserting the substitute instead of replacing in place', async () => {
     const sessionId = await setup();
     const [bench] = await items(sessionId);
@@ -308,6 +323,14 @@ describe('finishing and discarding (SPEC §4.3, §6.6, §6.7)', () => {
     expect(await db.sessionExercises.count()).toBe(0);
     expect(await db.setLogs.count()).toBe(0);
     expect((await getSettings()).activeTimer).toBeNull();
+  });
+
+  it('tells whether any set was completed, so an empty workout can be discarded', async () => {
+    const sessionId = await setup();
+    expect(await hasCompletedSets(sessionId)).toBe(false);
+    const bench = await fillBench(sessionId);
+    await completeSet(bench.sets[0].id);
+    expect(await hasCompletedSets(sessionId)).toBe(true);
   });
 
   it('saves the session notes', async () => {

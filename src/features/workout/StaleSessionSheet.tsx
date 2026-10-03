@@ -2,11 +2,10 @@ import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Sheet } from '../../components/Sheet';
-import { finishSession } from '../../db/workout';
 import { formatTime, relativeDay } from '../../domain/format';
 import { isStale } from '../../domain/workout';
 import type { Session } from '../../types';
-import { discardWorkout } from './finish';
+import { discardWorkout, finishWorkout } from './finish';
 
 /** SPEC §6.6: a session opened more than 6 hours ago asks what to do with it. */
 export function StaleSessionSheet({ session }: { session: Session | null }) {
@@ -16,9 +15,7 @@ export function StaleSessionSheet({ session }: { session: Session | null }) {
   const open = !dismissed && isStale(session.startedAt, Date.now());
 
   const finish = async () => {
-    await finishSession(session.id, { atLastSet: true });
-    setDismissed(true);
-    navigate(`/workout/${session.id}/summary`);
+    if (await finishWorkout(session.id, navigate, { atLastSet: true })) setDismissed(true);
   };
   const discard = async () => {
     if (await discardWorkout(session.id, navigate)) setDismissed(true);

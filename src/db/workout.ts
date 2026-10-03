@@ -156,6 +156,13 @@ export const countPendingSets = (sessionId: string): Promise<number> =>
     .filter((s) => s.completedAt === undefined)
     .count();
 
+export const hasCompletedSets = async (sessionId: string): Promise<boolean> =>
+  (await db.setLogs
+    .where('sessionId')
+    .equals(sessionId)
+    .filter((s) => s.completedAt !== undefined)
+    .count()) > 0;
+
 /** SPEC §6.7; with atLastSet (stale session, §6.6) endedAt is the last completed set. */
 export async function finishSession(sessionId: string, { atLastSet = false } = {}): Promise<void> {
   await db.transaction('rw', [db.sessions, db.setLogs, db.settings], async () => {
@@ -237,44 +244,54 @@ export async function replaceExercise(
   seId: string,
   exerciseId: string,
 ): Promise<'replaced' | 'inserted'> {
-  return db.transaction('rw', [db.sessions, db.sessionExercises, db.setLogs], async () => {
-    const se = await db.sessionExercises.get(seId);
-    if (!se) throw new Error(`Session exercise ${seId} not found`);
-    const sets = await db.setLogs.where('sessionExerciseId').equals(seId).toArray();
-    const doneWork = sets.filter((s) => s.completedAt !== undefined && !s.isWarmup).length;
+  return db.transaction(
+    'rw',
+    [db.sessions, db.sessionExercises, db.setLogs, db.exercises],
+    async () => {
+      const se = await db.sessionExercises.get(seId);
+      if (!se) throw new Error(`Session exercise ${seId} not found`);
+      const sets = await db.setLogs.where('sessionExerciseId').equals(seId).toArray();
+      const doneWork = sets.filter((s) => s.completedAt !== undefined && !s.isWarmup).length;
+      // A duration substitute for a reps exercise has no target time yet: use the default one.
+      const substitute = await db.exercises.get(exerciseId);
+      const targetSec =
+        se.targetSec ??
+        (substitute?.trackingType === 'duration' ? DEFAULT_TARGET.targetSec : undefined);
 
-    // Any completed set (warmups included) is history: keep it by taking the 'inserted' branch.
-    if (!sets.some((s) => s.completedAt !== undefined)) {
-      await db.setLogs.bulkDelete(sets.map((s) => s.id));
-      await db.sessionExercises.update(seId, {
+      // Any completed set (warmups included) is history: keep it by taking the 'inserted' branch.
+      if (!sets.some((s) => s.completedAt !== undefined)) {
+        await db.setLogs.bulkDelete(sets.map((s) => s.id));
+        await db.sessionExercises.update(seId, {
+          exerciseId,
+          replacedExerciseId: se.replacedExerciseId ?? se.exerciseId,
+          status: 'pending',
+          targetSec,
+        });
+        await insertPlannedSets({ ...se, exerciseId });
+        return 'replaced';
+      }
+
+      await db.setLogs.bulkDelete(sets.filter((s) => s.completedAt === undefined).map((s) => s.id));
+      await db.sessionExercises.update(seId, { status: 'done' });
+      const later = await db.sessionExercises
+        .where('sessionId')
+        .equals(se.sessionId)
+        .filter((x) => x.order > se.order)
+        .toArray();
+      for (const x of later) await db.sessionExercises.update(x.id, { order: x.order + 1 });
+      await insertSessionExercise({
+        sessionId: se.sessionId,
         exerciseId,
-        replacedExerciseId: se.replacedExerciseId ?? se.exerciseId,
-        status: 'pending',
+        order: se.order + 1,
+        plannedSets: Math.max(1, se.plannedSets - doneWork),
+        repMin: se.repMin,
+        repMax: se.repMax,
+        targetSec,
+        restSec: se.restSec,
+        replacedExerciseId: se.exerciseId,
+        supersetKey: se.supersetKey,
       });
-      await insertPlannedSets({ ...se, exerciseId });
-      return 'replaced';
-    }
-
-    await db.setLogs.bulkDelete(sets.filter((s) => s.completedAt === undefined).map((s) => s.id));
-    await db.sessionExercises.update(seId, { status: 'done' });
-    const later = await db.sessionExercises
-      .where('sessionId')
-      .equals(se.sessionId)
-      .filter((x) => x.order > se.order)
-      .toArray();
-    for (const x of later) await db.sessionExercises.update(x.id, { order: x.order + 1 });
-    await insertSessionExercise({
-      sessionId: se.sessionId,
-      exerciseId,
-      order: se.order + 1,
-      plannedSets: Math.max(1, se.plannedSets - doneWork),
-      repMin: se.repMin,
-      repMax: se.repMax,
-      targetSec: se.targetSec,
-      restSec: se.restSec,
-      replacedExerciseId: se.exerciseId,
-      supersetKey: se.supersetKey,
-    });
-    return 'inserted';
-  });
+      return 'inserted';
+    },
+  );
 }
