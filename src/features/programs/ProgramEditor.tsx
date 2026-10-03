@@ -49,7 +49,7 @@ export function ProgramEditor() {
   return (
     <>
       <Header title={program.name || 'Senza nome'} back="/programs" />
-      <div className="space-y-4 px-4">
+      <div key={program.id} className="space-y-4 px-4">
         <label className="block">
           <span className="label">Nome</span>
           <input
