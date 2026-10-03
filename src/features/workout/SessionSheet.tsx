@@ -1,20 +1,7 @@
-import { Check, Minus } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Lights } from '../../components/Lights';
 import { Sheet } from '../../components/Sheet';
 import type { WorkoutItem } from '../../db/sessions';
-import type { SessionExercise } from '../../types';
-
-function StatusIcon({ status }: { status: SessionExercise['status'] }) {
-  if (status === 'done') {
-    return (
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-plate-green text-rubber">
-        <Check size={14} strokeWidth={3} />
-      </span>
-    );
-  }
-  if (status === 'skipped') return <Minus size={24} className="shrink-0 text-steel" />;
-  return <span className="size-6 shrink-0 rounded-full border-2 border-steel/60" />;
-}
 
 interface Props {
   open: boolean;
@@ -22,33 +9,41 @@ interface Props {
   items: WorkoutItem[];
   current: number;
   onJump: (index: number) => void;
-  /** Session actions (add, finish, discard), added by later tasks. */
+  /** Session actions (add, finish, discard). */
   children?: ReactNode;
 }
 
+/** The session's start list: current on the blue band, done with lit lights, skipped struck. */
 export function SessionSheet({ open, onClose, items, current, onJump, children }: Props) {
   return (
     <Sheet open={open} onClose={onClose} title="Esercizi">
-      <ul>
+      <ol className="border-t border-luce">
         {items.map(({ se, exercise, sets }, i) => {
           const work = sets.filter((s) => !s.isWarmup);
           const done = work.filter((s) => s.completedAt !== undefined).length;
+          const isCurrent = i === current;
           return (
             <li key={se.id}>
               <button
                 type="button"
-                className="row"
-                aria-current={i === current ? 'step' : undefined}
+                className={`row ${isCurrent ? 'bg-plate-blue active:bg-plate-blue' : ''}`}
+                aria-current={isCurrent ? 'step' : undefined}
                 onClick={() => onJump(i)}
               >
-                <StatusIcon status={se.status} />
-                <span className={`flex-1 ${i === current ? 'font-semibold' : ''}`}>
+                <span className={`num w-6 text-title ${isCurrent ? 'text-luce' : 'text-fumo'}`}>
+                  {i + 1}
+                </span>
+                <span
+                  className={`min-w-0 flex-1 ${isCurrent ? 'font-semibold' : ''} ${se.status === 'skipped' ? 'text-fumo line-through' : ''}`}
+                >
                   {exercise.name}
                 </span>
                 {se.status === 'skipped' ? (
-                  <span className="text-small text-steel">Saltato</span>
+                  <span className="text-small text-fumo">Saltato</span>
+                ) : se.status === 'done' ? (
+                  <Lights total={3} lit={3} label="Completato" />
                 ) : (
-                  <span className="num text-title text-steel">
+                  <span className="num text-title">
                     {done}/{work.length}
                   </span>
                 )}
@@ -56,7 +51,7 @@ export function SessionSheet({ open, onClose, items, current, onJump, children }
             </li>
           );
         })}
-      </ul>
+      </ol>
       {children}
     </Sheet>
   );

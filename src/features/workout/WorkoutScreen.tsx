@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { useNow } from '../../components/useNow';
@@ -57,28 +57,32 @@ export function WorkoutScreen() {
     if (i !== current) window.scrollTo(0, 0); // a lone superset member stays where it is
   };
   const close = () => setSheet(null);
+  const position = items.length > 0 ? current + 1 : 0;
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-10 flex items-center gap-1 bg-rubber px-2 pt-[env(safe-area-inset-top)]">
+    <div className="flex min-h-dvh animate-enter-rise flex-col">
+      <header className="sticky top-0 z-10 flex items-center gap-1 bg-arena px-2 pt-[env(safe-area-inset-top)] rule-b">
         <Link
           to="/"
           aria-label="Esci dall'allenamento"
-          className="flex size-14 items-center justify-center"
+          className="flex size-14 items-center justify-center text-fumo active:text-luce"
         >
           <X />
         </Link>
         <div className="flex flex-1 items-baseline justify-center gap-3">
           <span className="font-semibold">Giornata {session.dayLabel}</span>
-          <span className="num text-title text-steel">{formatClock(now - session.startedAt)}</span>
+          <span className="num text-title text-fumo">{formatClock(now - session.startedAt)}</span>
         </div>
         <button
           type="button"
-          aria-label="Elenco degli esercizi"
-          className="num flex h-14 items-center px-3 text-title"
+          aria-label={`Elenco degli esercizi, ${position} di ${items.length}`}
+          className="flex h-14 items-center gap-1 px-3 active:opacity-60"
           onClick={() => setSheet('list')}
         >
-          {items.length > 0 ? `${current + 1} di ${items.length}` : '0 di 0'}
+          <span className="num text-title">{position}</span>
+          <span className="text-small text-fumo">di</span>
+          <span className="num text-title">{items.length}</span>
+          <ChevronDown size={18} aria-hidden="true" className="text-fumo" />
         </button>
       </header>
 
@@ -107,7 +111,7 @@ export function WorkoutScreen() {
           </>
         ) : (
           <div className="space-y-4 px-4 pt-8">
-            <p className="text-steel">
+            <p className="text-fumo">
               Nessun esercizio in questa sessione. Aggiungine uno per iniziare.
             </p>
             <button type="button" className="btn-secondary" onClick={() => setSheet('add')}>
@@ -117,8 +121,8 @@ export function WorkoutScreen() {
         )}
       </main>
 
-      <footer className="sticky bottom-0 bg-rubber">
-        <nav className="flex items-center border-t border-steel/25 px-2">
+      <footer className="sticky bottom-0 z-10 bg-arena">
+        <nav className="flex items-center px-2 rule-t">
           <button
             type="button"
             className="btn-text min-h-14"
@@ -131,7 +135,7 @@ export function WorkoutScreen() {
           {isLast ? (
             <button
               type="button"
-              className="inline-flex min-h-14 items-center rounded-control bg-plate-blue px-4 font-semibold text-chalk active:opacity-80"
+              className="my-1 inline-flex min-h-14 items-center rounded-control bg-plate-blue px-4 font-semibold text-luce transition-transform duration-120 ease-out active:scale-[0.97]"
               onClick={() => finishWorkout(session.id, navigate)}
             >
               Termina allenamento

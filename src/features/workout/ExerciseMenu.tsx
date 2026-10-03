@@ -26,7 +26,7 @@ export function ExerciseMenu({ item, open, onClose, onReplace, onSkip, onRemove 
           <Trash2 size={20} /> Rimuovi esercizio
         </button>
         {hasCompleted && (
-          <p className="text-small text-steel">
+          <p className="text-small text-fumo">
             Ha già serie completate: puoi saltarlo o sostituirlo, non rimuoverlo.
           </p>
         )}

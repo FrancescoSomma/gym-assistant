@@ -13,6 +13,7 @@ import {
   suggestWeight,
   warmupIndex,
   weightStep,
+  workSetCounter,
 } from './workout';
 
 describe('prefill (SPEC §8.3)', () => {
@@ -202,5 +203,19 @@ describe('offeredWeight (SPEC §8.6, the chip)', () => {
   });
   it('nothing to offer without a suggestion', () => {
     expect(offeredWeight(undefined, [set(80)])).toBeUndefined();
+  });
+});
+
+describe('workSetCounter (lower third "2/4")', () => {
+  const s = (done: boolean, isWarmup = false) => ({ isWarmup, completedAt: done ? 1 : undefined });
+  it('counts the next work set to do over the work sets, warmups aside', () => {
+    expect(workSetCounter([s(true, true), s(true), s(false), s(false), s(false)])).toEqual({
+      current: 2,
+      total: 4,
+    });
+  });
+  it('stays on the last set once all are done, and is undefined without work sets', () => {
+    expect(workSetCounter([s(true), s(true)])).toEqual({ current: 2, total: 2 });
+    expect(workSetCounter([s(false, true)])).toBeUndefined();
   });
 });

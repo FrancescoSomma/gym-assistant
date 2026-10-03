@@ -1,4 +1,6 @@
-import { Check, Trash2 } from 'lucide-react';
+import { Check, Trash2, Trophy } from 'lucide-react';
+import { m } from 'motion/react';
+import { Lights } from '../../components/Lights';
 import { Stepper } from '../../components/Stepper';
 import { deleteSet, updateSet } from '../../db/workout';
 import { formatNumber, formatRange, formatSet, type SetValues } from '../../domain/format';
@@ -7,41 +9,38 @@ import { confirmAction } from '../../platform/confirm';
 import type { Exercise, SessionExercise, SetLog, TrackingType } from '../../types';
 
 const DASH = '–';
+/** A set confirmed this recently lights up in sequence when its row appears. */
+const FRESH_MS = 1500;
 const setName = (set: SetLog, label: string) => (set.isWarmup ? 'Riscaldamento' : `Serie ${label}`);
 
-export function Disc({ done }: { done: boolean }) {
-  return done ? (
-    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-plate-green text-rubber">
-      <Check size={18} strokeWidth={3} />
-    </span>
-  ) : (
-    <span className="size-8 shrink-0 rounded-full border-2 border-steel/60" />
-  );
-}
-
+/** The numbers of a row: weight on the scoreboard, then × reps (or seconds, or reps alone). */
 function Values({ set, tracking }: { set: SetLog; tracking: TrackingType }) {
+  const big = set.isWarmup ? 'text-title' : 'text-score';
   if (tracking === 'duration') {
     return (
       <>
-        <span className="num w-20 text-right text-value">{set.durationSec ?? DASH}</span>
-        <span className="text-small text-steel">s</span>
+        <span className={`num w-20 text-right ${big}`}>{set.durationSec ?? DASH}</span>
+        <span className="label-text text-fumo">s</span>
+      </>
+    );
+  }
+  if (tracking === 'bodyweight_reps' && !set.weightKg) {
+    return (
+      <>
+        <span className={`num w-20 text-right ${big}`}>{set.reps ?? DASH}</span>
+        <span className="label-text text-fumo">rip</span>
       </>
     );
   }
   const weight =
-    tracking === 'bodyweight_reps'
-      ? set.weightKg
-        ? `+${formatNumber(set.weightKg)}`
-        : ''
-      : set.weightKg === undefined
-        ? DASH
-        : formatNumber(set.weightKg);
+    set.weightKg === undefined
+      ? DASH
+      : `${tracking === 'bodyweight_reps' ? '+' : ''}${formatNumber(set.weightKg)}`;
   return (
     <>
-      <span className="num w-20 text-right text-value">{weight}</span>
-      <span className="w-8 text-small text-steel">{weight && 'kg'}</span>
-      <span className="num w-10 text-right text-value">{set.reps ?? DASH}</span>
-      <span className="text-small text-steel">rip</span>
+      <span className={`num w-20 text-right ${big}`}>{weight}</span>
+      <span className="label-text w-6 text-fumo">kg</span>
+      <span className="num text-title">× {set.reps ?? DASH}</span>
     </>
   );
 }
@@ -54,22 +53,29 @@ interface RowProps {
   onSelect: () => void;
 }
 
-/** Compact row: values and status disc. A tap opens it in the editor. */
+/** A row of the set board: number, values and the judges' lights. A tap opens it in the editor. */
 export function SetRow({ set, label, tracking, record = false, onSelect }: RowProps) {
   const done = set.completedAt !== undefined;
-  const tone = record ? 'text-plate-yellow' : done && !set.isWarmup ? 'text-chalk' : 'text-steel';
+  const fresh = done && Date.now() - (set.completedAt ?? 0) < FRESH_MS;
+  const tone = record ? 'text-plate-yellow' : done && !set.isWarmup ? 'text-luce' : 'text-fumo';
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-label={`${setName(set, label)}: ${formatSet(set, tracking)}${done ? ', completata' : ''}${record ? ', record' : ''}`}
-      className="flex min-h-14 w-full items-center gap-2 border-b border-steel/25 px-4 text-left"
+      className="flex min-h-14 w-full items-center gap-2 px-4 text-left rule-b active:bg-fondale"
     >
-      <span className="num w-6 text-title text-steel">{label}</span>
+      <span className="num w-7 text-title text-fumo">{label}</span>
       <span className={`flex flex-1 items-baseline gap-1 ${tone}`}>
         <Values set={set} tracking={tracking} />
+        {record && <Trophy size={16} aria-hidden="true" className="ml-1 self-center" />}
       </span>
-      <Disc done={done} />
+      <Lights
+        total={set.isWarmup ? 1 : 3}
+        lit={done ? (set.isWarmup ? 1 : 3) : 0}
+        muted={set.isWarmup}
+        sequence={fresh}
+      />
     </button>
   );
 }
@@ -86,7 +92,10 @@ interface EditorProps {
   onShowPlates?: () => void;
 }
 
-/** Expanded row with 56pt steppers: the current set, or a completed one being corrected. */
+/**
+ * The current set (blue band) or a completed one being corrected (grey band), with 56pt
+ * steppers. The band carries a layoutId: when the next set becomes current it slides down to it.
+ */
 export function SetEditor({
   set,
   label,
@@ -106,31 +115,31 @@ export function SetEditor({
     void deleteSet(set.id);
   };
   return (
-    <div
-      className={`border-b border-l-4 border-b-steel/25 bg-iron px-4 py-3 ${done ? 'border-l-steel' : 'border-l-plate-blue'}`}
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-small text-steel">
+    <div className="bg-tribuna rule-b">
+      <m.div
+        layoutId={`set-band-${se.id}`}
+        transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+        className={`flex min-h-14 items-center pl-4 ${done ? 'bg-fondale' : 'bg-plate-blue'}`}
+      >
+        <span className="flex-1 font-semibold">
           {setName(set, label)}
           {done && ', completata'}
         </span>
-        <div className="flex items-center">
-          {onShowPlates && (
-            <button type="button" className="btn-text min-h-14 text-small" onClick={onShowPlates}>
-              Dischi
-            </button>
-          )}
-          <button
-            type="button"
-            aria-label="Elimina serie"
-            className="-mr-2 flex size-14 items-center justify-center text-steel"
-            onClick={remove}
-          >
-            <Trash2 size={20} />
+        {onShowPlates && (
+          <button type="button" className="btn-text min-h-14 text-small" onClick={onShowPlates}>
+            Dischi
           </button>
-        </div>
-      </div>
-      <div className="mt-1 space-y-2">
+        )}
+        <button
+          type="button"
+          aria-label="Elimina serie"
+          className="flex size-14 items-center justify-center active:opacity-60"
+          onClick={remove}
+        >
+          <Trash2 size={20} />
+        </button>
+      </m.div>
+      <div className="space-y-2 px-4 pt-3 pb-4">
         {tracking !== 'duration' && (
           <Stepper
             size="lg"
@@ -169,33 +178,33 @@ export function SetEditor({
             onChange={(reps) => save({ reps })}
           />
         )}
-      </div>
-      {onToggleWarmup && (
-        <label className="mt-2 flex min-h-11 items-center gap-3">
-          <span className="flex-1">Serie di riscaldamento</span>
-          <input
-            type="checkbox"
-            className="switch"
-            checked={set.isWarmup}
-            onChange={onToggleWarmup}
-          />
-        </label>
-      )}
-      <div className="mt-3">
-        {done ? (
-          <button type="button" className="btn-secondary" onClick={onClose}>
-            Fatto
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={!canComplete(set, tracking)}
-            onClick={onConfirm}
-          >
-            <Check size={22} /> Conferma serie
-          </button>
+        {onToggleWarmup && (
+          <label className="flex min-h-11 items-center gap-3">
+            <span className="flex-1">Serie di riscaldamento</span>
+            <input
+              type="checkbox"
+              className="switch"
+              checked={set.isWarmup}
+              onChange={onToggleWarmup}
+            />
+          </label>
         )}
+        <div className="pt-1">
+          {done ? (
+            <button type="button" className="btn-secondary" onClick={onClose}>
+              Fatto
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={!canComplete(set, tracking)}
+              onClick={onConfirm}
+            >
+              <Check size={22} /> Conferma serie
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

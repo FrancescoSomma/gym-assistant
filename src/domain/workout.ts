@@ -139,3 +139,13 @@ export function offeredWeight(
   );
   return below ? suggestion : undefined;
 }
+
+/** "2/4" on the workout lower third: the next work set to do (the last when all are done). */
+export function workSetCounter(
+  sets: Pick<SetLog, 'isWarmup' | 'completedAt'>[],
+): { current: number; total: number } | undefined {
+  const work = sets.filter((s) => !s.isWarmup);
+  if (work.length === 0) return undefined;
+  const next = work.findIndex((s) => s.completedAt === undefined);
+  return { current: next === -1 ? work.length : next + 1, total: work.length };
+}

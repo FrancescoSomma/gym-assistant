@@ -1,6 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { MoreHorizontal, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { NamePlate } from '../../components/NamePlate';
+import { RollingNumber } from '../../components/RollingNumber';
+import { Tab } from '../../components/Tab';
 import { exerciseHistory, updateExercise } from '../../db/exercises';
 import type { WorkoutItem } from '../../db/sessions';
 import { addSet, applyWeight, type CompleteResult, completeSet } from '../../db/workout';
@@ -18,6 +21,7 @@ import {
   setLabel,
   suggestWeight,
   weightStep,
+  workSetCounter,
 } from '../../domain/workout';
 import type { Settings } from '../../types';
 import { PlateSheet } from './PlateSheet';
@@ -50,6 +54,7 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
       : undefined,
     sets,
   );
+  const counter = workSetCounter(sets);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [platesKg, setPlatesKg] = useState<number | null>(null);
   const selected = sets.find((s) => s.id === selectedId) ?? firstPending(sets);
@@ -63,50 +68,65 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
 
   return (
     <>
-      <section className="px-4 pt-2 pb-3">
-        <div className="flex items-start gap-2">
-          <h1 className="flex-1 text-name font-semibold">{exercise.name}</h1>
+      <section className="px-4 pt-2 pb-4">
+        <div className="flex items-start gap-1">
+          {/* The lower third wipes in each time an exercise comes on (the view is keyed by it). */}
+          <div className="flex min-w-0 flex-1 animate-wipe items-stretch">
+            {counter && (
+              <Tab className="num text-title">
+                <span className="sr-only">
+                  Serie {counter.current} di {counter.total}
+                </span>
+                <RollingNumber
+                  value={counter.current}
+                  text={`${counter.current}/${counter.total}`}
+                />
+              </Tab>
+            )}
+            <NamePlate>{exercise.name}</NamePlate>
+          </div>
           {onMenu && (
             <button
               type="button"
               aria-label="Opzioni dell'esercizio"
-              className="-mr-3 flex size-14 shrink-0 items-center justify-center"
+              className="-mr-3 flex size-14 shrink-0 items-center justify-center text-fumo active:text-luce"
               onClick={onMenu}
             >
               <MoreHorizontal />
             </button>
           )}
         </div>
-        <p className="text-small text-steel">
+        <p className="mt-3 text-small text-fumo">
           {formatTarget({ ...se, sets: se.plannedSets }, tracking)}
         </p>
         {supersetWith && supersetWith.length > 0 && (
-          <p className="text-small text-steel">In superserie con {formatList(supersetWith)}</p>
+          <p className="text-small text-fumo">In superserie con {formatList(supersetWith)}</p>
         )}
         {se.status === 'skipped' && (
-          <p className="text-small text-steel">Saltato: completa una serie per riprenderlo.</p>
+          <p className="text-small text-fumo">Saltato: completa una serie per riprenderlo.</p>
         )}
         <label className="mt-1 block">
           <span className="sr-only">Nota permanente</span>
           <textarea
             key={exercise.id}
             rows={1}
-            className="field-sizing-content w-full resize-none bg-transparent outline-none placeholder:text-steel"
+            className="field-sizing-content w-full resize-none bg-transparent outline-none placeholder:text-fumo"
             defaultValue={exercise.notes}
             placeholder="Aggiungi una nota, es. sedile al 4"
             onChange={(e) => void updateExercise(exercise.id, { notes: e.target.value })}
           />
         </label>
-        {dayNote && <p className="text-small text-steel">{dayNote}</p>}
+        {dayNote && <p className="text-small text-fumo">{dayNote}</p>}
         {last && (
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <p className="text-small text-steel tabular-nums">
-              {relativeDay(last.startedAt)}: {formatSets(last.sets, tracking)}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <p className="text-small text-fumo first-letter:uppercase">
+              {relativeDay(last.startedAt)}:{' '}
+              <span className="num text-body text-luce">{formatSets(last.sets, tracking)}</span>
             </p>
             {suggestion !== undefined && (
               <button
                 type="button"
-                className="chip min-h-14"
+                className="chip-action"
                 aria-label={`Aumenta a ${formatNumber(suggestion)} kg le serie da fare`}
                 onClick={() => void applyWeight(se.id, suggestion)}
               >
@@ -117,7 +137,7 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
         )}
       </section>
 
-      <ul className="border-t border-steel/25">
+      <ul className="border-t border-luce">
         {sets.map((set) => (
           <li key={set.id}>
             {set.id === selected?.id ? (
@@ -154,7 +174,7 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
         </button>
         <button
           type="button"
-          className="btn-text min-h-14 text-steel"
+          className="btn-text min-h-14 text-fumo"
           onClick={() => addSet(se.id, true)}
         >
           <Plus size={20} /> Aggiungi riscaldamento
