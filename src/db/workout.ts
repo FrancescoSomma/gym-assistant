@@ -1,0 +1,148 @@
+import type { SetValues } from '../domain/format';
+import { propagateWeight, warmupIndex } from '../domain/workout';
+import type { ActiveTimer, SessionExercise } from '../types';
+import { db, uid } from './db';
+import { getSettings, setSetting } from './settings';
+
+export interface CompleteResult {
+  exerciseDone: boolean;
+  /** Absent: timer untouched (warmup, correction). null: timer cleared. Phase 2 mirrors it to push. */
+  timer?: ActiveTimer | null;
+}
+
+/** done = has sets and all are completed; anything else is pending (a skipped one resumes). */
+async function syncStatus(seId: string): Promise<boolean> {
+  const sets = await db.setLogs.where('sessionExerciseId').equals(seId).toArray();
+  const done = sets.length > 0 && sets.every((s) => s.completedAt !== undefined);
+  await db.sessionExercises.update(seId, { status: done ? 'done' : 'pending' });
+  return done;
+}
+
+async function restTimer(se: SessionExercise, exerciseName: string): Promise<ActiveTimer> {
+  const work = (await db.setLogs.where('sessionExerciseId').equals(se.id).toArray()).filter(
+    (s) => !s.isWarmup,
+  );
+  const done = work.filter((s) => s.completedAt !== undefined).length;
+  const durationMs = se.restSec * 1000;
+  return {
+    sessionExerciseId: se.id,
+    endAt: Date.now() + durationMs,
+    durationMs,
+    label: done > 0 ? `${exerciseName}, serie ${done} di ${work.length}` : exerciseName,
+  };
+}
+
+/** SPEC §6.3: a weight change also updates later planned sets that had the same weight. */
+export async function updateSet(setId: string, patch: SetValues): Promise<void> {
+  await db.transaction('rw', db.setLogs, async () => {
+    const set = await db.setLogs.get(setId);
+    if (!set) return;
+    const siblings = await db.setLogs
+      .where('sessionExerciseId')
+      .equals(set.sessionExerciseId)
+      .toArray();
+    const followers = 'weightKg' in patch ? propagateWeight(siblings, setId) : [];
+    await db.setLogs.update(setId, patch);
+    for (const id of followers) await db.setLogs.update(id, { weightKg: patch.weightKg });
+  });
+}
+
+/** SPEC §6.3 and §7.1. Warmups and corrections never touch the timer. */
+export async function completeSet(setId: string): Promise<CompleteResult> {
+  return db.transaction(
+    'rw',
+    [db.setLogs, db.sessionExercises, db.exercises, db.settings],
+    async () => {
+      const set = await db.setLogs.get(setId);
+      const se = set && (await db.sessionExercises.get(set.sessionExerciseId));
+      const exercise = set && (await db.exercises.get(set.exerciseId));
+      if (!set || !se || !exercise) throw new Error(`Set ${setId} not found`);
+      const bodyweightDefault =
+        exercise.trackingType === 'bodyweight_reps' && set.weightKg === undefined
+          ? { weightKg: 0 }
+          : {};
+      await db.setLogs.update(setId, {
+        completedAt: set.completedAt ?? Date.now(),
+        ...bodyweightDefault,
+      });
+      const exerciseDone = await syncStatus(se.id);
+      if (set.isWarmup || set.completedAt !== undefined) return { exerciseDone };
+
+      const { autoStartTimer } = await getSettings();
+      const timer = autoStartTimer ? await restTimer(se, exercise.name) : null;
+      await setSetting('activeTimer', timer); // a new confirmation replaces the running timer
+      return { exerciseDone, timer };
+    },
+  );
+}
+
+export async function addSet(seId: string, isWarmup: boolean): Promise<void> {
+  await db.transaction('rw', [db.setLogs, db.sessionExercises], async () => {
+    const se = await db.sessionExercises.get(seId);
+    if (!se) return;
+    const sets = await db.setLogs.where('sessionExerciseId').equals(seId).sortBy('index');
+    const work = sets.filter((s) => !s.isWarmup);
+    const base = {
+      id: uid(),
+      sessionId: se.sessionId,
+      sessionExerciseId: seId,
+      exerciseId: se.exerciseId,
+      isWarmup,
+    };
+    if (isWarmup) {
+      const lastWarmup = sets.filter((s) => s.isWarmup).at(-1);
+      await db.setLogs.add({ ...base, index: warmupIndex(lastWarmup?.index, work[0]?.index) });
+    } else {
+      const last = work.at(-1);
+      await db.setLogs.add({
+        ...base,
+        index: (sets.at(-1)?.index ?? -1) + 1,
+        weightKg: last?.weightKg,
+        reps: last?.reps,
+        durationSec: last?.durationSec,
+      });
+    }
+    await syncStatus(seId);
+  });
+}
+
+export async function deleteSet(setId: string): Promise<void> {
+  await db.transaction('rw', [db.setLogs, db.sessionExercises], async () => {
+    const set = await db.setLogs.get(setId);
+    if (!set) return;
+    await db.setLogs.delete(setId);
+    await syncStatus(set.sessionExerciseId);
+  });
+}
+
+export async function startTimer(seId: string): Promise<ActiveTimer | null> {
+  return db.transaction(
+    'rw',
+    [db.setLogs, db.sessionExercises, db.exercises, db.settings],
+    async () => {
+      const se = await db.sessionExercises.get(seId);
+      const exercise = se && (await db.exercises.get(se.exerciseId));
+      if (!se || !exercise) return null;
+      const timer = await restTimer(se, exercise.name);
+      await setSetting('activeTimer', timer);
+      return timer;
+    },
+  );
+}
+
+/** SPEC §7.1 "+15 s": endAt moves; durationMs too, so the line keeps its proportion. */
+export async function extendTimer(ms: number): Promise<ActiveTimer | null> {
+  return db.transaction('rw', db.settings, async () => {
+    const { activeTimer } = await getSettings();
+    if (!activeTimer) return null;
+    const timer = {
+      ...activeTimer,
+      endAt: activeTimer.endAt + ms,
+      durationMs: activeTimer.durationMs + ms,
+    };
+    await setSetting('activeTimer', timer);
+    return timer;
+  });
+}
+
+export const clearTimer = (): Promise<void> => setSetting('activeTimer', null);
