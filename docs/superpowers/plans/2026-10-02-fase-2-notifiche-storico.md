@@ -99,6 +99,39 @@ Valgono tutte quelle della Fase 1, più queste.
 
 ---
 
+### Task 0: Bug — fogli dal basso troppo in basso su iPhone
+
+**Contesto.**
+- Nell'app avviata dalla Home dell'iPhone, alcuni fogli si aprono troppo in basso, quasi fuori dallo schermo:
+  - il foglio dell'esercizio di giornata (Programmi → giornata → tocco su un esercizio, `DayExerciseSheet`);
+  - il menu ⋯ in allenamento (`ExerciseMenu`).
+- Entrambi usano `src/components/Sheet.tsx` (`<dialog>` con `showModal()`) e la classe `.sheet` in `src/styles/index.css` (`margin: auto 0 0`, `max-height: 92dvh`).
+- In Chrome lo stesso CSS è corretto: foglio in basso e intero. Attenzione: Chrome headless impone una finestra di almeno 500px di larghezza, quindi una finestra di 390px dà un falso positivo.
+- Ipotesi da verificare: regressione di iOS 26 nelle web app avviate dalla Home con `viewport-fit=cover` e status bar `black-translucent`.
+  - `100dvh` e `100%` valgono l'altezza dello schermo meno l'inset superiore.
+  - Gli elementi `fixed` si agganciano alla fine del documento quando il documento è più corto dello schermo.
+  - Fonti: https://bugs.webkit.org/show_bug.cgi?id=297779, https://github.com/nckrtl/orbit/pull/754, https://github.com/alieldinHosni/bunyan/pull/3.
+  - Rimedio citato: `min-height: 100lvh` su `html` e `body` in `@media (display-mode: standalone)`.
+
+**Dati dal telefono:**
+- Versione di iOS: <COMPILA>
+- Succede anche con altri fogli ("Scegli un'altra giornata" in Oggi, "3 di 6" in allenamento, "Nuovo esercizio" in Esercizi)? <COMPILA>
+- La tastiera era aperta, o avevi appena scritto qualcosa, prima di toccare? <COMPILA>
+
+**Passi.**
+1. Causa alla radice con superpowers:systematic-debugging.
+   - Consulta le fonti sopra in versione aggiornata (WebFetch), non a memoria. Verifica anche se la regressione è già risolta in una versione di iOS successiva.
+   - Incrocia l'ipotesi con i dati dal telefono e con i contenitori che usano `min-h-dvh`: `src/App.tsx`, `WorkoutScreen`, `SummaryScreen`.
+2. Correzione minima nel punto in cui nasce il problema, che non cambi il comportamento in Chrome. Probabilmente CSS in `src/styles/index.css`, ed eventualmente le altezze dei contenitori. Niente nuove dipendenze.
+3. Verifica:
+   - `bun run format && bun run check`;
+   - uno screenshot di Chrome headless (finestra almeno 600×900) che mostri un foglio intero, in basso;
+   - la prova sull'iPhone è dell'utente: aggiungi al Task 9 la riga "I fogli (esercizio di giornata, menu ⋯, '3 di 6', 'Nuovo esercizio') si aprono interi, in basso, anche dopo aver scritto in un campo".
+4. Non spuntare il bug in SPEC §12: lo spunta il Task 9 dopo la prova sul telefono.
+5. Commit: `fix(ios): …`.
+
+---
+
 ### Task 1: Worker — route `/api/timer`, validazione e Durable Object
 
 **Files:**
