@@ -2652,6 +2652,10 @@ Correggi una serie da Storico. In Progressi apri l'esercizio: il grafico riflett
 
 I fogli (esercizio di giornata, menu ⋯, '3 di 6', 'Nuovo esercizio') si aprono interi, in basso, anche dopo aver scritto in un campo
 
+Su schermate corte (Progressi vuoto, Impostazioni) la pagina non scorre e la tab bar tocca il fondo.
+
+Se i fogli restano troppo in basso o questo controllo non passa: togli la regola `@media (display-mode: standalone) { html, body { min-height: 100lvh; } }` da `src/styles/index.css`, oppure passa la barra di stato a `black` opaca (va reinstallata l'app dalla schermata Home). La scelta è dell'utente.
+
 - [ ] **Step 5: Produzione e checklist**
 
 ```bash
