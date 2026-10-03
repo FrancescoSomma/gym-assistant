@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "screens": "bun scripts/screens.ts",
     "deploy": "vite build && wrangler deploy",
     "deploy:preview": "vite build && wrangler deploy --name gym-log-preview",
     "test": "vitest run",

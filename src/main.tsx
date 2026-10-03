@@ -13,7 +13,17 @@ const root = createRoot(document.getElementById('root') as HTMLElement);
 
 document.addEventListener('pointerup', unlockAudio, { capture: true, passive: true });
 
-ensureSeed()
+async function boot(): Promise<void> {
+  await ensureSeed();
+  // Development only: ?demo fills the database for screenshots (src/db/demo.ts). Vite replaces
+  // import.meta.env.DEV with false in production, so the import and the module disappear.
+  if (import.meta.env.DEV) {
+    const demo = new URLSearchParams(location.search).get('demo');
+    if (demo !== null) await (await import('./db/demo')).seedDemo(demo);
+  }
+}
+
+boot()
   .then(() => {
     void requestPersistentStorage();
     void getSettings().then((settings) => {
