@@ -305,3 +305,11 @@ export async function setTimerPushFailed(endAt: number, failed: boolean): Promis
     }
   });
 }
+
+/** SPEC §5.4: history can turn a set into a warmup (excluded from stats) and back. */
+export async function toggleWarmup(setId: string): Promise<void> {
+  await db.transaction('rw', db.setLogs, async () => {
+    const set = await db.setLogs.get(setId);
+    if (set) await db.setLogs.update(setId, { isWarmup: !set.isWarmup });
+  });
+}

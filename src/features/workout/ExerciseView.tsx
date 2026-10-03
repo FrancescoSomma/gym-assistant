@@ -6,8 +6,8 @@ import type { WorkoutItem } from '../../db/sessions';
 import { addSet, completeSet } from '../../db/workout';
 import { formatSets, formatTarget, relativeDay } from '../../domain/format';
 import { computeRecords, isRecordSet } from '../../domain/records';
-import { firstPending, weightStep } from '../../domain/workout';
-import type { SetLog, Settings } from '../../types';
+import { firstPending, setLabel, weightStep } from '../../domain/workout';
+import type { Settings } from '../../types';
 import { syncRestPush } from './restPush';
 import { SetEditor, SetRow } from './SetRows';
 
@@ -30,8 +30,6 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = sets.find((s) => s.id === selectedId) ?? firstPending(sets);
-  const workIds = sets.filter((s) => !s.isWarmup).map((s) => s.id);
-  const label = (s: SetLog) => (s.isWarmup ? 'R' : String(workIds.indexOf(s.id) + 1));
 
   const confirm = async (setId: string) => {
     const { exerciseDone, timer } = await completeSet(setId);
@@ -87,7 +85,7 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
             {set.id === selected?.id ? (
               <SetEditor
                 set={set}
-                label={label(set)}
+                label={setLabel(sets, set)}
                 se={se}
                 exercise={exercise}
                 step={weightStep(exercise, settings.weightSteps)}
@@ -97,7 +95,7 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
             ) : (
               <SetRow
                 set={set}
-                label={label(set)}
+                label={setLabel(sets, set)}
                 tracking={tracking}
                 record={isRecordSet(set, tracking, before)}
                 onSelect={() => setSelectedId(set.id)}

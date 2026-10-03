@@ -3,6 +3,7 @@ import {
   countLabel,
   formatClock,
   formatMegabytes,
+  formatMonth,
   formatNumber,
   formatSeconds,
   formatSet,
@@ -108,5 +109,11 @@ describe('relativeDay', () => {
   });
   it('formats times of day', () => {
     expect(formatTime(new Date(2026, 8, 10, 18, 5).getTime())).toBe('18:05');
+  });
+});
+
+describe('formatMonth', () => {
+  it('names month and year', () => {
+    expect(formatMonth(new Date(2026, 8, 23).getTime())).toBe('settembre 2026');
   });
 });

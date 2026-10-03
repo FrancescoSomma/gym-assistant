@@ -74,3 +74,12 @@ export function restState(timer: Pick<ActiveTimer, 'endAt' | 'durationMs'>, now:
 
 export const isStale = (startedAt: number, now: number): boolean =>
   now - startedAt > STALE_SESSION_MS;
+
+/** "R" for warmups, 1-based position among work sets otherwise. */
+export function setLabel(
+  sets: Pick<SetLog, 'id' | 'isWarmup'>[],
+  set: Pick<SetLog, 'id' | 'isWarmup'>,
+): string {
+  if (set.isWarmup) return 'R';
+  return String(sets.filter((s) => !s.isWarmup).findIndex((s) => s.id === set.id) + 1);
+}

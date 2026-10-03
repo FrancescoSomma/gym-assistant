@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ClipboardList, Dumbbell } from 'lucide-react';
+import { ClipboardList, Dumbbell, History as HistoryIcon } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { getActiveSession } from './db/sessions';
@@ -9,6 +9,7 @@ import { StaleSessionSheet } from './features/workout/StaleSessionSheet';
 const TABS = [
   { to: '/', label: 'Oggi', Icon: Dumbbell },
   { to: '/programs', label: 'Programmi', Icon: ClipboardList },
+  { to: '/history', label: 'Storico', Icon: HistoryIcon },
 ];
 
 export function AppLayout() {

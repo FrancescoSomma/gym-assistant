@@ -7,6 +7,7 @@ import {
   propagateWeight,
   restState,
   resumeIndex,
+  setLabel,
   warmupIndex,
   weightStep,
 } from './workout';
@@ -110,5 +111,16 @@ describe('weightStep and isStale', () => {
   it('flags sessions started more than 6 hours ago', () => {
     expect(isStale(0, 6 * 3_600_000)).toBe(false);
     expect(isStale(0, 6 * 3_600_000 + 1)).toBe(true);
+  });
+});
+
+describe('setLabel', () => {
+  it('numbers work sets and marks warmups with R', () => {
+    const sets = [
+      { id: 'w', isWarmup: true },
+      { id: 'a', isWarmup: false },
+      { id: 'b', isWarmup: false },
+    ];
+    expect(sets.map((s) => setLabel(sets, s))).toEqual(['R', '1', '2']);
   });
 });

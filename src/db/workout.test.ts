@@ -22,6 +22,7 @@ import {
   setTimerPushFailed,
   skipExercise,
   startTimer,
+  toggleWarmup,
   updateSet,
 } from './workout';
 
@@ -354,5 +355,28 @@ describe('setTimerPushFailed', () => {
     expect((await getSettings()).activeTimer?.pushFailed).toBe(true);
     await setTimerPushFailed(second?.endAt ?? 0, false);
     expect((await getSettings()).activeTimer?.pushFailed).toBe(false);
+  });
+});
+
+describe('history edits', () => {
+  it('turns a work set into a warmup and back', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    await toggleWarmup(bench.sets[0].id);
+    expect((await db.setLogs.get(bench.sets[0].id))?.isWarmup).toBe(true);
+    await toggleWarmup(bench.sets[0].id);
+    expect((await db.setLogs.get(bench.sets[0].id))?.isWarmup).toBe(false);
+  });
+
+  it('deleting an old session keeps the running timer', async () => {
+    const oldSession = await setup();
+    await finishSession(oldSession);
+    const day = (await db.sessions.get(oldSession))?.dayId ?? '';
+    const current = await startSession(day);
+    const [bench] = await items(current);
+    await updateSet(bench.sets[0].id, { weightKg: 80, reps: 10 });
+    const { timer } = await completeSet(bench.sets[0].id);
+    await discardSession(oldSession);
+    expect((await getSettings()).activeTimer).toEqual(timer);
   });
 });

@@ -95,3 +95,6 @@ const startOfDay = (ts: number) => new Date(ts).setHours(0, 0, 0, 0);
 export function relativeDay(ts: number, now = Date.now()): string {
   return relative.format(-Math.round((startOfDay(now) - startOfDay(ts)) / DAY_MS), 'day');
 }
+
+const monthYear = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' });
+export const formatMonth = (ts: number): string => monthYear.format(ts);

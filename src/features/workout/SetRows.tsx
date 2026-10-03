@@ -82,10 +82,20 @@ interface EditorProps {
   step: number;
   onConfirm: () => void;
   onClose: () => void;
+  onToggleWarmup?: () => void;
 }
 
 /** Expanded row with 56pt steppers: the current set, or a completed one being corrected. */
-export function SetEditor({ set, label, se, exercise, step, onConfirm, onClose }: EditorProps) {
+export function SetEditor({
+  set,
+  label,
+  se,
+  exercise,
+  step,
+  onConfirm,
+  onClose,
+  onToggleWarmup,
+}: EditorProps) {
   const tracking = exercise.trackingType;
   const done = set.completedAt !== undefined;
   const save = (patch: SetValues) => void updateSet(set.id, patch);
@@ -151,6 +161,17 @@ export function SetEditor({ set, label, se, exercise, step, onConfirm, onClose }
           />
         )}
       </div>
+      {onToggleWarmup && (
+        <label className="mt-2 flex min-h-11 items-center gap-3">
+          <span className="flex-1">Serie di riscaldamento</span>
+          <input
+            type="checkbox"
+            className="switch"
+            checked={set.isWarmup}
+            onChange={onToggleWarmup}
+          />
+        </label>
+      )}
       <div className="mt-3">
         {done ? (
           <button type="button" className="btn-secondary" onClick={onClose}>
