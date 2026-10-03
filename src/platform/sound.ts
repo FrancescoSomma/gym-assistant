@@ -1,6 +1,6 @@
 let context: AudioContext | null = null;
 
-/** iOS plays Web Audio only after a user gesture: called on every pointerdown (cheap). */
+/** iOS plays Web Audio only after a user gesture (touch end): called on every pointerup (cheap). */
 export function unlockAudio(): void {
   context ??= new AudioContext();
   if (context.state !== 'running') void context.resume();

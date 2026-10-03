@@ -9,7 +9,7 @@ import './styles/index.css';
 
 const root = createRoot(document.getElementById('root') as HTMLElement);
 
-document.addEventListener('pointerdown', unlockAudio, { capture: true, passive: true });
+document.addEventListener('pointerup', unlockAudio, { capture: true, passive: true });
 
 ensureSeed()
   .then(() => {
