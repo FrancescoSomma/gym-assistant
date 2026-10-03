@@ -3,7 +3,7 @@ import { MoreHorizontal, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { exerciseHistory, updateExercise } from '../../db/exercises';
 import type { WorkoutItem } from '../../db/sessions';
-import { addSet, applyWeight, completeSet } from '../../db/workout';
+import { addSet, applyWeight, type CompleteResult, completeSet } from '../../db/workout';
 import { formatNumber, formatSets, formatTarget, relativeDay } from '../../domain/format';
 import { computeRecords, isRecordSet } from '../../domain/records';
 import { firstPending, setLabel, suggestWeight, weightStep } from '../../domain/workout';
@@ -14,12 +14,14 @@ import { SetEditor, SetRow } from './SetRows';
 interface Props {
   item: WorkoutItem;
   settings: Settings;
-  /** Called after the last set of the exercise is confirmed. */
-  onExerciseDone: () => void;
+  /** Called after a set is confirmed, with the outcome (where to go next). */
+  onSetCompleted: (result: CompleteResult) => void;
+  /** Names of the other members when the exercise is in a superset. */
+  supersetWith?: string[];
   onMenu?: () => void;
 }
 
-export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) {
+export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onMenu }: Props) {
   const { se, exercise, sets, dayNote } = item;
   const tracking = exercise.trackingType;
   const history = useLiveQuery(() => exerciseHistory(exercise.id), [exercise.id]) ?? [];
@@ -40,10 +42,10 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
   const selected = sets.find((s) => s.id === selectedId) ?? firstPending(sets);
 
   const confirm = async (setId: string) => {
-    const { exerciseDone, timer } = await completeSet(setId);
-    void syncRestPush(timer);
+    const result = await completeSet(setId);
+    void syncRestPush(result.timer);
     setSelectedId(null);
-    if (exerciseDone) onExerciseDone();
+    onSetCompleted(result);
   };
 
   return (
@@ -65,6 +67,9 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
         <p className="text-small text-steel">
           {formatTarget({ ...se, sets: se.plannedSets }, tracking)}
         </p>
+        {supersetWith && supersetWith.length > 0 && (
+          <p className="text-small text-steel">In superserie con {supersetWith.join(' e ')}</p>
+        )}
         {se.status === 'skipped' && (
           <p className="text-small text-steel">Saltato: completa una serie per riprenderlo.</p>
         )}

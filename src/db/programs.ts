@@ -1,4 +1,5 @@
 import { DEFAULT_TARGET, moveInList, nextDayLabel } from '../domain/program';
+import { toggleSupersetLink } from '../domain/superset';
 import type { Day, DayExercise, Exercise, Program } from '../types';
 import { db, uid } from './db';
 import { getSettings, setSetting } from './settings';
@@ -207,6 +208,21 @@ export async function moveDayExercise(id: string, dir: -1 | 1): Promise<void> {
     const changes = moveInList(siblings, id, dir);
     await db.dayExercises.bulkUpdate(
       changes.map(({ id: key, order }) => ({ key, changes: { order } })),
+    );
+  });
+}
+
+/** Links (or unlinks) the day exercise at `index` with the next one. */
+export async function toggleDayExerciseLink(dayId: string, index: number): Promise<void> {
+  await db.transaction('rw', db.dayExercises, async () => {
+    const items = await db.dayExercises.where('dayId').equals(dayId).sortBy('order');
+    const keys = toggleSupersetLink(
+      items.map((de) => de.supersetKey),
+      index,
+      uid,
+    );
+    await db.dayExercises.bulkUpdate(
+      items.map((de, i) => ({ key: de.id, changes: { supersetKey: keys[i] } })),
     );
   });
 }

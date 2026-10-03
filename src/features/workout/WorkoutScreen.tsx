@@ -12,6 +12,7 @@ import {
   skipExercise,
 } from '../../db/workout';
 import { formatClock } from '../../domain/format';
+import { supersetRun } from '../../domain/superset';
 import { resumeIndex } from '../../domain/workout';
 import { useWakeLock } from '../../platform/wakeLock';
 import { ExercisePicker } from '../library/ExercisePicker';
@@ -46,6 +47,14 @@ export function WorkoutScreen() {
   );
   const item = items[current];
   const isLast = current >= items.length - 1;
+  const partners = item
+    ? supersetRun(
+        items.map((i) => i.se.supersetKey),
+        current,
+      )
+        .filter((i) => i !== current)
+        .map((i) => items[i]?.exercise.name ?? '')
+    : [];
   const goTo = (i: number) => {
     setIndex(i);
     window.scrollTo(0, 0);
@@ -84,8 +93,11 @@ export function WorkoutScreen() {
               item={item}
               settings={settings}
               onMenu={() => setSheet('menu')}
-              onExerciseDone={() => {
-                if (!isLast) goTo(current + 1);
+              supersetWith={partners}
+              onSetCompleted={({ exerciseDone, next }) => {
+                const target = next ? items.findIndex((i) => i.se.id === next) : -1;
+                if (target !== -1) goTo(target);
+                else if (exerciseDone && !isLast) goTo(current + 1);
               }}
             />
             {isLast && (

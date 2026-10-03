@@ -10,15 +10,32 @@ import {
   updateDayExercise,
 } from '../../db/programs';
 
-export function DayExerciseSheet({ item, onClose }: { item: DayItem | null; onClose: () => void }) {
+interface LinkProps {
+  /** Name of the next exercise of the day, when there is one. */
+  nextName?: string;
+  linked: boolean;
+  onToggleLink: () => void;
+}
+
+export function DayExerciseSheet({
+  item,
+  onClose,
+  ...link
+}: { item: DayItem | null; onClose: () => void } & LinkProps) {
   return (
     <Sheet open={item !== null} onClose={onClose} title={item?.exercise.name ?? ''}>
-      {item && <Fields item={item} onClose={onClose} />}
+      {item && <Fields item={item} onClose={onClose} {...link} />}
     </Sheet>
   );
 }
 
-function Fields({ item: { de, exercise }, onClose }: { item: DayItem; onClose: () => void }) {
+function Fields({
+  item: { de, exercise },
+  onClose,
+  nextName,
+  linked,
+  onToggleLink,
+}: { item: DayItem; onClose: () => void } & LinkProps) {
   const update = (patch: DayExercisePatch) => void updateDayExercise(de.id, patch);
   const remove = async () => {
     await removeDayExercise(de.id);
@@ -89,6 +106,12 @@ function Fields({ item: { de, exercise }, onClose }: { item: DayItem; onClose: (
           onChange={(e) => update({ notes: e.target.value })}
         />
       </label>
+      {nextName && (
+        <label className="flex min-h-11 items-center gap-3">
+          <span className="flex-1">In superserie con {nextName}</span>
+          <input type="checkbox" className="switch" checked={linked} onChange={onToggleLink} />
+        </label>
+      )}
       <button type="button" className="btn-primary" onClick={onClose}>
         Fatto
       </button>

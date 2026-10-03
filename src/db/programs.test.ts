@@ -12,6 +12,7 @@ import {
   listDayItems,
   listDays,
   moveDay,
+  toggleDayExerciseLink,
 } from './programs';
 import { getSettings, setSetting } from './settings';
 
@@ -98,5 +99,18 @@ describe('programs', () => {
     await deleteDay(day);
     expect(await db.dayExercises.count()).toBe(0);
     expect(await db.sessions.count()).toBe(1);
+  });
+
+  it('links consecutive day exercises into a superset and unlinks them', async () => {
+    const day = await addDay(await createProgram());
+    for (const name of ['A', 'B', 'C']) await addDayExercise(day, await exercise(name));
+    await toggleDayExerciseLink(day, 0);
+    let keys = (await listDayItems(day)).map((i) => i.de.supersetKey);
+    expect(keys[0]).toBeTypeOf('string');
+    expect(keys[1]).toBe(keys[0]);
+    expect(keys[2]).toBeUndefined();
+    await toggleDayExerciseLink(day, 0);
+    keys = (await listDayItems(day)).map((i) => i.de.supersetKey);
+    expect(keys).toEqual([undefined, undefined, undefined]);
   });
 });

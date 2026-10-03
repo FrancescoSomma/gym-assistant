@@ -10,9 +10,11 @@ import {
   getDay,
   listDayItems,
   moveDayExercise,
+  toggleDayExerciseLink,
   updateDay,
 } from '../../db/programs';
 import { formatShortTarget } from '../../domain/format';
+import { supersetRun } from '../../domain/superset';
 import { confirmAction } from '../../platform/confirm';
 import { ExercisePicker } from '../library/ExercisePicker';
 import { DayExerciseSheet } from './DayExerciseSheet';
@@ -29,6 +31,12 @@ export function DayEditor() {
   if (day === undefined || !items) return null;
   if (day === null) return <Navigate to={back} replace />;
   const editing = items.find((item) => item.de.id === editingId) ?? null;
+  const keys = items.map((item) => item.de.supersetKey);
+  const editingIndex = items.findIndex((item) => item.de.id === editingId);
+  const linkedToNext =
+    editingIndex !== -1 &&
+    keys[editingIndex] !== undefined &&
+    keys[editingIndex] === keys[editingIndex + 1];
 
   const remove = async () => {
     if (
@@ -74,7 +82,10 @@ export function DayEditor() {
       )}
       <ul>
         {items.map(({ de, exercise }, i) => (
-          <li key={de.id} className="flex items-center border-b border-steel/25">
+          <li
+            key={de.id}
+            className={`flex items-center border-b border-steel/25 ${supersetRun(keys, i).length > 1 ? 'border-l-2 border-l-steel' : ''}`}
+          >
             <button
               type="button"
               className="flex min-h-16 flex-1 flex-col justify-center py-2 pl-4 text-left"
@@ -83,6 +94,7 @@ export function DayEditor() {
               <span>{exercise.name}</span>
               <span className="text-small text-steel tabular-nums">
                 {formatShortTarget(de, exercise.trackingType)}
+                {supersetRun(keys, i).length > 1 && ', in superserie'}
               </span>
             </button>
             <MoveButtons
@@ -110,7 +122,13 @@ export function DayEditor() {
         onClose={() => setPicking(false)}
         onPick={(exerciseId) => void addDayExercise(day.id, exerciseId)}
       />
-      <DayExerciseSheet item={editing} onClose={() => setEditingId(null)} />
+      <DayExerciseSheet
+        item={editing}
+        onClose={() => setEditingId(null)}
+        nextName={items[editingIndex + 1]?.exercise.name}
+        linked={linkedToNext}
+        onToggleLink={() => void toggleDayExerciseLink(day.id, editingIndex)}
+      />
     </>
   );
 }

@@ -1,5 +1,6 @@
 import type { SetValues } from '../domain/format';
 import { DEFAULT_TARGET } from '../domain/program';
+import { supersetNext, supersetRun } from '../domain/superset';
 import { propagateWeight, warmupIndex } from '../domain/workout';
 import type { ActiveTimer, SessionExercise } from '../types';
 import { db, uid } from './db';
@@ -10,6 +11,8 @@ export interface CompleteResult {
   exerciseDone: boolean;
   /** Absent: timer untouched (warmup, correction). null: timer cleared. Phase 2 mirrors it to push. */
   timer?: ActiveTimer | null;
+  /** Session exercise to show next, set only inside supersets. */
+  next?: string;
 }
 
 /** done = has sets and all are completed; anything else is pending (a skipped one resumes). */
@@ -70,10 +73,12 @@ export async function completeSet(setId: string): Promise<CompleteResult> {
       const exerciseDone = await syncStatus(se.id);
       if (set.isWarmup || set.completedAt !== undefined) return { exerciseDone };
 
+      const flow = await supersetFlow(se);
       const { autoStartTimer } = await getSettings();
-      const timer = autoStartTimer ? await restTimer(se, exercise.name) : null;
+      // Inside a superset the rest starts only at the end of the round (SPEC §7.1).
+      const timer = autoStartTimer && flow.roundEnd ? await restTimer(se, exercise.name) : null;
       await setSetting('activeTimer', timer); // a new confirmation replaces the running timer
-      return { exerciseDone, timer };
+      return { exerciseDone, timer, next: flow.next };
     },
   );
 }
@@ -321,4 +326,32 @@ export async function applyWeight(seId: string, weightKg: number): Promise<void>
     .equals(seId)
     .filter((s) => !s.isWarmup && s.completedAt === undefined)
     .modify({ weightKg });
+}
+
+/** For a work set inside a superset: where to go next and whether the round ended. */
+async function supersetFlow(se: SessionExercise): Promise<{ next?: string; roundEnd: boolean }> {
+  if (!se.supersetKey) return { roundEnd: true };
+  const siblings = await db.sessionExercises
+    .where('sessionId')
+    .equals(se.sessionId)
+    .sortBy('order');
+  const run = supersetRun(
+    siblings.map((s) => s.supersetKey),
+    siblings.findIndex((s) => s.id === se.id),
+  );
+  if (run.length < 2) return { roundEnd: true };
+  const members = run.map((i) => siblings[i]);
+  const sets = await db.setLogs.where('sessionId').equals(se.sessionId).toArray();
+  // A skipped member has no work left: the round must not send the user back to it.
+  const hasWork = members.map(
+    (m) =>
+      m.status !== 'skipped' &&
+      sets.some((s) => s.sessionExerciseId === m.id && !s.isWarmup && s.completedAt === undefined),
+  );
+  const { next, roundEnd } = supersetNext(
+    hasWork,
+    members.findIndex((m) => m.id === se.id),
+  );
+  const after = siblings[(run.at(-1) ?? 0) + 1];
+  return { next: next === null ? after?.id : members[next]?.id, roundEnd };
 }

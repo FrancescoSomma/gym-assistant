@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { firstPending, resumeIndex } from '../domain/workout';
 import { db } from './db';
 import { createExercise } from './exercises';
-import { addDay, addDayExercise, createProgram, updateDayExercise } from './programs';
+import {
+  addDay,
+  addDayExercise,
+  createProgram,
+  toggleDayExerciseLink,
+  updateDayExercise,
+} from './programs';
 import { getWorkout, startSession, type WorkoutItem } from './sessions';
 import { getSettings, setSetting } from './settings';
 import {
@@ -389,5 +395,78 @@ describe('applyWeight', () => {
     await completeSet(bench.sets[0].id);
     await applyWeight(bench.se.id, 82.5);
     expect((await items(sessionId))[0].sets.map((s) => s.weightKg)).toEqual([80, 82.5, 82.5]);
+  });
+});
+
+async function supersetSetup(setsA: number, setsB: number) {
+  const day = await addDay(await createProgram());
+  const make = (name: string) =>
+    createExercise({
+      name,
+      muscleGroup: 'chest',
+      equipment: 'barbell',
+      trackingType: 'weight_reps',
+      notes: '',
+    });
+  const a = await addDayExercise(day, await make('A'));
+  const b = await addDayExercise(day, await make('B'));
+  await addDayExercise(day, await make('C'));
+  await updateDayExercise(a, { sets: setsA });
+  await updateDayExercise(b, { sets: setsB });
+  await toggleDayExerciseLink(day, 0);
+  const sessionId = await startSession(day);
+  for (const item of await items(sessionId)) {
+    for (const s of item.sets) await db.setLogs.update(s.id, { weightKg: 50, reps: 10 });
+  }
+  return sessionId;
+}
+
+/** Completes the first pending set of the exercise called `name`. */
+async function nextSetOf(sessionId: string, name: string) {
+  const item = (await items(sessionId)).find((i) => i.exercise.name === name);
+  return completeSet(item?.sets.find((s) => s.completedAt === undefined)?.id ?? '');
+}
+
+describe('supersets', () => {
+  it('alternates members and starts the rest only at the end of a round', async () => {
+    const sessionId = await supersetSetup(2, 2);
+    const [a, b, c] = await items(sessionId);
+    expect(await nextSetOf(sessionId, 'A')).toMatchObject({ next: b.se.id, timer: null });
+    const endOfRound = await nextSetOf(sessionId, 'B');
+    expect(endOfRound.next).toBe(a.se.id);
+    expect(endOfRound.timer).toBeTruthy();
+    await nextSetOf(sessionId, 'A');
+    const last = await nextSetOf(sessionId, 'B');
+    expect(last.next).toBe(c.se.id);
+    expect(last.timer).toBeTruthy();
+  });
+
+  it('uneven superset: the longer member finishes alone and rests after each set', async () => {
+    const sessionId = await supersetSetup(3, 2);
+    const [a, , c] = await items(sessionId);
+    for (const name of ['A', 'B', 'A']) await nextSetOf(sessionId, name);
+    const bDone = await nextSetOf(sessionId, 'B');
+    expect(bDone.next).toBe(a.se.id);
+    const aDone = await nextSetOf(sessionId, 'A');
+    expect(aDone.next).toBe(c.se.id);
+    expect(aDone.timer).toBeTruthy();
+  });
+
+  it('a skipped member has no work left: the round does not come back to it', async () => {
+    const sessionId = await supersetSetup(2, 2);
+    const [a, b] = await items(sessionId);
+    await skipExercise(a.se.id);
+    const result = await nextSetOf(sessionId, 'B');
+    expect(result.next).not.toBe(a.se.id);
+    expect(result.next).toBe(b.se.id);
+  });
+
+  it('leaves exercises outside supersets as before', async () => {
+    const sessionId = await supersetSetup(1, 1);
+    const [, , c] = await items(sessionId);
+    await db.setLogs.update(c.sets[0].id, { weightKg: 50, reps: 10 });
+    const result = await completeSet(c.sets[0].id);
+    expect(result.next).toBeUndefined();
+    expect(result.timer).toBeTruthy();
   });
 });
