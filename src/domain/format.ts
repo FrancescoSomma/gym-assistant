@@ -98,3 +98,6 @@ export function relativeDay(ts: number, now = Date.now()): string {
 
 const monthYear = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' });
 export const formatMonth = (ts: number): string => monthYear.format(ts);
+
+const shortDate = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'short' });
+export const formatShortDate = (ts: number): string => shortDate.format(ts);

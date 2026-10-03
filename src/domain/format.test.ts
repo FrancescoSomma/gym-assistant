@@ -9,6 +9,7 @@ import {
   formatSet,
   formatSets,
   formatSetsReps,
+  formatShortDate,
   formatShortTarget,
   formatTarget,
   formatTime,
@@ -115,5 +116,11 @@ describe('relativeDay', () => {
 describe('formatMonth', () => {
   it('names month and year', () => {
     expect(formatMonth(new Date(2026, 8, 23).getTime())).toBe('settembre 2026');
+  });
+});
+
+describe('formatShortDate', () => {
+  it('uses day and short month', () => {
+    expect(formatShortDate(new Date(2026, 8, 23).getTime())).toBe('23 set');
   });
 });

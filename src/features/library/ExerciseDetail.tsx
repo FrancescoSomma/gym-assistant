@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArchiveRestore, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Header } from '../../components/Header';
 import {
@@ -17,6 +17,8 @@ import { confirmAction } from '../../platform/confirm';
 import { EQUIPMENT, MUSCLE_GROUPS, TRACKING_TYPES } from '../../types';
 import { ExerciseForm } from './ExerciseForm';
 
+const ExerciseCharts = lazy(() => import('./ExerciseCharts')); // Recharts stays out of the main bundle
+
 const LIBRARY = '/programs?tab=exercises';
 
 export function ExerciseDetail() {
@@ -24,7 +26,7 @@ export function ExerciseDetail() {
   const navigate = useNavigate();
   const exercise = useLiveQuery(async () => (await getExercise(exerciseId)) ?? null, [exerciseId]);
   const inUse = useLiveQuery(() => isExerciseInUse(exerciseId), [exerciseId]);
-  const history = useLiveQuery(() => exerciseHistory(exerciseId, 5), [exerciseId]);
+  const history = useLiveQuery(() => exerciseHistory(exerciseId), [exerciseId]);
   const settings = useLiveQuery(getSettings);
   const [editing, setEditing] = useState(false);
 
@@ -91,6 +93,12 @@ export function ExerciseDetail() {
         />
       </label>
 
+      {history.length > 0 && (
+        <Suspense fallback={null}>
+          <ExerciseCharts history={history} tracking={trackingType} />
+        </Suspense>
+      )}
+
       <h2 className="section-title">Ultime sessioni</h2>
       {history.length === 0 ? (
         <p className="px-4 text-steel">
@@ -98,7 +106,7 @@ export function ExerciseDetail() {
         </p>
       ) : (
         <ul>
-          {history.map((h) => (
+          {history.slice(0, 5).map((h) => (
             <li key={h.sessionId} className="row">
               <span className="w-28 shrink-0 text-small text-steel">
                 {relativeDay(h.startedAt)}
