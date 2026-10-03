@@ -19,13 +19,13 @@ import { lastWeekStarts, monthCells, toDateKey, weeklyCounts } from '../../domai
 import { countLabel, formatMonth, formatShortDate, formatShortDateYear } from '../../domain/format';
 
 const WEEKDAYS = [
-  ['lun', 'L', 'lunedì'],
-  ['mar', 'M', 'martedì'],
-  ['mer', 'M', 'mercoledì'],
-  ['gio', 'G', 'giovedì'],
-  ['ven', 'V', 'venerdì'],
-  ['sab', 'S', 'sabato'],
-  ['dom', 'D', 'domenica'],
+  ['lun', 'L'],
+  ['mar', 'M'],
+  ['mer', 'M'],
+  ['gio', 'G'],
+  ['ven', 'V'],
+  ['sab', 'S'],
+  ['dom', 'D'],
 ] as const;
 
 export default function ConsistencyView() {
@@ -113,7 +113,7 @@ export default function ConsistencyView() {
             'allenamento',
             'allenamenti',
           )}{' '}
-          in questo mese. I giorni pieni sono quelli in cui ti sei allenato.
+          nel mese. I giorni pieni sono quelli in cui ti sei allenato.
         </p>
       </section>
 
@@ -139,7 +139,8 @@ export default function ConsistencyView() {
               <YAxis
                 width={24}
                 allowDecimals={false}
-                domain={[0, Math.max(goal, ...weeks.map((w) => w.count))]}
+                // One unit of headroom keeps the goal label above the line inside the chart.
+                domain={[0, Math.max(goal, ...weeks.map((w) => w.count)) + 1]}
                 {...AXIS}
               />
               <ReferenceLine
@@ -148,7 +149,7 @@ export default function ConsistencyView() {
                 strokeOpacity={0.6}
                 label={{
                   value: `Obiettivo ${goal}`,
-                  position: 'insideTopRight',
+                  position: 'insideBottomRight', // above the line: the current week's bar ends at it
                   fill: CHART.steel,
                   fontSize: 13,
                 }}
