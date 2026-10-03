@@ -6,7 +6,13 @@ import { Header } from '../../components/Header';
 import { getWorkout } from '../../db/sessions';
 import { getSettings } from '../../db/settings';
 import { discardSession, setSessionNotes, toggleWarmup } from '../../db/workout';
-import { countLabel, formatClock, formatDate, formatNumber, formatTime } from '../../domain/format';
+import {
+  countLabel,
+  formatClock,
+  formatDateYear,
+  formatNumber,
+  formatTime,
+} from '../../domain/format';
 import { summarize } from '../../domain/stats';
 import { setLabel, weightStep } from '../../domain/workout';
 import { confirmAction } from '../../platform/confirm';
@@ -43,7 +49,7 @@ export function SessionDetail() {
     <>
       <Header title={`Giornata ${session.dayLabel}`} back="/history" />
       <p className="px-4 text-small text-steel first-letter:uppercase">
-        {formatDate(session.startedAt)}, alle {formatTime(session.startedAt)}
+        {formatDateYear(session.startedAt)}, alle {formatTime(session.startedAt)}
       </p>
       <p className="px-4 text-small text-steel tabular-nums">
         Durata {formatClock((session.endedAt ?? session.startedAt) - session.startedAt)},{' '}

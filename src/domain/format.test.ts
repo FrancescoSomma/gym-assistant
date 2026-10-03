@@ -3,6 +3,7 @@ import {
   countLabel,
   formatChange,
   formatClock,
+  formatDateYear,
   formatMegabytes,
   formatMonth,
   formatNumber,
@@ -11,6 +12,7 @@ import {
   formatSets,
   formatSetsReps,
   formatShortDate,
+  formatShortDateYear,
   formatShortTarget,
   formatTarget,
   formatTime,
@@ -123,6 +125,18 @@ describe('formatMonth', () => {
 describe('formatShortDate', () => {
   it('uses day and short month', () => {
     expect(formatShortDate(new Date(2026, 8, 23).getTime())).toBe('23 set');
+  });
+});
+
+describe('dates with the year', () => {
+  const now = new Date(2026, 0, 2).getTime();
+  it('adds the year only outside the current one', () => {
+    expect(formatShortDateYear(new Date(2026, 0, 1).getTime(), now)).toBe('1 gen');
+    expect(formatShortDateYear(new Date(2025, 11, 31).getTime(), now)).toBe('31 dic 2025');
+    expect(formatDateYear(new Date(2026, 0, 1).getTime(), now)).toBe('giovedì 1 gennaio');
+    expect(formatDateYear(new Date(2025, 11, 31).getTime(), now)).toBe(
+      'mercoledì 31 dicembre 2025',
+    );
   });
 });
 

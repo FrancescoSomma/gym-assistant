@@ -102,6 +102,28 @@ export const formatMonth = (ts: number): string => monthYear.format(ts);
 const shortDate = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'short' });
 export const formatShortDate = (ts: number): string => shortDate.format(ts);
 
+const shortDateYear = new Intl.DateTimeFormat('it-IT', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+const longDateYear = new Intl.DateTimeFormat('it-IT', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+const sameYear = (ts: number, now: number) =>
+  new Date(ts).getFullYear() === new Date(now).getFullYear();
+
+/** "23 set" this year, "23 set 2025" before: a row naming one session is never ambiguous. */
+export const formatShortDateYear = (ts: number, now = Date.now()): string =>
+  (sameYear(ts, now) ? shortDate : shortDateYear).format(ts);
+
+/** formatDate, plus the year when it is not the current one. */
+export const formatDateYear = (ts: number, now = Date.now()): string =>
+  (sameYear(ts, now) ? longDate : longDateYear).format(ts);
+
 const percentChange = new Intl.NumberFormat('it-IT', {
   style: 'percent',
   signDisplay: 'exceptZero',
