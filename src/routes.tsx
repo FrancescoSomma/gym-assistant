@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { AppLayout } from './App';
+import { ExerciseDetail } from './features/library/ExerciseDetail';
 import { ProgramsScreen } from './features/programs/ProgramsScreen';
 import { TodayScreen } from './features/today/TodayScreen';
 
@@ -9,6 +10,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: TodayScreen },
       { path: 'programs', Component: ProgramsScreen },
+      { path: 'exercises/:exerciseId', Component: ExerciseDetail },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },
