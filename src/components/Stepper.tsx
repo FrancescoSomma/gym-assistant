@@ -1,5 +1,5 @@
 import { Minus, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { type PointerEvent, useEffect, useRef, useState } from 'react';
 import { formatNumber, parseInteger, parseWeight } from '../domain/format';
 
 interface Props {
@@ -18,6 +18,12 @@ interface Props {
   placeholder?: string;
   /** lg: 56pt targets for workout mode. */
   size?: 'md' | 'lg';
+  /**
+   * Save every valid keystroke, not only on blur (workout mode: a forced close keeps what was
+   * typed, and "Conferma serie" enables while the keyboard is still open). Not for fields that
+   * adjust each other, like minimum and maximum reps.
+   */
+  live?: boolean;
 }
 
 export function Stepper({
@@ -32,18 +38,35 @@ export function Stepper({
   unit,
   placeholder,
   size = 'md',
+  live = false,
 }: Props) {
   const [draft, setDraft] = useState<string | null>(null);
   const clamp = (n: number) => Math.min(max, Math.max(min, Math.round(n * 100) / 100));
-  const bump = (delta: number) => onChange(value === undefined ? fallback : clamp(value + delta));
+  /** Typed text as a number: undefined when empty, null when it is not a number. */
+  const parse = (text: string) =>
+    text.trim() === '' ? undefined : ((decimal ? parseWeight(text) : parseInteger(text)) ?? null);
+  const write = (text: string) => {
+    const n = parse(text);
+    if (n !== null) onChange(n === undefined ? undefined : clamp(n));
+  };
   const commit = () => {
     if (draft === null) return;
-    const text = draft.trim();
-    const parsed = decimal ? parseWeight(text) : parseInteger(text);
-    if (text === '') onChange(undefined);
-    else if (parsed !== undefined) onChange(clamp(parsed));
+    write(draft);
     setDraft(null); // invalid text: back to the stored value
   };
+  // While typing, ± starts from the typed number: the stored one may not have caught up yet.
+  const bump = (delta: number) => {
+    const typed = draft === null ? value : parse(draft);
+    const base = typed === null ? value : typed;
+    setDraft(null);
+    onChange(base === undefined ? fallback : clamp(base + delta));
+  };
+  // Closing a sheet or the set editor removes the field without a blur: keep what was typed.
+  const commitOnUnmount = useRef(commit);
+  commitOnUnmount.current = commit;
+  useEffect(() => () => commitOnUnmount.current(), []);
+  // ± must not take the focus: the blur would save the draft after bump read the old value.
+  const keepFocus = (e: PointerEvent) => e.preventDefault();
 
   const height = size === 'lg' ? 'h-14' : 'h-11';
   const button = `flex ${height} w-14 shrink-0 items-center justify-center rounded-control bg-steel/15 active:opacity-60 disabled:opacity-30`;
@@ -55,6 +78,7 @@ export function Stepper({
         aria-label={`Diminuisci ${label.toLowerCase()}`}
         className={button}
         disabled={value !== undefined && value <= min}
+        onPointerDown={keepFocus}
         onClick={() => bump(-step)}
       >
         <Minus />
@@ -72,7 +96,10 @@ export function Stepper({
               setDraft(e.currentTarget.value);
               e.currentTarget.select();
             }}
-            onChange={(e) => setDraft(e.currentTarget.value)}
+            onChange={(e) => {
+              setDraft(e.currentTarget.value);
+              if (live) write(e.currentTarget.value);
+            }}
             onBlur={commit}
             onKeyDown={(e) => {
               if (e.key === 'Enter') e.currentTarget.blur();
@@ -86,6 +113,7 @@ export function Stepper({
         aria-label={`Aumenta ${label.toLowerCase()}`}
         className={button}
         disabled={value !== undefined && value >= max}
+        onPointerDown={keepFocus}
         onClick={() => bump(step)}
       >
         <Plus />

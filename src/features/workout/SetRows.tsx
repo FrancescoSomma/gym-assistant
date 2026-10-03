@@ -115,6 +115,7 @@ export function SetEditor({ set, label, se, exercise, step, onConfirm, onClose }
         {tracking !== 'duration' && (
           <Stepper
             size="lg"
+            live
             label={tracking === 'bodyweight_reps' ? 'Zavorra' : 'Peso'}
             decimal
             unit="kg"
@@ -127,6 +128,7 @@ export function SetEditor({ set, label, se, exercise, step, onConfirm, onClose }
         {tracking === 'duration' ? (
           <Stepper
             size="lg"
+            live
             label="Durata"
             unit="s"
             step={5}
@@ -138,6 +140,7 @@ export function SetEditor({ set, label, se, exercise, step, onConfirm, onClose }
         ) : (
           <Stepper
             size="lg"
+            live
             label="Ripetizioni"
             unit="rip"
             step={1}

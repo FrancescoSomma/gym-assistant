@@ -22,6 +22,8 @@ export function RestPicker({
             className="chip"
             aria-pressed={!custom && value === sec}
             onClick={() => {
+              // Save a half-typed custom value now, so the preset is the last write and wins.
+              if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
               setCustom(false);
               onChange(sec);
             }}
