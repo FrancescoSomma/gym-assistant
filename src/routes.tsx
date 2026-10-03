@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { AppLayout } from './App';
 import { ExerciseDetail } from './features/library/ExerciseDetail';
+import { ProgramEditor } from './features/programs/ProgramEditor';
 import { ProgramsScreen } from './features/programs/ProgramsScreen';
 import { TodayScreen } from './features/today/TodayScreen';
 
@@ -10,6 +11,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: TodayScreen },
       { path: 'programs', Component: ProgramsScreen },
+      { path: 'programs/:programId', Component: ProgramEditor },
       { path: 'exercises/:exerciseId', Component: ExerciseDetail },
     ],
   },
