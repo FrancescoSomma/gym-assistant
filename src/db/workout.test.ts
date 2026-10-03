@@ -441,6 +441,16 @@ describe('supersets', () => {
     expect(last.timer).toBeTruthy();
   });
 
+  it('rests the longest time among the members at the end of a round', async () => {
+    const sessionId = await supersetSetup(2, 2);
+    const [a, b] = await items(sessionId);
+    await db.sessionExercises.update(a.se.id, { restSec: 180 });
+    await db.sessionExercises.update(b.se.id, { restSec: 60 });
+    await nextSetOf(sessionId, 'A');
+    const { timer } = await nextSetOf(sessionId, 'B');
+    expect(timer).toMatchObject({ durationMs: 180_000, label: 'B, serie 1 di 2' });
+  });
+
   it('after A1 a reopened workout resumes on B, where the round was going', async () => {
     const sessionId = await supersetSetup(2, 2);
     await nextSetOf(sessionId, 'A');

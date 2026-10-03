@@ -23,12 +23,16 @@ async function syncStatus(seId: string): Promise<boolean> {
   return done;
 }
 
-async function restTimer(se: SessionExercise, exerciseName: string): Promise<ActiveTimer> {
+async function restTimer(
+  se: SessionExercise,
+  exerciseName: string,
+  restSec = se.restSec,
+): Promise<ActiveTimer> {
   const work = (await db.setLogs.where('sessionExerciseId').equals(se.id).toArray()).filter(
     (s) => !s.isWarmup,
   );
   const done = work.filter((s) => s.completedAt !== undefined).length;
-  const durationMs = se.restSec * 1000;
+  const durationMs = restSec * 1000;
   return {
     sessionExerciseId: se.id,
     endAt: Date.now() + durationMs,
@@ -76,7 +80,8 @@ export async function completeSet(setId: string): Promise<CompleteResult> {
       const flow = await supersetFlow(se);
       const { autoStartTimer } = await getSettings();
       // Inside a superset the rest starts only at the end of the round (SPEC §7.1).
-      const timer = autoStartTimer && flow.roundEnd ? await restTimer(se, exercise.name) : null;
+      const timer =
+        autoStartTimer && flow.roundEnd ? await restTimer(se, exercise.name, flow.restSec) : null;
       await setSetting('activeTimer', timer); // a new confirmation replaces the running timer
       return { exerciseDone, timer, next: flow.next };
     },
@@ -328,8 +333,13 @@ export async function applyWeight(seId: string, weightKg: number): Promise<void>
     .modify({ weightKg });
 }
 
-/** For a work set inside a superset: where to go next and whether the round ended. */
-async function supersetFlow(se: SessionExercise): Promise<{ next?: string; roundEnd: boolean }> {
+/**
+ * For a work set inside a superset: where to go next, whether the round ended and the rest after
+ * it, the longest among the members (undefined outside supersets: the exercise's own).
+ */
+async function supersetFlow(
+  se: SessionExercise,
+): Promise<{ next?: string; roundEnd: boolean; restSec?: number }> {
   if (!se.supersetKey) return { roundEnd: true };
   const siblings = await db.sessionExercises
     .where('sessionId')
@@ -350,5 +360,9 @@ async function supersetFlow(se: SessionExercise): Promise<{ next?: string; round
     members.findIndex((m) => m.id === se.id),
   );
   const after = siblings[(run.at(-1) ?? 0) + 1];
-  return { next: next === null ? after?.id : members[next]?.id, roundEnd };
+  return {
+    next: next === null ? after?.id : members[next]?.id,
+    roundEnd,
+    restSec: Math.max(...members.map((m) => m.restSec)),
+  };
 }
