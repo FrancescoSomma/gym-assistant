@@ -71,6 +71,8 @@ gym-log/
 
 - Asset statici su Cloudflare Workers, con fallback SPA per le richieste di navigazione. Verifica la sintassi attuale della configurazione (es. `not_found_handling`).
 - Dominio stabile fin dal primo deploy (il sottodominio `workers.dev` del Worker `gym-log` va bene): i dati sono legati all'origine.
+  - Produzione: `https://gym-log.fs-personal.workers.dev`. Non cambiarlo, né cambiare il sottodominio `fs-personal`: un'origine nuova parte senza dati.
+  - Anteprima: `https://gym-log-preview.fs-personal.workers.dev` (`bun run deploy:preview`), con dati separati.
 - In Fase 2 le richieste `/api/*` devono arrivare al Worker prima del fallback SPA (es. `run_worker_first`, da verificare). Il service worker deve escludere `/api/` dal `navigateFallback`.
 
 ## 4. Modello dati
@@ -564,22 +566,28 @@ La palette nasce dal codice colore dei dischi olimpici (25 kg rosso, 20 blu, 15 
 
 - [x] Progetto Vite + React + TypeScript strict con Bun; Tailwind v4 con i token di §11.2; Biome; Vitest
 - [x] vite-plugin-pwa (`injectManifest`) con `src/sw.ts`, manifest e icone come in §10
-- [ ] Deploy su Cloudflare Workers con soli asset statici e fallback SPA
-- [ ] Criterio: l'app si installa dalla Home dell'iPhone e si apre in modalità aereo
+- [x] Deploy su Cloudflare Workers con soli asset statici e fallback SPA
+- [x] Criterio: l'app si installa dalla Home dell'iPhone e si apre in modalità aereo
 
 ### Fase 1: MVP da palestra
 
-- [ ] Schema Dexie v1, repository, seed della libreria (§13)
-- [ ] Libreria esercizi: elenco, ricerca, filtri, creazione, modifica, archiviazione
-- [ ] Programmi: creazione, modifica, duplicazione, attivazione, archiviazione; giornate ed esercizi di giornata
-- [ ] Oggi: prossima giornata, avvio, ripresa
-- [ ] Modalità allenamento completa (§6) con Wake Lock
-- [ ] Timer in app (§7.1)
-- [ ] Riepilogo base
-- [ ] Backup: export, import, promemoria; `storage.persist()`
-- [ ] Impostazioni, escluse le notifiche
-- [ ] Test di dominio: precompilazione, rotazione, volume, e1RM, lettura del peso con virgola e punto
-- [ ] Criteri: un allenamento completo in modalità aereo; chiusura forzata a metà e ripresa dalla stessa serie; export, import ed export di nuovo producono dati identici
+- [x] Schema Dexie v1, repository, seed della libreria (§13)
+- [x] Libreria esercizi: elenco, ricerca, filtri, creazione, modifica, archiviazione
+- [x] Programmi: creazione, modifica, duplicazione, attivazione, archiviazione; giornate ed esercizi di giornata
+- [x] Oggi: prossima giornata, avvio, ripresa
+- [x] Modalità allenamento completa (§6) con Wake Lock
+- [x] Timer in app (§7.1)
+- [x] Riepilogo base
+- [x] Backup: export, import, promemoria; `storage.persist()`
+- [x] Impostazioni, escluse le notifiche
+- [x] Test di dominio: precompilazione, rotazione, volume, e1RM, lettura del peso con virgola e punto
+- [x] Criteri: un allenamento completo in modalità aereo; chiusura forzata a metà e ripresa dalla stessa serie; export, import ed export di nuovo producono dati identici
+
+### Bug aperti
+
+- [ ] **Fogli dal basso troppo in basso su iPhone.** Nell'app avviata dalla Home, il foglio dell'esercizio di giornata (Programmi → giornata → tocco su un esercizio) e il menu dell'esercizio in allenamento (⋯) si aprono troppo in basso, quasi fuori dallo schermo. In Chrome sul Mac lo stesso CSS è corretto, quindi il problema è di WebKit su iOS.
+  - Ipotesi da verificare sul telefono: regressione di iOS 26 nelle web app con `viewport-fit=cover` e `black-translucent`, in cui `100dvh` e `100%` valgono l'altezza dello schermo meno l'inset superiore e gli elementi `fixed` si agganciano alla fine del documento quando questo è più corto dello schermo ([WebKit 297779](https://bugs.webkit.org/show_bug.cgi?id=297779)). Correzione proposta in giro: `min-height: 100lvh` su `html` e `body` in `@media (display-mode: standalone)`.
+  - Prima di correggere: controllare versione di iOS, se succede anche con gli altri fogli ("Scegli un'altra giornata", "3 di 6", "Nuovo esercizio") e se la tastiera era aperta. Componente: `src/components/Sheet.tsx`, classe `.sheet` in `src/styles/index.css`.
 
 ### Fase 2: notifiche e storico
 
