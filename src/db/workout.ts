@@ -243,7 +243,8 @@ export async function replaceExercise(
     const sets = await db.setLogs.where('sessionExerciseId').equals(seId).toArray();
     const doneWork = sets.filter((s) => s.completedAt !== undefined && !s.isWarmup).length;
 
-    if (doneWork === 0) {
+    // Any completed set (warmups included) is history: keep it by taking the 'inserted' branch.
+    if (!sets.some((s) => s.completedAt !== undefined)) {
       await db.setLogs.bulkDelete(sets.map((s) => s.id));
       await db.sessionExercises.update(seId, {
         exerciseId,

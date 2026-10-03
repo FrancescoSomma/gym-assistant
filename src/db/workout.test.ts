@@ -245,6 +245,21 @@ describe('skip, remove, add, replace (SPEC §6.5)', () => {
     expect(after.sets.every((s) => s.exerciseId === exerciseId)).toBe(true);
   });
 
+  it('keeps a completed warmup by inserting the substitute instead of replacing in place', async () => {
+    const sessionId = await setup();
+    const [bench] = await items(sessionId);
+    await db.setLogs.update(bench.sets[0].id, {
+      isWarmup: true,
+      weightKg: 40,
+      reps: 10,
+      completedAt: 1,
+    });
+    expect(await replaceExercise(bench.se.id, await dumbbellPress())).toBe('inserted');
+    const list = await items(sessionId);
+    expect(list[0].sets.map((s) => s.id)).toEqual([bench.sets[0].id]);
+    expect(list[1].se.plannedSets).toBe(3);
+  });
+
   it('closes the exercise and inserts the substitute right after it once work sets are done', async () => {
     const sessionId = await setup();
     const bench = await fillBench(sessionId);
