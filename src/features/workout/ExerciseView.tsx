@@ -3,10 +3,10 @@ import { MoreHorizontal, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { exerciseHistory, updateExercise } from '../../db/exercises';
 import type { WorkoutItem } from '../../db/sessions';
-import { addSet, completeSet } from '../../db/workout';
-import { formatSets, formatTarget, relativeDay } from '../../domain/format';
+import { addSet, applyWeight, completeSet } from '../../db/workout';
+import { formatNumber, formatSets, formatTarget, relativeDay } from '../../domain/format';
 import { computeRecords, isRecordSet } from '../../domain/records';
-import { firstPending, setLabel, weightStep } from '../../domain/workout';
+import { firstPending, setLabel, suggestWeight, weightStep } from '../../domain/workout';
 import type { Settings } from '../../types';
 import { syncRestPush } from './restPush';
 import { SetEditor, SetRow } from './SetRows';
@@ -28,6 +28,14 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
     history.map((h) => h.sets),
     tracking,
   );
+  const step = weightStep(exercise, settings.weightSteps);
+  const suggestion =
+    tracking === 'weight_reps'
+      ? suggestWeight(last?.sets, se.plannedSets, se.repMax, step)
+      : undefined;
+  const offerSuggestion =
+    suggestion !== undefined &&
+    sets.some((s) => !s.isWarmup && s.completedAt === undefined && (s.weightKg ?? 0) < suggestion);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = sets.find((s) => s.id === selectedId) ?? firstPending(sets);
 
@@ -73,9 +81,21 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
         </label>
         {dayNote && <p className="text-small text-steel">{dayNote}</p>}
         {last && (
-          <p className="mt-1 text-small text-steel tabular-nums">
-            {relativeDay(last.startedAt)}: {formatSets(last.sets, tracking)}
-          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="text-small text-steel tabular-nums">
+              {relativeDay(last.startedAt)}: {formatSets(last.sets, tracking)}
+            </p>
+            {offerSuggestion && suggestion !== undefined && (
+              <button
+                type="button"
+                className="chip min-h-14"
+                aria-label={`Aumenta a ${formatNumber(suggestion)} kg le serie da fare`}
+                onClick={() => applyWeight(se.id, suggestion)}
+              >
+                Aumenta a {formatNumber(suggestion)} kg
+              </button>
+            )}
+          </div>
         )}
       </section>
 
@@ -88,7 +108,7 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
                 label={setLabel(sets, set)}
                 se={se}
                 exercise={exercise}
-                step={weightStep(exercise, settings.weightSteps)}
+                step={step}
                 onConfirm={() => confirm(set.id)}
                 onClose={() => setSelectedId(null)}
               />

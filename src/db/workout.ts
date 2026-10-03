@@ -313,3 +313,12 @@ export async function toggleWarmup(setId: string): Promise<void> {
     if (set) await db.setLogs.update(setId, { isWarmup: !set.isWarmup });
   });
 }
+
+/** Applies a weight to the planned (not yet completed) work sets of an exercise. */
+export async function applyWeight(seId: string, weightKg: number): Promise<void> {
+  await db.setLogs
+    .where('sessionExerciseId')
+    .equals(seId)
+    .filter((s) => !s.isWarmup && s.completedAt === undefined)
+    .modify({ weightKg });
+}

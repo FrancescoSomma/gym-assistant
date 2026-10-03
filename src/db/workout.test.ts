@@ -8,6 +8,7 @@ import { getSettings, setSetting } from './settings';
 import {
   addSessionExercise,
   addSet,
+  applyWeight,
   clearTimer,
   completeSet,
   countPendingSets,
@@ -378,5 +379,15 @@ describe('history edits', () => {
     const { timer } = await completeSet(bench.sets[0].id);
     await discardSession(oldSession);
     expect((await getSettings()).activeTimer).toEqual(timer);
+  });
+});
+
+describe('applyWeight', () => {
+  it('sets the weight of planned work sets only', async () => {
+    const sessionId = await setup();
+    const bench = await fillBench(sessionId);
+    await completeSet(bench.sets[0].id);
+    await applyWeight(bench.se.id, 82.5);
+    expect((await items(sessionId))[0].sets.map((s) => s.weightKg)).toEqual([80, 82.5, 82.5]);
   });
 });

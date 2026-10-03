@@ -7,6 +7,7 @@ import type {
   TrackingType,
 } from '../types';
 import type { SetValues } from './format';
+import { isWorkSetDone, type LoggedSet } from './stats';
 
 export const STALE_SESSION_MS = 6 * 3_600_000;
 
@@ -82,4 +83,20 @@ export function setLabel(
 ): string {
   if (set.isWarmup) return 'R';
   return String(sets.filter((s) => !s.isWarmup).findIndex((s) => s.id === set.id) + 1);
+}
+
+/**
+ * SPEC §8.6: if every planned work set of last time reached repMax, suggest one increment more
+ * than the heaviest of them. Never applied automatically.
+ */
+export function suggestWeight(
+  last: LoggedSet[] | undefined,
+  plannedSets: number,
+  repMax: number,
+  stepKg: number,
+): number | undefined {
+  const work = (last ?? []).filter(isWorkSetDone).slice(0, plannedSets);
+  if (work.length < plannedSets || !work.every((s) => (s.reps ?? 0) >= repMax)) return undefined;
+  const top = Math.max(...work.map((s) => s.weightKg ?? 0));
+  return top > 0 ? Math.round((top + stepKg) * 100) / 100 : undefined;
 }

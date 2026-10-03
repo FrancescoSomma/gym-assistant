@@ -8,6 +8,7 @@ import {
   restState,
   resumeIndex,
   setLabel,
+  suggestWeight,
   warmupIndex,
   weightStep,
 } from './workout';
@@ -122,5 +123,27 @@ describe('setLabel', () => {
       { id: 'b', isWarmup: false },
     ];
     expect(sets.map((s) => setLabel(sets, s))).toEqual(['R', '1', '2']);
+  });
+});
+
+describe('suggestWeight (SPEC §8.6, double progression)', () => {
+  const done = (weightKg: number, reps: number) => ({
+    weightKg,
+    reps,
+    isWarmup: false,
+    completedAt: 1,
+  });
+  it('adds one increment when every planned work set reached repMax', () => {
+    expect(suggestWeight([done(80, 12), done(80, 12), done(80, 12)], 3, 12, 2.5)).toBe(82.5);
+  });
+  it('does not suggest when a set fell short of repMax', () => {
+    expect(suggestWeight([done(80, 12), done(80, 11), done(80, 12)], 3, 12, 2.5)).toBeUndefined();
+  });
+  it('does not suggest when last time had fewer sets than planned', () => {
+    expect(suggestWeight([done(80, 12), done(80, 12)], 3, 12, 2.5)).toBeUndefined();
+  });
+  it('does not suggest without history or without load', () => {
+    expect(suggestWeight(undefined, 3, 12, 2.5)).toBeUndefined();
+    expect(suggestWeight([done(0, 12)], 1, 12, 2.5)).toBeUndefined();
   });
 });
