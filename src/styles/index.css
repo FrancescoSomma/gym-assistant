@@ -1,35 +1,66 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "Barlow Condensed";
-  src: url("/fonts/barlow-condensed-600.woff2") format("woff2");
-  font-weight: 600;
+  font-family: "Archivo";
+  src: url("/fonts/archivo-roman.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/archivo-italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+
+/* Pedana di gara: docs/superpowers/specs/2026-10-03-redesign-pedana-di-gara.md §5.
+   Variables read from inline styles in TSX (--ease-out in Sheet) are also used below in CSS,
+   so Tailwind emits them. */
 @theme {
   --color-*: initial;
-  --color-rubber: #1f1e1c;
-  --color-iron: #2e2c29;
-  --color-chalk: #edebe6;
-  --color-steel: #9c978e;
-  --color-plate-blue: #2b5dd8;
-  --color-plate-yellow: #f0c419;
-  --color-plate-green: #2fa45a;
+  --color-arena: #0b0c0e;
+  --color-tribuna: #17191d;
+  --color-fondale: #23262b;
+  --color-luce: #f2f1ec;
+  --color-fumo: #8f949b;
+  --color-filetto: rgb(242 241 236 / 0.14);
+  --color-pedana: #b8875a;
+  --color-acciaio: #9aa0a6;
+  --color-plate-blue: #2453d6;
+  --color-plate-yellow: #f6d43a;
+  --color-plate-green: #2ba55b;
   --color-plate-red: #d93a2f;
+  --color-plate-white: #f2f1ec;
+  /* Old names mapped to the new world; the cleanup task removes them. */
+  --color-rubber: #0b0c0e;
+  --color-iron: #17191d;
+  --color-chalk: #f2f1ec;
+  --color-steel: #8f949b;
 
-  --font-sans: system-ui, -apple-system, sans-serif;
-  --font-num: "Barlow Condensed", system-ui, sans-serif;
+  --font-sans: "Archivo", system-ui, -apple-system, sans-serif;
 
   --text-*: initial;
-  --text-timer: 64px;
+  --text-bib: 96px;
+  --text-bib--line-height: 0.9;
+  --text-timer: 72px;
   --text-timer--line-height: 1;
-  --text-value: 32px;
-  --text-value--line-height: 1.1;
-  --text-name: 28px;
-  --text-name--line-height: 1.15;
+  --text-value: 44px;
+  --text-value--line-height: 1;
+  --text-large: 34px;
+  --text-large--line-height: 1.05;
+  --text-score: 32px;
+  --text-score--line-height: 1;
+  --text-step: 28px;
+  --text-step--line-height: 1;
+  --text-name: 26px;
+  --text-name--line-height: 1.1;
   --text-title: 22px;
-  --text-title--line-height: 1.25;
+  --text-title--line-height: 1.2;
   --text-body: 17px;
   --text-body--line-height: 1.4;
   --text-small: 15px;
@@ -38,22 +69,122 @@
   --text-tiny--line-height: 1.3;
 
   --radius-*: initial;
-  --radius-control: 12px;
-  --radius-sheet: 20px;
+  --radius-tag: 2px;
+  --radius-control: 6px;
+  --radius-sheet: 16px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* backwards fill: once over, no transform stays behind to break sticky or fixed children. */
+  --animate-wipe: wipe 240ms var(--ease-out) backwards;
+  --animate-enter-forward: enter-forward 240ms var(--ease-out) backwards;
+  --animate-enter-back: enter-back 240ms var(--ease-out) backwards;
+  --animate-enter-fade: enter-fade 160ms var(--ease-out) backwards;
+  --animate-enter-rise: enter-rise 320ms var(--ease-out) backwards;
+  --animate-light-on: light-on 180ms var(--ease-out) backwards;
 }
 
+/* The broadcast graphic uncovering itself from the left: the world's one native motion. */
+@keyframes wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes enter-forward {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+@keyframes enter-back {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+@keyframes light-on {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Tabellone: every number on screen. */
 @utility num {
-  font-family: var(--font-num);
-  font-weight: 600;
+  font-style: italic;
+  font-stretch: 62%;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
+}
+
+/* Targa: exercise names in workout mode, large titles, sheet titles. */
+@utility plate {
+  font-style: italic;
+  font-stretch: 75%;
+  font-weight: 800;
+}
+
+/* Labels: section titles, column heads, tab bar. Sentence case, never all caps. */
+@utility label-text {
+  font-size: var(--text-tiny);
+  line-height: var(--text-tiny--line-height);
+  font-stretch: 87.5%;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Right edge cut at the italic angle (12°): wood tabs and record tabs only. */
+@utility cut-right {
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  padding-right: calc(var(--spacing) * 2 + 6px);
+}
+
+/* One device pixel on retina screens. */
+@utility rule-t {
+  border-top: 0.5px solid var(--color-filetto);
+}
+@utility rule-b {
+  border-bottom: 0.5px solid var(--color-filetto);
 }
 
 @layer base {
   html,
   body {
     overscroll-behavior: none;
-    background: var(--color-rubber);
-    color: var(--color-chalk);
+    background: var(--color-arena);
+    color: var(--color-luce);
+    color-scheme: dark;
   }
   /* iOS 26 home-screen apps with viewport-fit=cover and black-translucent resolve 100% and 100dvh
      one status bar short of the screen (WebKit bug 301108). On a document shorter than the screen
@@ -65,11 +196,24 @@
     }
   }
   body {
+    --surface: var(--color-arena);
+    --sticky-top: env(safe-area-inset-top);
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
+    font-synthesis: none;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
+  }
+  ::selection {
+    background: var(--color-pedana);
+    color: var(--color-arena);
+  }
+  input,
+  textarea,
+  select {
+    caret-color: var(--color-luce);
+    accent-color: var(--color-plate-blue);
   }
   a,
   button,
@@ -94,8 +238,11 @@
     font-size: max(16px, 1em);
   }
   :focus-visible {
-    outline: 2px solid var(--color-chalk);
+    outline: 2px solid var(--color-luce);
     outline-offset: 2px;
+  }
+  .lucide {
+    stroke-width: 1.75;
   }
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -104,62 +251,94 @@
       /* biome-ignore lint/complexity/noImportantStyles: must override utility and inline animation durations */
       transition-duration: 0s !important;
       /* biome-ignore lint/complexity/noImportantStyles: must override utility and inline animation durations */
+      transition-delay: 0s !important;
+      /* biome-ignore lint/complexity/noImportantStyles: must override utility and inline animation durations */
       animation-duration: 0s !important;
+      /* biome-ignore lint/complexity/noImportantStyles: a delayed reveal must not stay hidden */
+      animation-delay: 0s !important;
     }
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply flex min-h-14 w-full items-center justify-center gap-2 rounded-control bg-plate-blue px-4 text-body font-semibold text-chalk active:opacity-80 disabled:opacity-40;
+    @apply flex min-h-14 w-full items-center justify-center gap-2 rounded-control bg-plate-blue px-4 text-body font-semibold text-luce transition-transform duration-120 ease-out active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100;
   }
   .btn-secondary,
   .btn-danger {
-    @apply flex min-h-14 w-full items-center justify-center gap-2 rounded-control bg-steel/15 px-4 text-body font-semibold text-chalk active:opacity-80 disabled:opacity-40;
+    @apply flex min-h-14 w-full items-center justify-center gap-2 rounded-control bg-fondale px-4 text-body font-semibold text-luce transition-transform duration-120 ease-out active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100;
   }
-  /* Red text would be 3.6:1 on rubber: destructive actions keep chalk text and a red icon. */
+  /* Red text would be 4.3:1 on arena: destructive actions keep luce text and a red icon. */
   .btn-danger svg {
     color: var(--color-plate-red);
   }
   .btn-text {
-    @apply inline-flex min-h-11 items-center gap-1 px-2 text-body font-semibold text-chalk active:opacity-60 disabled:opacity-40;
+    @apply inline-flex min-h-11 items-center gap-1 px-2 text-body font-semibold text-luce active:opacity-60 disabled:opacity-40;
   }
   .row {
-    @apply flex min-h-14 w-full items-center gap-3 border-b border-steel/25 px-4 py-2 text-left;
+    @apply flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left rule-b;
   }
+  a.row:active,
+  button.row:active {
+    background: var(--color-fondale);
+  }
+  /* A section heading, with the list's total right-aligned when there is one. */
   .section-title {
-    @apply px-4 pt-6 pb-2 text-small text-steel;
+    @apply flex items-baseline justify-between gap-3 px-4 pt-6 pb-2 label-text text-fumo;
   }
   .field {
-    @apply w-full rounded-control border border-steel/40 bg-transparent px-3 py-3 text-body text-chalk outline-none placeholder:text-steel focus:border-chalk;
+    @apply w-full rounded-control border-b-[1.5px] border-transparent bg-fondale px-3 py-3 text-body text-luce outline-none placeholder:text-fumo focus:border-luce disabled:opacity-50;
+  }
+  select.field {
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%238f949b' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
   }
   .label {
-    @apply mb-1 block text-small text-steel;
+    @apply mb-1 block label-text text-fumo;
   }
   .chip {
-    @apply inline-flex min-h-11 shrink-0 items-center rounded-full border border-steel/40 px-4 text-small font-semibold text-chalk aria-pressed:border-chalk aria-pressed:bg-chalk aria-pressed:text-rubber;
+    @apply inline-flex min-h-11 shrink-0 items-center rounded-control bg-fondale px-4 text-small font-semibold text-luce transition-colors duration-180 aria-pressed:bg-luce aria-pressed:text-arena;
+  }
+  /* A suggestion to act on (progression): outlined in the action blue. */
+  .chip-action {
+    @apply inline-flex min-h-14 shrink-0 items-center rounded-control px-4 text-small font-semibold text-luce ring-[1.5px] ring-plate-blue ring-inset active:bg-plate-blue;
   }
   .switch {
-    @apply relative h-8 w-13 shrink-0 appearance-none rounded-full bg-steel/30 transition-colors checked:bg-chalk;
+    @apply relative h-8 w-13 shrink-0 appearance-none rounded-full bg-fondale transition-colors duration-180 checked:bg-plate-blue;
   }
   .switch::after {
     content: "";
-    @apply absolute top-1 left-1 size-6 rounded-full bg-steel transition-transform;
+    @apply absolute top-1 left-1 size-6 rounded-full bg-fumo transition-transform duration-180 ease-out;
   }
   .switch:checked::after {
-    @apply translate-x-5 bg-rubber;
+    @apply translate-x-5 bg-luce;
   }
   .sheet {
+    --surface: var(--color-tribuna);
+    --sticky-top: 0px;
     margin: auto 0 0;
     width: 100%;
     max-width: 100%;
     max-height: 92dvh;
     padding: 0; /* the safe area is padded inside, so taps there do not count as backdrop taps */
     border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
-    background: var(--color-iron);
-    color: var(--color-chalk);
+    background: var(--color-tribuna);
+    color: var(--color-luce);
+  }
+  .sheet[open] {
+    animation: sheet-in 320ms var(--ease-out) backwards;
+  }
+  .sheet[data-closing] {
+    animation: sheet-out 200ms var(--ease-in) forwards;
   }
   .sheet::backdrop {
-    background: rgb(0 0 0 / 0.6);
+    background: rgb(0 0 0 / 0.7);
+    animation: enter-fade 320ms var(--ease-out) backwards;
+  }
+  .sheet[data-closing]::backdrop {
+    animation: fade-out 200ms var(--ease-in) forwards;
   }
 }
