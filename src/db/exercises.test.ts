@@ -6,6 +6,7 @@ import {
   deleteOrArchiveExercise,
   exerciseHistory,
   isExerciseInUse,
+  listArchivedExercises,
   listExercises,
   restoreExercise,
 } from './exercises';
@@ -75,6 +76,19 @@ describe('exercises', () => {
     expect((await db.exercises.get(id))?.archivedAt).toBeTypeOf('number');
     await restoreExercise(id);
     expect((await db.exercises.get(id))?.archivedAt).toBeUndefined();
+  });
+
+  it('lists archived exercises only, in Italian alphabetical order', async () => {
+    const used = async (name: string) => {
+      const id = await createExercise({ ...bench, name });
+      await db.exercises.update(id, { archivedAt: 1 });
+      return id;
+    };
+    await used('Zercher');
+    await used('Èpaule');
+    await createExercise({ ...bench, name: 'Attivo' });
+    expect((await listArchivedExercises()).map((e) => e.name)).toEqual(['Èpaule', 'Zercher']);
+    expect((await listExercises()).map((e) => e.name)).toEqual(['Attivo']);
   });
 
   it('counts an exercise replaced during a session as used', async () => {

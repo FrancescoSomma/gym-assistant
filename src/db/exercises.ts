@@ -32,6 +32,13 @@ export async function listExercises(): Promise<Exercise[]> {
     .sort((a, b) => a.name.localeCompare(b.name, 'it'));
 }
 
+export async function listArchivedExercises(): Promise<Exercise[]> {
+  const all = await db.exercises.toArray();
+  return all
+    .filter((e) => e.archivedAt !== undefined)
+    .sort((a, b) => a.name.localeCompare(b.name, 'it'));
+}
+
 export const getExercise = (id: string): Promise<Exercise | undefined> => db.exercises.get(id);
 
 export async function createExercise(input: NewExercise): Promise<string> {

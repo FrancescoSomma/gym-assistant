@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Header } from '../../components/Header';
 import { Segmented } from '../../components/Segmented';
+import { listArchivedExercises } from '../../db/exercises';
 import { createProgram, listProgramRows, type ProgramRow } from '../../db/programs';
 import { getSettings } from '../../db/settings';
 import { countLabel } from '../../domain/format';
@@ -104,6 +105,7 @@ function ProgramLink({ row, active }: { row: ProgramRow; active: boolean }) {
 function ExerciseLibrary() {
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
+  const archived = useLiveQuery(listArchivedExercises) ?? [];
   return (
     <>
       <div className="px-4 pb-2">
@@ -112,6 +114,23 @@ function ExerciseLibrary() {
         </button>
       </div>
       <ExerciseList onSelect={(e) => navigate(`/exercises/${e.id}`)} />
+      {archived.length > 0 && (
+        <details>
+          <summary className="section-title min-h-11 cursor-pointer">
+            Archiviati ({archived.length})
+          </summary>
+          <ul>
+            {archived.map((e) => (
+              <li key={e.id}>
+                <Link to={`/exercises/${e.id}`} className="row">
+                  <span className="flex-1">{e.name}</span>
+                  <ChevronRight size={20} className="text-steel" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       <ExerciseForm
         open={creating}
         onClose={() => setCreating(false)}
