@@ -99,3 +99,58 @@
     }
   }
 }
+
+@layer components {
+  .btn-primary {
+    @apply flex min-h-14 w-full items-center justify-center gap-2 rounded-control bg-plate-blue px-4 text-body font-semibold text-chalk active:opacity-80 disabled:opacity-40;
+  }
+  .btn-secondary,
+  .btn-danger {
+    @apply flex min-h-14 w-full items-center justify-center gap-2 rounded-control bg-steel/15 px-4 text-body font-semibold text-chalk active:opacity-80 disabled:opacity-40;
+  }
+  /* Red text would be 3.6:1 on rubber: destructive actions keep chalk text and a red icon. */
+  .btn-danger svg {
+    color: var(--color-plate-red);
+  }
+  .btn-text {
+    @apply inline-flex min-h-11 items-center gap-1 px-2 text-body font-semibold text-chalk active:opacity-60 disabled:opacity-40;
+  }
+  .row {
+    @apply flex min-h-14 w-full items-center gap-3 border-b border-steel/25 px-4 py-2 text-left;
+  }
+  .section-title {
+    @apply px-4 pt-6 pb-2 text-small text-steel;
+  }
+  .field {
+    @apply w-full rounded-control border border-steel/40 bg-transparent px-3 py-3 text-body text-chalk outline-none placeholder:text-steel focus:border-chalk;
+  }
+  .label {
+    @apply mb-1 block text-small text-steel;
+  }
+  .chip {
+    @apply inline-flex min-h-11 shrink-0 items-center rounded-full border border-steel/40 px-4 text-small font-semibold text-chalk aria-pressed:border-chalk aria-pressed:bg-chalk aria-pressed:text-rubber;
+  }
+  .switch {
+    @apply relative h-8 w-13 shrink-0 appearance-none rounded-full bg-steel/30 transition-colors checked:bg-chalk;
+  }
+  .switch::after {
+    content: "";
+    @apply absolute top-1 left-1 size-6 rounded-full bg-steel transition-transform;
+  }
+  .switch:checked::after {
+    @apply translate-x-5 bg-rubber;
+  }
+  .sheet {
+    margin: auto 0 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    padding: 0; /* the safe area is padded inside, so taps there do not count as backdrop taps */
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    background: var(--color-iron);
+    color: var(--color-chalk);
+  }
+  .sheet::backdrop {
+    background: rgb(0 0 0 / 0.6);
+  }
+}

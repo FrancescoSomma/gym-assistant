@@ -1,14 +1,36 @@
+import { ClipboardList, Dumbbell } from 'lucide-react';
+import { NavLink, Outlet } from 'react-router';
 import { UpdatePrompt } from './components/UpdatePrompt';
 
-export function App() {
+const TABS = [
+  { to: '/', label: 'Oggi', Icon: Dumbbell },
+  { to: '/programs', label: 'Programmi', Icon: ClipboardList },
+];
+
+export function AppLayout() {
   return (
-    <div className="flex min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      <main className="flex-1 px-4 pt-4">
-        <h1 className="text-title font-semibold">Palestra</h1>
-        <p className="mt-1 text-small text-steel">Diario di allenamento</p>
-        <p className="num mt-8 text-timer">1:42</p>
+    <div className="flex min-h-dvh flex-col pt-[env(safe-area-inset-top)]">
+      <main className="flex flex-1 flex-col">
+        <Outlet />
       </main>
-      <UpdatePrompt />
+      <div className="sticky bottom-0 bg-rubber pb-[env(safe-area-inset-bottom)]">
+        <UpdatePrompt />
+        <nav className="flex border-t border-steel/25">
+          {TABS.map(({ to, label, Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              className={({ isActive }) =>
+                `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-tiny ${isActive ? 'text-chalk' : 'text-steel'}`
+              }
+            >
+              <Icon size={24} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 }

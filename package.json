@@ -18,8 +18,10 @@
   "dependencies": {
     "dexie": "4.4.6",
     "dexie-react-hooks": "4.4.0",
+    "lucide-react": "1.50.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-router": "8.4.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
