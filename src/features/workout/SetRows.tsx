@@ -50,23 +50,23 @@ interface RowProps {
   set: SetLog;
   label: string;
   tracking: TrackingType;
+  record?: boolean;
   onSelect: () => void;
 }
 
 /** Compact row: values and status disc. A tap opens it in the editor. */
-export function SetRow({ set, label, tracking, onSelect }: RowProps) {
+export function SetRow({ set, label, tracking, record = false, onSelect }: RowProps) {
   const done = set.completedAt !== undefined;
+  const tone = record ? 'text-plate-yellow' : done && !set.isWarmup ? 'text-chalk' : 'text-steel';
   return (
     <button
       type="button"
       onClick={onSelect}
-      aria-label={`${setName(set, label)}: ${formatSet(set, tracking)}${done ? ', completata' : ''}`}
+      aria-label={`${setName(set, label)}: ${formatSet(set, tracking)}${done ? ', completata' : ''}${record ? ', record' : ''}`}
       className="flex min-h-14 w-full items-center gap-2 border-b border-steel/25 px-4 text-left"
     >
       <span className="num w-6 text-title text-steel">{label}</span>
-      <span
-        className={`flex flex-1 items-baseline gap-1 ${done && !set.isWarmup ? 'text-chalk' : 'text-steel'}`}
-      >
+      <span className={`flex flex-1 items-baseline gap-1 ${tone}`}>
         <Values set={set} tracking={tracking} />
       </span>
       <Disc done={done} />

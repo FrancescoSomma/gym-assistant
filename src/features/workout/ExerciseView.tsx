@@ -5,6 +5,7 @@ import { exerciseHistory, updateExercise } from '../../db/exercises';
 import type { WorkoutItem } from '../../db/sessions';
 import { addSet, completeSet } from '../../db/workout';
 import { formatSets, formatTarget, relativeDay } from '../../domain/format';
+import { computeRecords, isRecordSet } from '../../domain/records';
 import { firstPending, weightStep } from '../../domain/workout';
 import type { SetLog, Settings } from '../../types';
 import { syncRestPush } from './restPush';
@@ -21,7 +22,12 @@ interface Props {
 export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) {
   const { se, exercise, sets, dayNote } = item;
   const tracking = exercise.trackingType;
-  const [last] = useLiveQuery(() => exerciseHistory(exercise.id, 1), [exercise.id]) ?? [];
+  const history = useLiveQuery(() => exerciseHistory(exercise.id), [exercise.id]) ?? [];
+  const last = history[0];
+  const before = computeRecords(
+    history.map((h) => h.sets),
+    tracking,
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = sets.find((s) => s.id === selectedId) ?? firstPending(sets);
   const workIds = sets.filter((s) => !s.isWarmup).map((s) => s.id);
@@ -93,6 +99,7 @@ export function ExerciseView({ item, settings, onExerciseDone, onMenu }: Props) 
                 set={set}
                 label={label(set)}
                 tracking={tracking}
+                record={isRecordSet(set, tracking, before)}
                 onSelect={() => setSelectedId(set.id)}
               />
             )}
