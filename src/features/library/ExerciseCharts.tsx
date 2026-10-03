@@ -226,7 +226,7 @@ export default function ExerciseCharts({
                     {RECORD_LABELS[r.kind]}
                   </th>
                   <td className="num text-right text-title">{formatRecord(r.kind, r.value)}</td>
-                  <td className="w-20 pr-4 text-right text-small whitespace-nowrap text-steel">
+                  <td className="w-20 pr-4 pl-3 text-right text-small whitespace-nowrap text-steel">
                     {formatShortDateYear(r.startedAt)}
                   </td>
                 </tr>
