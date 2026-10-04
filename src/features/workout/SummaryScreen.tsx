@@ -62,9 +62,12 @@ export function SummaryScreen() {
         <div className="col-span-2 py-3 rule-t">
           <dt className="label-text text-fumo">Volume</dt>
           <dd className="flex items-baseline gap-1.5">
-            <span className="sr-only">{whole(totals.volume)} kg</span>
+            <span className="sr-only">{formatNumber(totals.volume)} kg</span>
             <span className="num text-value">
-              <CountUp value={totals.volume} format={whole} />
+              <CountUp
+                value={totals.volume}
+                format={(n) => formatNumber(n === totals.volume ? n : Math.round(n))}
+              />
             </span>
             <span aria-hidden="true" className="label-text text-fumo">
               kg

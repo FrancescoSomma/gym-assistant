@@ -1,5 +1,6 @@
 import { Check, Trash2, Trophy } from 'lucide-react';
-import { m } from 'motion/react';
+import { m, useReducedMotion } from 'motion/react';
+import { useEffect, useRef } from 'react';
 import { Lights } from '../../components/Lights';
 import { Stepper } from '../../components/Stepper';
 import { deleteSet, updateSet } from '../../db/workout';
@@ -109,13 +110,24 @@ export function SetEditor({
 }: EditorProps) {
   const tracking = exercise.trackingType;
   const done = set.completedAt !== undefined;
+  const ref = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
+  // Keep the confirm button in view when this set becomes the current one (nav above, timer below).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only a new current set moves the page
+  useEffect(() => {
+    if (!done)
+      ref.current?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+  }, [set.id]);
   const save = (patch: SetValues) => void updateSet(set.id, patch);
   const remove = () => {
     if (done && !confirmAction('Eliminare questa serie completata?')) return;
     void deleteSet(set.id);
   };
   return (
-    <div className="bg-tribuna rule-b">
+    <div
+      ref={ref}
+      className="scroll-mt-[calc(env(safe-area-inset-top)+57px)] scroll-mb-[calc(env(safe-area-inset-bottom)+10rem)] bg-tribuna rule-b"
+    >
       <m.div
         layoutId={`set-band-${se.id}`}
         transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}

@@ -106,7 +106,7 @@ export function TodayScreen() {
           Nessun programma attivo. Crea il primo per iniziare ad allenarti.
         </p>
       ) : !plan.day ? (
-        <p className="px-4 pt-6">
+        <p className="px-4 pt-6 text-fumo">
           Il programma {plan.program.name} non ha giornate. Aggiungine una per iniziare.
         </p>
       ) : (

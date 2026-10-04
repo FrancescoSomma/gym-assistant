@@ -222,7 +222,8 @@ async function captureShot(
       await new Promise((r) => setTimeout(r, 150));
     }
     if (!rendered) throw new Error('timed out waiting for content to render');
-    await new Promise((r) => setTimeout(r, 300)); // let the final layout/paint settle
+    // Let the final layout/paint settle; summary screens count up (600 ms) and list records after.
+    await new Promise((r) => setTimeout(r, path.includes('/summary') ? 1500 : 300));
 
     const shot = await send('Page.captureScreenshot', {
       format: 'png',

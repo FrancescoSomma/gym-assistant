@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useNow } from '../../components/useNow';
 import type { WorkoutItem } from '../../db/sessions';
 import { clearTimer, extendTimer, startTimer } from '../../db/workout';
-import { formatClock, formatSeconds } from '../../domain/format';
+import { formatClock } from '../../domain/format';
 import { restState } from '../../domain/workout';
 import { beep } from '../../platform/sound';
 import type { ActiveTimer } from '../../types';
@@ -41,12 +41,19 @@ export function TimerBar({ timer, sound, item }: Props) {
     void syncRestPush(null);
   };
 
+  const live = (
+    <p className="sr-only" aria-live="polite">
+      {finished ? 'Recupero finito' : ''}
+    </p>
+  );
+
   if (!timer || !state) {
     if (!item) return <div className={SAFE_BOTTOM} />;
     return (
-      <div className={`flex min-h-16 items-center gap-3 bg-tribuna px-4 ${SAFE_BOTTOM}`}>
-        <span className="flex-1 text-small text-fumo">
-          Recupero {formatSeconds(item.se.restSec)}
+      <div className={`flex min-h-24 items-center gap-3 bg-tribuna px-4 ${SAFE_BOTTOM}`}>
+        <span className="flex flex-1 flex-col">
+          <span className="label-text text-fumo">Recupero</span>
+          <span className="num text-timer text-fumo">{formatClock(item.se.restSec * 1000)}</span>
         </span>
         <button
           type="button"
@@ -55,25 +62,30 @@ export function TimerBar({ timer, sound, item }: Props) {
         >
           Avvia recupero
         </button>
+        {live}
       </div>
     );
   }
 
   if (state.finished) {
     return (
-      <button
-        type="button"
-        onClick={stop}
-        className={`flex min-h-24 w-full animate-[enter-fade_240ms_var(--ease-out)_backwards] items-center gap-3 bg-plate-green px-4 text-left text-arena ${SAFE_BOTTOM}`}
-      >
-        <span className="flex-1 text-body font-semibold">Recupero finito</span>
-        <span className="num text-timer">+{formatClock(state.overtimeMs)}</span>
-      </button>
+      <div>
+        {live}
+        <button
+          type="button"
+          onClick={stop}
+          className={`flex min-h-24 w-full animate-[enter-fade_240ms_var(--ease-out)_backwards] items-center gap-3 bg-plate-green px-4 text-left text-arena ${SAFE_BOTTOM}`}
+        >
+          <span className="flex-1 text-body font-semibold">Recupero finito</span>
+          <span className="num text-timer">+{formatClock(state.overtimeMs)}</span>
+        </button>
+      </div>
     );
   }
 
   return (
     <div className={`relative bg-tribuna ${SAFE_BOTTOM}`} role="timer">
+      {live}
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-[3px] origin-left bg-pedana transition-transform duration-250 ease-linear"

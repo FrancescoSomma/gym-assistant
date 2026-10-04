@@ -337,3 +337,14 @@
     animation: fade-out 200ms var(--ease-in) forwards;
   }
 }
+
+/* Charts: no default focus box on tap, a themed ring for the keyboard. */
+.recharts-wrapper:focus:not(:focus-visible),
+.recharts-surface:focus:not(:focus-visible) {
+  outline: none;
+}
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus-visible {
+  outline: 2px solid var(--color-luce);
+  outline-offset: 2px;
+}

@@ -81,11 +81,11 @@ export function ExerciseList({ onSelect, initialGroup = 'all' }: Props) {
         return (
           <section key={key}>
             {/* Sticky under the status bar in a page, at the top inside a sheet (--sticky-top). */}
-            <h3 className="sticky top-(--sticky-top) z-[1] flex items-baseline justify-between bg-(--surface) px-4 pt-5 pb-2">
+            <h3 className="sticky top-(--sticky-top) z-[1] flex items-baseline justify-between bg-(--surface) px-4 pt-5 pb-2 rule-b">
               <span className="plate text-title">{label}</span>
               <span className="num text-small text-fumo">{items.length}</span>
             </h3>
-            <ul className="rule-t">
+            <ul>
               {items.map((e) => (
                 <li key={e.id}>
                   <button type="button" className="row" onClick={() => onSelect(e)}>

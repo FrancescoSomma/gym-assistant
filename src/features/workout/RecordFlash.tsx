@@ -27,7 +27,7 @@ export function RecordFlash({ flash, onDone }: { flash: Flash | null; onDone: ()
   return (
     <div
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-4 top-[calc(env(safe-area-inset-top)+64px)] z-20"
+      className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+56px)] z-20"
     >
       <AnimatePresence>
         {flash && (
@@ -37,20 +37,22 @@ export function RecordFlash({ flash, onDone }: { flash: Flash | null; onDone: ()
             animate={{ clipPath: 'inset(0 0% 0 0)' }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduced ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-stretch bg-tribuna"
+            className="absolute inset-x-0 top-0 bg-arena rule-b"
           >
-            <Tab tone="record" className="py-2">
-              <Trophy size={20} aria-hidden="true" />
-            </Tab>
-            <p className="flex flex-1 items-center justify-between gap-3 px-3 py-2">
-              <span className="leading-tight">
-                <span className="block font-semibold">Record</span>
-                <span className="block text-small text-fumo">{RECORD_LABELS[flash.kind]}</span>
-              </span>
-              <span className="num text-score text-plate-yellow">
-                {formatRecord(flash.kind, flash.value)}
-              </span>
-            </p>
+            <div className="flex min-h-[73px] items-stretch bg-tribuna">
+              <Tab tone="record" className="py-2">
+                <Trophy size={20} aria-hidden="true" />
+              </Tab>
+              <p className="flex flex-1 items-center justify-between gap-3 px-3 py-2">
+                <span className="leading-tight">
+                  <span className="block font-semibold">Record</span>
+                  <span className="block text-small text-fumo">{RECORD_LABELS[flash.kind]}</span>
+                </span>
+                <span className="num text-score text-plate-yellow">
+                  {formatRecord(flash.kind, flash.value)}
+                </span>
+              </p>
+            </div>
           </m.div>
         )}
       </AnimatePresence>

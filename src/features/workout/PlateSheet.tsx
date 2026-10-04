@@ -55,14 +55,14 @@ export function PlateSheet({
           <p>Il carico è inferiore al peso del bilanciere.</p>
         ) : (
           <>
-            {/* The bar seen from the side: shaft, collar, plates, sleeve. Text says the same. */}
+            {/* The bar seen from the side: shaft, collar, plates, sleeve. The bar is dark so the steel change plates read as plates. Text says the same. */}
             <div className="flex h-36 items-center" aria-hidden="true">
-              <span className="h-2.5 w-8 bg-acciaio" />
-              <span className="h-7 w-2 rounded-tag bg-acciaio" />
+              <span className="h-2.5 w-8 bg-fondale" />
+              <span className="h-7 w-2 rounded-tag bg-fondale" />
               {plates.map(({ key, kg }) => (
                 <span key={key} className={`ml-px rounded-tag ${PLATE_STYLE[kg]}`} />
               ))}
-              <span className="h-3.5 flex-1 bg-acciaio" />
+              <span className="ml-1 h-3.5 flex-1 bg-fondale" />
             </div>
             <p className="flex items-baseline gap-2">
               {plates.length === 0 ? (
