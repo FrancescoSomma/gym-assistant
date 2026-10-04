@@ -1,9 +1,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, Trash2 } from 'lucide-react';
+import { m } from 'motion/react';
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Header } from '../../components/Header';
 import { MoveButtons } from '../../components/MoveButtons';
+import { SupersetBracket } from '../../components/SupersetBracket';
 import {
   addDayExercise,
   deleteDay,
@@ -14,7 +16,7 @@ import {
   updateDay,
 } from '../../db/programs';
 import { formatShortTarget } from '../../domain/format';
-import { supersetRun } from '../../domain/superset';
+import { supersetPosition, supersetRun } from '../../domain/superset';
 import { confirmAction } from '../../platform/confirm';
 import { ExercisePicker } from '../library/ExercisePicker';
 import { DayExerciseSheet } from './DayExerciseSheet';
@@ -73,35 +75,46 @@ export function DayEditor() {
         </label>
       </div>
 
-      <h2 className="section-title">Esercizi</h2>
+      <h2 className="section-title">
+        <span>Esercizi</span>
+        <span className="num text-small text-luce">{items.length}</span>
+      </h2>
       {items.length === 0 && (
-        <p className="px-4 pb-2 text-steel">Nessun esercizio. Aggiungine uno dalla libreria.</p>
+        <p className="px-4 pb-2 text-fumo">Nessun esercizio. Aggiungine uno dalla libreria.</p>
       )}
-      <ul>
-        {items.map(({ de, exercise }, i) => (
-          <li
-            key={de.id}
-            className={`flex items-center border-b border-steel/25 ${supersetRun(keys, i).length > 1 ? 'border-l-2 border-l-steel' : ''}`}
-          >
-            <button
-              type="button"
-              className="flex min-h-16 flex-1 flex-col justify-center py-2 pl-4 text-left"
-              onClick={() => setEditingId(de.id)}
+      <ul className="rule-t">
+        {items.map(({ de, exercise }, i) => {
+          const position = supersetPosition(keys, i);
+          return (
+            <m.li
+              layout
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              key={de.id}
+              className="relative flex items-center bg-(--surface) rule-b"
             >
-              <span>{exercise.name}</span>
-              <span className="text-small text-steel tabular-nums">
-                {formatShortTarget(de, exercise.trackingType)}
-                {supersetRun(keys, i).length > 1 && ', in superserie'}
-              </span>
-            </button>
-            <MoveButtons
-              first={i === 0}
-              last={i === items.length - 1}
-              label={exercise.name}
-              onMove={(dir) => moveDayExercise(de.id, dir)}
-            />
-          </li>
-        ))}
+              <SupersetBracket position={position} />
+              <button
+                type="button"
+                className="flex min-h-16 flex-1 flex-col justify-center py-2 pl-4 text-left active:bg-fondale"
+                onClick={() => setEditingId(de.id)}
+              >
+                <span>{exercise.name}</span>
+                <span className="text-small text-fumo">
+                  <span className="num text-body text-luce">
+                    {formatShortTarget(de, exercise.trackingType)}
+                  </span>
+                  {position && ', in superserie'}
+                </span>
+              </button>
+              <MoveButtons
+                first={i === 0}
+                last={i === items.length - 1}
+                label={exercise.name}
+                onMove={(dir) => moveDayExercise(de.id, dir)}
+              />
+            </m.li>
+          );
+        })}
       </ul>
       <div className="px-2 py-2">
         <button type="button" className="btn-text" onClick={() => setPicking(true)}>

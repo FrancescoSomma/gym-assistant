@@ -1,9 +1,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArchiveRestore, Copy, Plus, Trash2 } from 'lucide-react';
+import { m } from 'motion/react';
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { Header } from '../../components/Header';
 import { MoveButtons } from '../../components/MoveButtons';
+import { Tab } from '../../components/Tab';
 import {
   activateProgram,
   addDay,
@@ -65,7 +67,7 @@ export function ProgramEditor() {
         <label className="block">
           <span className="label">Nome</span>
           <input
-            className="field"
+            className="field plate text-name"
             defaultValue={program.name}
             onChange={(e) => void updateProgram(program.id, { name: e.target.value })}
           />
@@ -79,26 +81,34 @@ export function ProgramEditor() {
             onChange={(e) => void updateProgram(program.id, { notes: e.target.value })}
           />
         </label>
-        {active && <p className="text-small font-semibold">Programma attivo</p>}
+        {active && <Tab className="py-1 label-text">Programma attivo</Tab>}
       </div>
 
-      <h2 className="section-title">Giornate</h2>
+      <h2 className="section-title">
+        <span>Giornate</span>
+        <span className="num text-small text-luce">{days.length}</span>
+      </h2>
       {days.length === 0 && (
-        <p className="px-4 pb-2 text-steel">
+        <p className="px-4 pb-2 text-fumo">
           Nessuna giornata. Aggiungi la prima per costruire il programma.
         </p>
       )}
-      <ul>
+      <ul className="rule-t">
         {days.map((day, i) => (
-          <li key={day.id} className="flex items-center border-b border-steel/25">
+          <m.li
+            layout
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            key={day.id}
+            className="flex items-center bg-(--surface) rule-b"
+          >
             <Link
               to={`/programs/${program.id}/days/${day.id}`}
-              className="flex min-h-16 flex-1 items-center gap-4 py-2 pl-4"
+              className="flex min-h-16 flex-1 items-center gap-4 py-2 pl-4 active:bg-fondale"
             >
-              <span className="num w-8 text-value">{day.label}</span>
-              <span className="flex-1">
-                <span className="block">{day.name || `Giornata ${day.label}`}</span>
-                <span className="block text-small text-steel">
+              <span className="num w-10 text-score">{day.label}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate">{day.name || `Giornata ${day.label}`}</span>
+                <span className="block text-small text-fumo">
                   {countLabel(counts[day.id] ?? 0, 'esercizio', 'esercizi')}
                 </span>
               </span>
@@ -109,7 +119,7 @@ export function ProgramEditor() {
               label={`giornata ${day.label}`}
               onMove={(dir) => moveDay(day.id, dir)}
             />
-          </li>
+          </m.li>
         ))}
       </ul>
       <div className="px-2 py-2">
@@ -138,7 +148,7 @@ export function ProgramEditor() {
         </button>
         {!archived &&
           (active && used ? (
-            <p className="pt-2 text-small text-steel">
+            <p className="pt-2 text-small text-fumo">
               È il programma attivo: attivane un altro per archiviarlo.
             </p>
           ) : (

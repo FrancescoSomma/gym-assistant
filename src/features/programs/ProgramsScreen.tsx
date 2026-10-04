@@ -1,9 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ChevronRight, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Header } from '../../components/Header';
 import { Segmented } from '../../components/Segmented';
+import { Tab } from '../../components/Tab';
 import { listArchivedExercises } from '../../db/exercises';
 import { createProgram, listProgramRows, type ProgramRow } from '../../db/programs';
 import { getSettings } from '../../db/settings';
@@ -11,16 +12,16 @@ import { countLabel } from '../../domain/format';
 import { ExerciseForm } from '../library/ExerciseForm';
 import { ExerciseList } from '../library/ExerciseList';
 
-type Tab = 'programs' | 'exercises';
+type Section = 'programs' | 'exercises';
 
 export function ProgramsScreen() {
   const [params, setParams] = useSearchParams();
-  const tab: Tab = params.get('tab') === 'exercises' ? 'exercises' : 'programs';
+  const tab: Section = params.get('tab') === 'exercises' ? 'exercises' : 'programs';
   return (
     <>
-      <Header title={tab === 'programs' ? 'Programmi' : 'Esercizi'} />
+      <Header large title={tab === 'programs' ? 'Programmi' : 'Esercizi'} />
       <div className="px-4 pb-2">
-        <Segmented<Tab>
+        <Segmented<Section>
           options={[
             ['programs', 'Programmi'],
             ['exercises', 'Esercizi'],
@@ -52,11 +53,11 @@ function ProgramList() {
   return (
     <>
       {current.length === 0 && (
-        <p className="px-4 py-6 text-steel">
+        <p className="px-4 py-6 text-fumo">
           Nessun programma. Crea il primo per iniziare ad allenarti.
         </p>
       )}
-      <ul>
+      <ul className="rule-t">
         {current.map((row) => (
           <ProgramLink key={row.program.id} row={row} active={isActive(row)} />
         ))}
@@ -79,11 +80,19 @@ function ProgramList() {
         </button>
       </div>
       {archived.length > 0 && (
-        <details>
-          <summary className="section-title min-h-11 cursor-pointer">
-            Archiviati ({archived.length})
+        <details className="group">
+          <summary className="section-title min-h-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+            <span>Archiviati</span>
+            <span className="flex items-center gap-1">
+              <span className="num text-small text-luce">{archived.length}</span>
+              <ChevronDown
+                size={16}
+                aria-hidden="true"
+                className="transition-transform duration-180 group-open:rotate-180"
+              />
+            </span>
           </summary>
-          <ul>
+          <ul className="rule-t">
             {archived.map((row) => (
               <ProgramLink key={row.program.id} row={row} active={false} />
             ))}
@@ -98,14 +107,14 @@ function ProgramLink({ row, active }: { row: ProgramRow; active: boolean }) {
   return (
     <li>
       <Link to={`/programs/${row.program.id}`} className="row">
-        <span className="flex-1">
-          <span className="block">{row.program.name || 'Senza nome'}</span>
-          <span className="block text-small text-steel">
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-semibold">{row.program.name || 'Senza nome'}</span>
+          <span className="block text-small text-fumo">
             {countLabel(row.dayCount, 'giornata', 'giornate')}
           </span>
         </span>
-        {active && <span className="text-small font-semibold">Attivo</span>}
-        <ChevronRight size={20} className="text-steel" />
+        {active && <Tab className="py-1 label-text">Attivo</Tab>}
+        <ChevronRight size={20} className="shrink-0 text-fumo" />
       </Link>
     </li>
   );
@@ -124,16 +133,24 @@ function ExerciseLibrary() {
       </div>
       <ExerciseList onSelect={(e) => navigate(`/exercises/${e.id}`)} />
       {archived.length > 0 && (
-        <details>
-          <summary className="section-title min-h-11 cursor-pointer">
-            Archiviati ({archived.length})
+        <details className="group">
+          <summary className="section-title min-h-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+            <span>Archiviati</span>
+            <span className="flex items-center gap-1">
+              <span className="num text-small text-luce">{archived.length}</span>
+              <ChevronDown
+                size={16}
+                aria-hidden="true"
+                className="transition-transform duration-180 group-open:rotate-180"
+              />
+            </span>
           </summary>
-          <ul>
+          <ul className="rule-t">
             {archived.map((e) => (
               <li key={e.id}>
                 <Link to={`/exercises/${e.id}`} className="row">
                   <span className="flex-1">{e.name}</span>
-                  <ChevronRight size={20} className="text-steel" />
+                  <ChevronRight size={20} className="text-fumo" />
                 </Link>
               </li>
             ))}
