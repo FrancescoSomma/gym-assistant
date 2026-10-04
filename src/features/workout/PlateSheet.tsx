@@ -5,8 +5,8 @@ import { formatNumber } from '../../domain/format';
 import { platesPerSide } from '../../domain/plates';
 
 /**
- * SPEC §11.2: the only place where plates wear their real colours. Competition plates from 25 to
- * 10 kg share the 450 mm diameter and differ in thickness; change plates are smaller.
+ * The only place where plates wear their real colours. Competition plates from 25 to 10 kg share
+ * the 450 mm diameter and differ in thickness; change plates are smaller.
  */
 const PLATE_STYLE: Record<number, string> = {
   25: 'h-32 w-[22px] bg-plate-red',
