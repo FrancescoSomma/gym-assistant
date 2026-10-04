@@ -6,6 +6,7 @@ import {
   headlineRecord,
   isRecordSet,
   recordTable,
+  setRecord,
 } from './records';
 
 const set = (
@@ -45,6 +46,32 @@ describe('computeRecords (SPEC §8.5)', () => {
       maxWeight: 40,
       maxVolume: 600,
     });
+  });
+});
+
+describe('setRecord (the on-screen record flash)', () => {
+  const before = computeRecords([[set(80, 10)]], 'weight_reps');
+  it('names the e1RM first, then the load', () => {
+    const estimate = setRecord(set(80, 11), 'weight_reps', before);
+    expect(estimate?.kind).toBe('e1rm');
+    expect(estimate?.value).toBeCloseTo(109.33, 2);
+    expect(setRecord(set(82.5, 1), 'weight_reps', before)).toEqual({
+      kind: 'maxWeight',
+      value: 82.5,
+    });
+    expect(setRecord(set(80, 10), 'weight_reps', before)).toBeUndefined();
+  });
+  it('uses reps and duration for the other tracking types, and ignores warmups', () => {
+    expect(setRecord(set(0, 13), 'bodyweight_reps', { maxReps: 12 })).toEqual({
+      kind: 'maxReps',
+      value: 13,
+    });
+    const hold = { durationSec: 65, isWarmup: false, completedAt: 1 };
+    expect(setRecord(hold, 'duration', { maxDuration: 60 })).toEqual({
+      kind: 'maxDuration',
+      value: 65,
+    });
+    expect(setRecord(set(100, 10, { isWarmup: true }), 'weight_reps', before)).toBeUndefined();
   });
 });
 

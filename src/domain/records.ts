@@ -51,18 +51,40 @@ export function computeRecords(sessions: LoggedSet[][], tracking: TrackingType):
   return records;
 }
 
-/** A completed work set beating the history before this session. No history means no records. */
-export function isRecordSet(set: LoggedSet, tracking: TrackingType, before: Records): boolean {
-  if (!isWorkSetDone(set)) return false;
+/**
+ * The record a completed work set beats, against the history before this session: the e1RM
+ * first, then the load. No history means no records.
+ */
+export function setRecord(
+  set: LoggedSet,
+  tracking: TrackingType,
+  before: Records,
+): { kind: RecordKind; value: number } | undefined {
+  if (!isWorkSetDone(set)) return undefined;
   if (tracking === 'weight_reps') {
     const estimate = e1rm(set.weightKg ?? 0, set.reps ?? 0);
-    const beatsE1rm = estimate !== undefined && before.e1rm !== undefined && estimate > before.e1rm;
-    const beatsLoad = before.maxWeight !== undefined && (set.weightKg ?? 0) > before.maxWeight;
-    return beatsE1rm || beatsLoad;
+    if (estimate !== undefined && before.e1rm !== undefined && estimate > before.e1rm)
+      return { kind: 'e1rm', value: estimate };
+    const load = set.weightKg ?? 0;
+    return before.maxWeight !== undefined && load > before.maxWeight
+      ? { kind: 'maxWeight', value: load }
+      : undefined;
   }
-  if (tracking === 'bodyweight_reps')
-    return before.maxReps !== undefined && (set.reps ?? 0) > before.maxReps;
-  return before.maxDuration !== undefined && (set.durationSec ?? 0) > before.maxDuration;
+  if (tracking === 'bodyweight_reps') {
+    const reps = set.reps ?? 0;
+    return before.maxReps !== undefined && reps > before.maxReps
+      ? { kind: 'maxReps', value: reps }
+      : undefined;
+  }
+  const duration = set.durationSec ?? 0;
+  return before.maxDuration !== undefined && duration > before.maxDuration
+    ? { kind: 'maxDuration', value: duration }
+    : undefined;
+}
+
+/** A completed work set beating the history before this session. No history means no records. */
+export function isRecordSet(set: LoggedSet, tracking: TrackingType, before: Records): boolean {
+  return setRecord(set, tracking, before) !== undefined;
 }
 
 /** Records improved by one session (summary, SPEC §6.8). */

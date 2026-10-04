@@ -14,7 +14,7 @@ import {
   formatTarget,
   relativeDay,
 } from '../../domain/format';
-import { computeRecords, isRecordSet } from '../../domain/records';
+import { computeRecords, isRecordSet, type RecordKind, setRecord } from '../../domain/records';
 import {
   firstPending,
   offeredWeight,
@@ -36,9 +36,18 @@ interface Props {
   /** Names of the other members when the exercise is in a superset. */
   supersetWith?: string[];
   onMenu?: () => void;
+  /** A confirmed set beat a personal record: the screen shows it over the board. */
+  onRecord?: (record: { kind: RecordKind; value: number }) => void;
 }
 
-export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onMenu }: Props) {
+export function ExerciseView({
+  item,
+  settings,
+  onSetCompleted,
+  supersetWith,
+  onMenu,
+  onRecord,
+}: Props) {
   const { se, exercise, sets, dayNote } = item;
   const tracking = exercise.trackingType;
   const history = useLiveQuery(() => exerciseHistory(exercise.id), [exercise.id]) ?? [];
@@ -60,9 +69,13 @@ export function ExerciseView({ item, settings, onSetCompleted, supersetWith, onM
   const selected = sets.find((s) => s.id === selectedId) ?? firstPending(sets);
 
   const confirm = async (setId: string) => {
+    const set = sets.find((s) => s.id === setId);
     const result = await completeSet(setId);
     void syncRestPush(result.timer);
     setSelectedId(null);
+    // Values were saved live while typing, so the set read before completing is the one confirmed.
+    const record = set && setRecord({ ...set, completedAt: Date.now() }, tracking, before);
+    if (record) onRecord?.(record);
     onSetCompleted(result);
   };
 

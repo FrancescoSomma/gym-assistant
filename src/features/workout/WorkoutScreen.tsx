@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { useNow } from '../../components/useNow';
 import { getWorkout } from '../../db/sessions';
@@ -19,6 +19,7 @@ import { ExercisePicker } from '../library/ExercisePicker';
 import { ExerciseMenu } from './ExerciseMenu';
 import { ExerciseView } from './ExerciseView';
 import { discardWorkout, finishWorkout } from './finish';
+import { type Flash, RecordFlash } from './RecordFlash';
 import { SessionSheet } from './SessionSheet';
 import { TimerBar } from './TimerBar';
 
@@ -31,6 +32,8 @@ export function WorkoutScreen() {
   const settings = useLiveQuery(getSettings);
   const [index, setIndex] = useState<number | null>(null);
   const [sheet, setSheet] = useState<SheetName | null>(null);
+  const [flash, setFlash] = useState<Flash | null>(null);
+  const clearFlash = useCallback(() => setFlash(null), []);
   const now = useNow(1000);
   useWakeLock();
 
@@ -100,6 +103,7 @@ export function WorkoutScreen() {
                 if (target !== -1) goTo(target);
                 else if (exerciseDone && !isLast) goTo(current + 1);
               }}
+              onRecord={(record) => setFlash({ id: Date.now(), ...record })}
             />
             {isLast && (
               <div className="px-2">
@@ -148,6 +152,8 @@ export function WorkoutScreen() {
         </nav>
         <TimerBar timer={settings.activeTimer} sound={settings.timerSound} item={item} />
       </footer>
+
+      <RecordFlash flash={flash} onDone={clearFlash} />
 
       <SessionSheet
         open={sheet === 'list'}
