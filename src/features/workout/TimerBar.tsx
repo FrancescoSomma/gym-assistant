@@ -47,34 +47,40 @@ export function TimerBar({ timer, sound, item }: Props) {
     </p>
   );
 
+  // Every state: same root (live region first, safe-area padding outside) and an inner min-h-24 row,
+  // so the lane keeps the same height with or without a home-indicator inset.
   if (!timer || !state) {
     if (!item) return <div className={SAFE_BOTTOM} />;
     return (
-      <div className={`flex min-h-24 items-center gap-3 bg-tribuna px-4 ${SAFE_BOTTOM}`}>
-        <span className="flex flex-1 flex-col">
-          <span className="label-text text-fumo">Recupero</span>
-          <span className="num text-timer text-fumo">{formatClock(item.se.restSec * 1000)}</span>
-        </span>
-        <button
-          type="button"
-          className="btn-text min-h-14"
-          onClick={async () => void syncRestPush(await startTimer(item.se.id))}
-        >
-          Avvia recupero
-        </button>
+      <div className={`bg-tribuna ${SAFE_BOTTOM}`}>
         {live}
+        <div className="flex min-h-24 items-center gap-3 px-4">
+          <span className="flex flex-1 flex-col">
+            <span className="label-text text-fumo">Recupero</span>
+            <span className="num text-timer text-fumo">{formatClock(item.se.restSec * 1000)}</span>
+          </span>
+          <button
+            type="button"
+            className="btn-text min-h-14"
+            onClick={async () => void syncRestPush(await startTimer(item.se.id))}
+          >
+            Avvia recupero
+          </button>
+        </div>
       </div>
     );
   }
 
   if (state.finished) {
     return (
-      <div>
+      <div
+        className={`animate-[enter-fade_240ms_var(--ease-out)_backwards] bg-plate-green text-arena ${SAFE_BOTTOM}`}
+      >
         {live}
         <button
           type="button"
           onClick={stop}
-          className={`flex min-h-24 w-full animate-[enter-fade_240ms_var(--ease-out)_backwards] items-center gap-3 bg-plate-green px-4 text-left text-arena ${SAFE_BOTTOM}`}
+          className="flex min-h-24 w-full items-center gap-3 px-4 text-left"
         >
           <span className="flex-1 text-body font-semibold">Recupero finito</span>
           <span className="num text-timer">+{formatClock(state.overtimeMs)}</span>
