@@ -464,13 +464,13 @@ Formato:
 Manifest:
 
 - `name` e `short_name`: "Palestra" (provvisorio), `lang: "it"`, `display: "standalone"`, `orientation: "portrait"`, `start_url` e `scope`: `"/"`.
-- `background_color` e `theme_color`: `#1F1E1C`. Icone 192, 512 e 512 maskable.
+- `background_color` e `theme_color`: `#0B0C0E`. Icone 192, 512 e 512 maskable.
 
 `index.html`:
 
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1F1E1C">
+<meta name="theme-color" content="#0B0C0E">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">  <!-- 180×180, senza trasparenza -->
 ```
@@ -493,40 +493,41 @@ Test sull'iPhone: servono HTTPS e un dominio diverso da quello di produzione, pe
 
 ## 11. Design
 
+Il design "Pedana di gara" è descritto per intero in `DESIGN.md` (token e componenti) e in `docs/superpowers/specs/2026-10-03-redesign-pedana-di-gara.md` (direzione e decisioni). Qui restano le regole che il codice deve rispettare.
+
 ### 11.1 Principi
 
-- **Il numero è l'interfaccia.** In allenamento peso, ripetizioni e timer sono gli elementi più grandi dello schermo; tutto il resto è secondario.
-- **Un solo elemento audace: la barra del timer.** Numeri grandi, una linea sottile che si svuota, il verde a fine recupero. Il resto dell'interfaccia è sobrio.
+- **Il numero è l'interfaccia.** In allenamento peso, ripetizioni e recupero sono gli elementi più grandi dello schermo.
+- **Pedana di gara.** L'app prende la grafica di una gara di pesistica: sottopancia con linguetta di legno e targa chiara, tabellone delle serie con le luci dei giudici, orologio del recupero a tutta larghezza. Navigazione e controlli restano quelli di iOS; nei testi non c'è gergo di gara.
 - **Zona del pollice.** Le azioni principali stanno nella metà inferiore, le informazioni in alto.
-- **Righe, non card.** Elenchi a righe con separatori; la gerarchia nasce da tipografia e spazio, non da riquadri e ombre.
-- Testi allineati a sinistra; numeri in colonne allineate a destra, con cifre tabellari.
-- Target touch di almeno 44 pt, 56 pt in modalità allenamento.
-- Movimento solo in risposta a un'azione (conferma della serie, fine del recupero), rispettando `prefers-reduced-motion`. Niente animazioni di ingresso né gradienti decorativi.
-- Solo tema scuro, pensato per la palestra e per ridurre i riflessi.
+- **Movimento che dice cosa è successo:** tendina per le grafiche che entrano, luci in sequenza alla conferma, banda della serie corrente che scivola, cifre che scorrono, totali che contano. Tutto rispetta `prefers-reduced-motion`. Niente ombre, gradienti o bagliori.
+- Testi allineati a sinistra; numeri con cifre tabellari. Target touch di almeno 44 pt, 56 pt in modalità allenamento.
+- Solo tema scuro: un'arena con la luce sulla pedana.
 
 ### 11.2 Colori
 
-La palette nasce dal codice colore dei dischi olimpici (25 kg rosso, 20 blu, 15 giallo, 10 verde). Ogni colore dei dischi ha un solo significato e non si usa mai come decorazione.
-
 | Token | Hex | Uso |
 |---|---|---|
-| `rubber` | `#1F1E1C` | sfondo, come il pavimento in gomma |
-| `iron` | `#2E2C29` | superfici, fogli, riga della serie corrente |
-| `chalk` | `#EDEBE6` | testo principale |
-| `steel` | `#9C978E` | testo secondario; separatori al 25% di opacità |
-| `plate-blue` | `#2B5DD8` | azione primaria, serie corrente |
-| `plate-yellow` | `#F0C419` | record personali |
-| `plate-green` | `#2FA45A` | recupero finito, serie completate |
-| `plate-red` | `#D93A2F` | azioni distruttive |
+| `arena` | `#0B0C0E` | fondo |
+| `tribuna` | `#17191D` | fogli, editor della serie, orologio del recupero |
+| `fondale` | `#23262B` | riempimento dei controlli, stato premuto |
+| `luce` | `#F2F1EC` | testo e numeri; selezione invertita |
+| `fumo` | `#8F949B` | testo secondario |
+| `filetto` | `luce` al 14% | separatori di un pixel |
+| `pedana` | `#B8875A` | linguette, filo del cronometro, tab attiva, riferimenti nei grafici |
+| `plate-blue` | `#2453D6` | azione primaria, serie corrente, allenamento in corso |
+| `plate-yellow` | `#F6D43A` | record personali |
+| `plate-green` | `#2BA55B` | serie completate, recupero finito |
+| `plate-red` | `#D93A2F` | azioni distruttive (solo icona o riempimento) |
 
-- Il testo sui pulsanti blu è `chalk` (contrasto di circa 4,6:1).
-- Il calcolatore dei dischi (Fase 3) usa i colori reali: 25 rosso, 20 blu, 15 giallo, 10 verde, 5 bianco, 2,5 e 1,25 acciaio.
+- Ogni colore dei dischi ha un solo significato e non decora mai; il colore non è mai l'unica informazione.
+- Il calcolatore dei dischi usa i colori reali: 25 rosso, 20 blu, 15 giallo, 10 verde, 5 bianco, 2,5 e 1,25 acciaio (`#9AA0A6`).
 
 ### 11.3 Tipografia
 
-- **Numeri** (peso, ripetizioni, timer, statistiche): Big Shoulders Display, semibold o bold, con `font-variant-numeric: tabular-nums`. Verifica che il font abbia le cifre tabellari; se non le ha, usa Barlow Condensed. Font self-hosted in woff2 e inclusi nel precache, così funzionano offline.
-- **Testo dell'interfaccia**: font di sistema (`system-ui`, cioè SF Pro su iPhone), per leggibilità e coerenza con iOS.
-- **Scala**: timer 64 px; valori negli stepper 32 px; nome dell'esercizio 28 px; titoli 22 px; testo 17 px; secondario 15 px; minimo 13 px.
+- Una sola famiglia, **Archivo** (OFL), self-hosted in due woff2 variabili (tondo e corsivo, peso 100–900, larghezza 62–125%) inclusi nel precache.
+- Ruoli: testo in tondo a larghezza normale; numeri sul "tabellone" (corsivo, larghezza 62%, peso 800, cifre tabellari); nomi e titoli nella "targa" (corsivo, larghezza 75%, peso 800); etichette a 13 px, larghezza 87,5%, peso 600.
+- Scala: lettera della giornata 96 px; timer 72; valori degli stepper 44; titoli grandi 34; tabellone delle serie 32; nome dell'esercizio 26; titoli 22; testo 17; secondario 15; minimo 13.
 
 ### 11.4 Testi
 
@@ -540,24 +541,24 @@ La palette nasce dal codice colore dei dischi olimpici (25 kg rosso, 20 blu, 15 
 
 ```
 ┌───────────────────────────────────────┐
-│ ✕     Giornata A     24:13     3 di 6  │
-│                                       │
-│ Panca piana con bilanciere            │
+│ ✕     Giornata A   24:13      3 di 6 ⌄│
+├───────────────────────────────────────┤
+│ ▐2/4▌ Panca piana con bilanciere      │  linguetta di legno + targa chiara
 │ 4 serie da 8–12, recupero 2 min       │
 │ Sedile al 4                           │
 │ 4 giorni fa: 80×10 / 80×9 / 80×8      │
-│                                       │
-│  R     60 kg          10         ✓    │  riscaldamento, attenuato
-│  1   − 80 kg +     − 10 +        ✓    │  completata
-│  2   − 80 kg +     −  9 +       [ ]   │  serie corrente, evidenziata
-│  3   − 80 kg +     −  8 +       [ ]   │
-│  4   − 80 kg +     −  8 +       [ ]   │
-│                                       │
-│  Aggiungi serie    Aggiungi riscald.  │
-│                                       │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━│  filetto pieno in luce
+│  R      60 kg  × 10                ●  │  riscaldamento, una luce grigia
+│  1    82,5 kg  × 10            ● ● ●  │  completata, luci verdi
+│█ Serie 2 ████████████ Dischi  cestino │  banda blu della serie corrente
+│  [−]      82,5      kg          [+]   │  stepper da 56 pt, valori a 44 px
+│  [−]         9      rip         [+]   │
+│  [         Conferma serie         ]   │
+│  3    82,5 kg  × 8             ○ ○ ○  │  prevista
 │  ‹ Precedente            Successivo › │
-├───────────────────────────────────────┤
-│  Recupero    1:42      +15 s   Salta  │  barra fissa, linea che si svuota
+├━━━━━━━━━━━━━━━━━━━━━━─────────────────┤  filo di legno che si accorcia
+│  Recupero                             │
+│  1:42                  +15 s   Salta  │  orologio, cifre da 72 px
 └───────────────────────────────────────┘
 ```
 
@@ -609,6 +610,15 @@ La palette nasce dal codice colore dei dischi olimpici (25 kg rosso, 20 blu, 15 
 - [x] Superserie (`supersetKey`): esercizi alternati, timer solo a fine giro
 - [x] Peso corporeo
 - [x] Calcolatore dei dischi, con bilanciere da 20 kg di default
+
+### Redesign "Pedana di gara"
+
+- [x] Token, carattere Archivo, base e primitive
+- [x] Modalità allenamento: sottopancia, tabellone delle serie, orologio del recupero, record in sovraimpressione
+- [x] Oggi, riepilogo, programmi, libreria, storico, progressi, impostazioni
+- [x] Icone, dati dimostrativi e screenshot di revisione
+- [x] Revisione finale impeccable e `DESIGN.md`
+- [ ] Criteri sul telefono: allenamento completo in modalità aereo, ripresa dopo chiusura forzata, notifica del recupero a schermo bloccato, reduced motion
 
 ## 13. Libreria esercizi iniziale
 

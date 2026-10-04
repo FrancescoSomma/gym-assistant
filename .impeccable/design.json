@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T00:00:00Z",
+  "title": "Design System: Palestra",
+  "extensions": {
+    "colorMeta": {
+      "arena": { "role": "neutral", "displayName": "Arena", "canonical": "#0b0c0e", "tonalRamp": ["#0b0c0e", "#17191d", "#23262b", "#3a3e44", "#5c6168", "#8f949b", "#c4c6c8", "#f2f1ec"] },
+      "tribuna": { "role": "neutral", "displayName": "Tribuna", "canonical": "#17191d", "tonalRamp": ["#0b0c0e", "#17191d", "#23262b", "#3a3e44", "#5c6168", "#8f949b", "#c4c6c8", "#f2f1ec"] },
+      "fondale": { "role": "neutral", "displayName": "Fondale", "canonical": "#23262b", "tonalRamp": ["#0b0c0e", "#17191d", "#23262b", "#3a3e44", "#5c6168", "#8f949b", "#c4c6c8", "#f2f1ec"] },
+      "luce": { "role": "neutral", "displayName": "Luce", "canonical": "#f2f1ec", "tonalRamp": ["#23262b", "#5c6168", "#8f949b", "#b4b6b6", "#cfcfcb", "#e0dfda", "#f2f1ec", "#fbfbf9"] },
+      "fumo": { "role": "neutral", "displayName": "Fumo", "canonical": "#8f949b", "tonalRamp": ["#23262b", "#3a3e44", "#5c6168", "#767b82", "#8f949b", "#a9adb3", "#c4c6c8", "#e0e1e2"] },
+      "acciaio": { "role": "neutral", "displayName": "Acciaio", "canonical": "#9aa0a6", "tonalRamp": ["#23262b", "#3a3e44", "#5c6168", "#787d83", "#9aa0a6", "#b2b6bb", "#cbced1", "#e4e5e7"] },
+      "filetto": { "role": "neutral", "displayName": "Filetto", "canonical": "rgb(242 241 236 / 0.14)", "tonalRamp": [] },
+      "pedana": { "role": "secondary", "displayName": "Platform Wood", "canonical": "#b8875a", "tonalRamp": ["#2e2112", "#4d3822", "#6f5136", "#8f6a46", "#b8875a", "#caa17a", "#dcbf9f", "#efe0cf"] },
+      "plate-blue": { "role": "primary", "displayName": "Plate Blue", "canonical": "#2453d6", "tonalRamp": ["#0a1740", "#10277a", "#1a3fae", "#2453d6", "#4f77e3", "#7d9aea", "#adc0f2", "#dce4fa"] },
+      "plate-green": { "role": "tertiary", "displayName": "Plate Green", "canonical": "#2ba55b", "tonalRamp": ["#0a2916", "#12472a", "#1b6b3e", "#2ba55b", "#52bb7d", "#7fcf9f", "#b0e1c3", "#def3e6"] },
+      "plate-yellow": { "role": "tertiary", "displayName": "Plate Yellow", "canonical": "#f6d43a", "tonalRamp": ["#403506", "#6f5c0b", "#a58a14", "#d4b525", "#f6d43a", "#f9e17a", "#fbecaa", "#fdf7de"] },
+      "plate-red": { "role": "tertiary", "displayName": "Plate Red", "canonical": "#d93a2f", "tonalRamp": ["#3f0f0c", "#701a15", "#a62921", "#d93a2f", "#e4685f", "#ec928b", "#f4bcb8", "#fae3e1"] },
+      "plate-white": { "role": "neutral", "displayName": "Plate White", "canonical": "#f2f1ec", "tonalRamp": [] }
+    },
+    "typographyMeta": {
+      "bib": { "displayName": "Bib", "purpose": "Largest result figure on the summary; num face." },
+      "timer": { "displayName": "Timer", "purpose": "Rest clock digits; num face." },
+      "value": { "displayName": "Value", "purpose": "Stepper values of the current set; num face." },
+      "large": { "displayName": "Large", "purpose": "Title of the four tab screens; plate face." },
+      "score": { "displayName": "Score", "purpose": "Numbers on the set board; num face." },
+      "step": { "displayName": "Step", "purpose": "Stepper values in sheets and forms; num face." },
+      "name": { "displayName": "Name", "purpose": "Exercise name on the light plate; plate face." },
+      "title": { "displayName": "Title", "purpose": "Screen and sheet titles; plate face." },
+      "body": { "displayName": "Body", "purpose": "Running text and buttons; roman Archivo." },
+      "small": { "displayName": "Small", "purpose": "Chips and secondary actions." },
+      "label": { "displayName": "Label", "purpose": "Section titles, units, column heads; sentence case, 87.5% width." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default for every enter, press and slide." },
+      { "name": "ease-in", "value": "cubic-bezier(0.5, 0, 0.75, 0)", "purpose": "Sheet and backdrop exit." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.65, 0, 0.35, 1)", "purpose": "Symmetric moves." },
+      { "name": "wipe", "value": "240ms ease-out, clip-path inset from the left", "purpose": "The broadcast graphic uncovering itself; the world's native motion." },
+      { "name": "enter-forward / enter-back", "value": "240ms ease-out, translateX(+/-24px) + fade", "purpose": "Screen transitions." },
+      { "name": "enter-fade", "value": "160ms ease-out", "purpose": "Fades and backdrop in (320ms)." },
+      { "name": "enter-rise", "value": "320ms ease-out, translateY(32px) + fade", "purpose": "Rising panels." },
+      { "name": "light-on", "value": "180ms ease-out, scale 0.4 to 1 + fade, 70ms stagger", "purpose": "Judges' lights on set confirm." },
+      { "name": "press", "value": "120ms ease-out, scale 0.97 (steppers 0.94)", "purpose": "Button press feedback." },
+      { "name": "sheet", "value": "in 320ms ease-out, out 200ms ease-in, translateY(100%)", "purpose": "Bottom sheets." },
+      { "name": "timer-wire", "value": "250ms linear transform on a 3px wood bar", "purpose": "Shortening clock wire." },
+      { "name": "reduced-motion", "value": "all transition/animation durations and delays 0s; motion library reducedMotion: user", "purpose": "prefers-reduced-motion behaviour." }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one blue action, e.g. Conferma serie.",
+      "html": "<button class=\"ds-btn-primary\">Conferma serie</button>",
+      "css": ".ds-btn-primary { display:flex; align-items:center; justify-content:center; width:100%; min-height:56px; padding:0 16px; border:0; border-radius:6px; background:var(--color-plate-blue,#2453d6); color:var(--color-luce,#f2f1ec); font:600 17px/1.4 Archivo, system-ui, sans-serif; transition:transform 120ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-primary:active { transform:scale(0.97); } .ds-btn-primary:focus-visible { outline:2px solid #f2f1ec; outline-offset:2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Neutral action on fondale.",
+      "html": "<button class=\"ds-btn-secondary\">Annulla</button>",
+      "css": ".ds-btn-secondary { display:flex; align-items:center; justify-content:center; width:100%; min-height:56px; padding:0 16px; border:0; border-radius:6px; background:#23262b; color:#f2f1ec; font:600 17px/1.4 Archivo, system-ui, sans-serif; transition:transform 120ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-secondary:active { transform:scale(0.97); } .ds-btn-secondary:focus-visible { outline:2px solid #f2f1ec; outline-offset:2px; }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Filter chip, inverts to luce when pressed.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"true\">Petto</button>",
+      "css": ".ds-chip { display:inline-flex; align-items:center; min-height:44px; padding:0 16px; border:0; border-radius:6px; background:#23262b; color:#f2f1ec; font:600 15px/1.35 Archivo, system-ui, sans-serif; } .ds-chip[aria-pressed=true] { background:#f2f1ec; color:#0b0c0e; } .ds-chip:focus-visible { outline:2px solid #f2f1ec; outline-offset:2px; }"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Text field with a bottom border that lights on focus.",
+      "html": "<input class=\"ds-field\" placeholder=\"Nome\">",
+      "css": ".ds-field { width:100%; box-sizing:border-box; padding:12px; border:0; border-bottom:1.5px solid transparent; border-radius:6px; background:#23262b; color:#f2f1ec; font:400 17px/1.4 Archivo, system-ui, sans-serif; outline:none; } .ds-field::placeholder { color:#8f949b; } .ds-field:focus { border-bottom-color:#f2f1ec; }"
+    },
+    {
+      "name": "Lower third",
+      "kind": "custom",
+      "refersTo": "name-plate",
+      "description": "Wood tab with the set count and the light name plate.",
+      "html": "<div class=\"ds-lt\"><span class=\"ds-tab\">2/4</span><span class=\"ds-plate\">Panca piana</span></div>",
+      "css": ".ds-lt { display:flex; align-items:stretch; font-family:Archivo, system-ui, sans-serif; } .ds-tab { display:inline-flex; align-items:center; padding:0 14px 0 8px; background:#b8875a; color:#0b0c0e; border-radius:2px 0 0 2px; clip-path:polygon(0 0,100% 0,calc(100% - 6px) 100%,0 100%); font-style:italic; font-stretch:62%; font-weight:800; font-size:22px; } .ds-plate { padding:8px 10px; background:#f2f1ec; color:#0b0c0e; font-style:italic; font-stretch:75%; font-weight:800; font-size:26px; line-height:1.1; }"
+    },
+    {
+      "name": "Judges' lights",
+      "kind": "custom",
+      "refersTo": "set-row-current",
+      "description": "Three lights per set: green when done, outlined while to do.",
+      "html": "<span class=\"ds-lights\"><i class=\"on\"></i><i class=\"on\"></i><i></i></span>",
+      "css": ".ds-lights { display:flex; gap:4px; } .ds-lights i { width:10px; height:10px; box-sizing:border-box; border-radius:50%; border:1.5px solid rgb(143 148 155 / 0.7); } .ds-lights i.on { background:#2ba55b; border:0; }"
+    },
+    {
+      "name": "Current set band",
+      "kind": "custom",
+      "refersTo": "set-row-current",
+      "description": "The current set as a blue band with a large stepper value.",
+      "html": "<div class=\"ds-band\"><button class=\"ds-step\">-</button><span class=\"ds-val\">82,5</span><button class=\"ds-step\">+</button></div>",
+      "css": ".ds-band { display:flex; align-items:center; gap:8px; padding:12px 16px; background:#2453d6; color:#f2f1ec; } .ds-step { width:56px; height:56px; border:0; border-radius:6px; background:#23262b; color:#f2f1ec; font-size:24px; } .ds-val { flex:1; text-align:center; font:italic 800 44px/1 Archivo, system-ui, sans-serif; font-stretch:62%; font-variant-numeric:tabular-nums; }"
+    },
+    {
+      "name": "Timer bar",
+      "kind": "custom",
+      "refersTo": "timer-bar",
+      "description": "Full-width rest clock with a shortening wood wire.",
+      "html": "<div class=\"ds-timer\"><i class=\"wire\"></i><span class=\"lbl\">Recupero</span><span class=\"clk\">1:30</span></div>",
+      "css": ".ds-timer { position:relative; display:flex; flex-direction:column; justify-content:center; min-height:96px; padding:0 16px; background:#17191d; color:#f2f1ec; font-family:Archivo, system-ui, sans-serif; } .ds-timer .wire { position:absolute; left:0; right:0; top:0; height:3px; background:#b8875a; transform-origin:left; transform:scaleX(0.6); } .ds-timer .lbl { font:600 13px/1.3 Archivo, sans-serif; font-stretch:87.5%; color:#8f949b; } .ds-timer .clk { font-style:italic; font-stretch:62%; font-weight:800; font-size:72px; line-height:1; font-variant-numeric:tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Pedana di gara",
+    "overview": "Every set is an attempt on the platform and the rest is the meet clock: the app is the broadcast graphics of a weightlifting competition with one athlete. A dark arena carries the light-coloured numbers, wood marks tabs, the clock wire and references, and the plate colours each keep one meaning. It is built to be read at arm's length under strong gym light and operated with one thumb.\n\nDensity is that of a scoreboard: big condensed italic numbers, one-pixel rules, near-square corners, no shadows. The felt moment is the set confirmation: three lights come on, the blue band slides to the next set, the clock starts.\n\nThe system rejects the rounded-card fitness dashboard, progress rings and neon accents.",
+    "keyCharacteristics": [
+      "Dark only (color-scheme: dark), arena ground, tribuna panels, luce text.",
+      "Numbers in extra-condensed black italic; names in a condensed black italic plate face; text in roman Archivo.",
+      "Blue means act / current, green means done, yellow means record, red is destructive (icon only), wood is reference.",
+      "Hairlines (0.5px) instead of boxes; flat, no shadow anywhere.",
+      "Tap targets 44px minimum, 56px on the workout path."
+    ],
+    "rules": [
+      { "name": "The One Meaning Rule", "body": "Each plate colour carries one meaning (blue act, green done, yellow record, red destroy). Never use one as decoration.", "section": "colors" },
+      { "name": "The Wood Is Reference Rule", "body": "Pedana wood marks labels, the clock wire and reference bands; it is never a button fill.", "section": "colors" },
+      { "name": "The Tabellone Rule", "body": "Every number on screen uses the num face: italic, 62% width, 800, tabular figures.", "section": "typography" },
+      { "name": "The Targa Rule", "body": "Names and large titles use the plate face: italic, 75% width, 800.", "section": "typography" },
+      { "name": "The Sentence Case Rule", "body": "Labels are sentence case and never all caps.", "section": "typography" },
+      { "name": "The 16px Input Rule", "body": "Inputs are never below 16px (max(16px, 1em)); weights use decimal keyboard, reps numeric.", "section": "typography" },
+      { "name": "The No Shadow Rule", "body": "No box-shadow in the system. Separation comes from tone and hairlines.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do set every number in the num face and every name in the plate face.",
+      "Do use plate blue for the single current action, green for done, yellow for record.",
+      "Do separate with 0.5px filetto hairlines and tone steps (arena, tribuna, fondale).",
+      "Do keep taps at 44px and workout-path controls at 56px, inputs at 16px or more.",
+      "Do compute everything from the fixed px type scale; add a step only when a new role needs one.",
+      "Do reveal graphics with the left-to-right wipe or the 240ms ease-out slide; honour reduced motion."
+    ],
+    "donts": [
+      "Don't add shadows, gradients or rounded dashboard cards.",
+      "Don't use progress rings or a neon accent.",
+      "Don't set labels in all caps.",
+      "Don't use wood as a button fill or a plate colour for decoration.",
+      "Don't use red for text (4.3:1 on arena); use the icon.",
+      "Don't put an animation on a transform that must persist (fixed or sticky children)."
+    ]
+  }
+}
