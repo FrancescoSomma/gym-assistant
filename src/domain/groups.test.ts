@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { startOfWeek } from './dates';
-import { setsByGroup, weeklySetsByGroup } from './groups';
+import { inGroupBand, setsByGroup, weeklySetsByGroup } from './groups';
 
 const bench = { muscleGroup: 'chest', secondaryGroups: ['triceps', 'shoulders'] } as const;
 const squat = { muscleGroup: 'legs', secondaryGroups: [] } as const;
@@ -41,5 +41,14 @@ describe('weeklySetsByGroup', () => {
     expect(weeks.at(-1)?.totals.back).toBe(2);
     expect(weeks.at(-2)?.totals.back).toBe(1);
     expect(weeks.reduce((sum, w) => sum + w.totals.back, 0)).toBe(3);
+  });
+});
+
+describe('inGroupBand', () => {
+  it('includes both ends of the indicative 10–20 band', () => {
+    expect(inGroupBand(10)).toBe(true);
+    expect(inGroupBand(20)).toBe(true);
+    expect(inGroupBand(9.5)).toBe(false);
+    expect(inGroupBand(20.5)).toBe(false);
   });
 });

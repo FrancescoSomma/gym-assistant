@@ -40,7 +40,7 @@ export default function BodyweightChart({ entries }: { entries: Bodyweight[] }) 
         cx={cx}
         cy={cy}
         r={5}
-        fill={CHART.chalk}
+        fill={CHART.luce}
         stroke={CHART.surface}
         strokeWidth={2}
       />
@@ -51,7 +51,7 @@ export default function BodyweightChart({ entries }: { entries: Bodyweight[] }) 
   return (
     <section className="pt-4">
       <div className="flex items-baseline justify-between px-4">
-        <h2 className="text-small text-steel">Andamento</h2>
+        <h2 className="text-small text-fumo">Andamento</h2>
         <p className="num text-title">{formatNumber(last.kg)} kg</p>
       </div>
       <div
@@ -78,7 +78,7 @@ export default function BodyweightChart({ entries }: { entries: Bodyweight[] }) 
               {...AXIS}
             />
             <Tooltip
-              cursor={{ stroke: CHART.steel, strokeWidth: 1 }}
+              cursor={{ stroke: CHART.fumo, strokeWidth: 1 }}
               isAnimationActive={false}
               content={({ active, payload }) => {
                 const p = (payload?.[0] as { payload?: Point } | undefined)?.payload;
@@ -92,12 +92,12 @@ export default function BodyweightChart({ entries }: { entries: Bodyweight[] }) 
             />
             <Line
               dataKey="kg"
-              stroke={CHART.chalk}
+              stroke={CHART.luce}
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
               dot={renderDot}
-              activeDot={{ r: 5, fill: CHART.chalk, stroke: CHART.surface, strokeWidth: 2 }}
+              activeDot={{ r: 5, fill: CHART.luce, stroke: CHART.surface, strokeWidth: 2 }}
               isAnimationActive={false}
             />
           </LineChart>

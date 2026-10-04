@@ -68,23 +68,23 @@ export default function ConsistencyView() {
           <button
             type="button"
             aria-label="Mese precedente"
-            className="flex size-11 items-center justify-center text-steel"
+            className="flex size-11 items-center justify-center text-fumo"
             onClick={() => shift(-1)}
           >
             <ChevronLeft />
           </button>
-          <h2 className="font-semibold first-letter:uppercase">{formatMonth(monthStart)}</h2>
+          <h2 className="plate text-title first-letter:uppercase">{formatMonth(monthStart)}</h2>
           <button
             type="button"
             aria-label="Mese successivo"
             disabled={isCurrentMonth}
-            className="flex size-11 items-center justify-center text-steel disabled:opacity-30"
+            className="flex size-11 items-center justify-center text-fumo disabled:opacity-30"
             onClick={() => shift(1)}
           >
             <ChevronRight />
           </button>
         </div>
-        <ol className="grid grid-cols-7 text-center text-tiny text-steel" aria-hidden="true">
+        <ol className="grid grid-cols-7 text-center label-text text-fumo" aria-hidden="true">
           {WEEKDAYS.map(([key, short]) => (
             <li key={key} className="py-1">
               {short}
@@ -101,7 +101,7 @@ export default function ConsistencyView() {
                 <span
                   role="img"
                   aria-label={`${cell.day}${done ? ', allenamento' : ''}${dateKey === today ? ', oggi' : ''}`}
-                  className={`num flex size-9 items-center justify-center rounded-full text-body ${done ? 'bg-chalk text-rubber' : 'text-steel'} ${dateKey === today ? 'ring-1 ring-chalk' : ''}`}
+                  className={`num flex size-9 items-center justify-center rounded-full text-body ${done ? 'bg-luce text-arena' : 'text-fumo'} ${dateKey === today ? 'ring-[1.5px] ring-pedana' : ''}`}
                 >
                   {cell.day}
                 </span>
@@ -109,7 +109,7 @@ export default function ConsistencyView() {
             );
           })}
         </ol>
-        <p className="pt-2 text-small text-steel">
+        <p className="pt-2 text-small text-fumo">
           {countLabel(
             countInMonth(startedAts, shown.year, shown.month),
             'allenamento',
@@ -121,7 +121,7 @@ export default function ConsistencyView() {
 
       <section>
         <h2 className="section-title">Allenamenti per settimana</h2>
-        <p className="px-4 pb-2 text-small text-steel">
+        <p className="px-4 pb-2 text-small text-fumo">
           In chiaro le settimane in cui hai raggiunto l'obiettivo di {goal}.
         </p>
         <div
@@ -147,12 +147,13 @@ export default function ConsistencyView() {
               />
               <ReferenceLine
                 y={goal}
-                stroke={CHART.chalk}
-                strokeOpacity={0.6}
+                stroke={CHART.pedana}
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
                 label={{
                   value: `Obiettivo ${goal}`,
                   position: 'insideBottomRight', // above the line: the current week's bar ends at it
-                  fill: CHART.steel,
+                  fill: CHART.pedana,
                   fontSize: 13,
                 }}
               />
@@ -170,9 +171,9 @@ export default function ConsistencyView() {
                   ) : null;
                 }}
               />
-              <Bar dataKey="count" maxBarSize={24} radius={[4, 4, 0, 0]} isAnimationActive={false}>
+              <Bar dataKey="count" maxBarSize={24} radius={[2, 2, 0, 0]} isAnimationActive={false}>
                 {weeks.map((w) => (
-                  <Cell key={w.weekStart} fill={w.count >= goal ? CHART.chalk : CHART.steel} />
+                  <Cell key={w.weekStart} fill={w.count >= goal ? CHART.luce : CHART.fumo} />
                 ))}
               </Bar>
             </BarChart>
@@ -182,7 +183,7 @@ export default function ConsistencyView() {
           <summary className="section-title min-h-11 cursor-pointer">Mostra i dati</summary>
           <table className="w-full text-small tabular-nums">
             <thead>
-              <tr className="text-steel">
+              <tr className="text-fumo">
                 <th scope="col" className="pl-4 text-left font-normal">
                   Settimana del
                 </th>
@@ -193,7 +194,7 @@ export default function ConsistencyView() {
             </thead>
             <tbody>
               {[...weeks].reverse().map((w) => (
-                <tr key={w.weekStart} className="border-b border-steel/25">
+                <tr key={w.weekStart} className="rule-b">
                   <td className="py-2 pl-4">{formatShortDateYear(w.weekStart)}</td>
                   <td className="pr-4 text-right">
                     {w.count} di {goal}

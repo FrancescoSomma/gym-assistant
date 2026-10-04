@@ -64,11 +64,11 @@ export function BodyweightScreen() {
 
       <h2 className="section-title">Misurazioni</h2>
       {entries.length === 0 ? (
-        <p className="px-4 text-steel">
+        <p className="px-4 text-fumo">
           Nessuna misurazione. Registra il peso di oggi per iniziare.
         </p>
       ) : (
-        <ul className="border-t border-steel/25">
+        <ul className="rule-t">
           {entries.map((entry) => {
             const day = formatDateYear(dateKeyToTs(entry.date));
             return (

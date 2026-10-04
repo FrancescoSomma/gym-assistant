@@ -16,7 +16,7 @@ import { AXIS, CHART, TooltipBox } from '../../components/chartTheme';
 import { listGroupEntries } from '../../db/history';
 import { lastWeekStarts } from '../../domain/dates';
 import { formatNumber, formatShortDate, formatShortDateYear } from '../../domain/format';
-import { GROUP_BAND, weeklySetsByGroup } from '../../domain/groups';
+import { GROUP_BAND, inGroupBand, weeklySetsByGroup } from '../../domain/groups';
 import { MUSCLE_GROUPS, type MuscleGroup } from '../../types';
 
 const GROUPS = Object.entries(MUSCLE_GROUPS) as [MuscleGroup, string][];
@@ -43,9 +43,9 @@ export default function GroupsView() {
     <>
       <section>
         <h2 className="section-title">Serie di questa settimana</h2>
-        <p className="px-4 pb-2 text-small text-steel">
-          La fascia chiara, da {GROUP_BAND.min} a {GROUP_BAND.max} serie, è un riferimento
-          indicativo. I gruppi secondari contano mezza serie.
+        <p className="px-4 pb-2 text-small text-fumo">
+          La fascia da {GROUP_BAND.min} a {GROUP_BAND.max} serie è un riferimento indicativo: le
+          barre chiare ci stanno dentro. I gruppi secondari contano mezza serie.
         </p>
         <div
           className="h-72 pr-2"
@@ -61,23 +61,20 @@ export default function GroupsView() {
               <ReferenceArea
                 x1={GROUP_BAND.min}
                 x2={GROUP_BAND.max}
-                fill={CHART.hover}
+                fill={CHART.band}
                 stroke="none"
               />
               <CartesianGrid horizontal={false} stroke={CHART.grid} />
               <XAxis type="number" domain={[0, top]} ticks={ticks} {...AXIS} />
               <YAxis type="category" dataKey="label" width={84} {...AXIS} />
-              <Bar
-                dataKey="sets"
-                fill={CHART.chalk}
-                maxBarSize={24}
-                radius={[0, 4, 4, 0]}
-                isAnimationActive={false}
-              >
+              <Bar dataKey="sets" maxBarSize={24} radius={[0, 2, 2, 0]} isAnimationActive={false}>
+                {rows.map((r) => (
+                  <Cell key={r.key} fill={inGroupBand(r.sets) ? CHART.luce : CHART.fumo} />
+                ))}
                 <LabelList
                   dataKey="sets"
                   position="right"
-                  fill={CHART.chalk}
+                  fill={CHART.luce}
                   fontSize={13}
                   formatter={(value) => formatNumber(Number(value))}
                 />
@@ -112,7 +109,7 @@ export default function GroupsView() {
               <ReferenceArea
                 y1={GROUP_BAND.min}
                 y2={GROUP_BAND.max}
-                fill={CHART.hover}
+                fill={CHART.band}
                 stroke="none"
               />
               <CartesianGrid vertical={false} stroke={CHART.grid} />
@@ -137,9 +134,9 @@ export default function GroupsView() {
                   ) : null;
                 }}
               />
-              <Bar dataKey="sets" maxBarSize={24} radius={[4, 4, 0, 0]} isAnimationActive={false}>
+              <Bar dataKey="sets" maxBarSize={24} radius={[2, 2, 0, 0]} isAnimationActive={false}>
                 {trend.map((t) => (
-                  <Cell key={t.weekStart} fill={t.current ? CHART.chalk : CHART.steel} />
+                  <Cell key={t.weekStart} fill={t.current ? CHART.luce : CHART.fumo} />
                 ))}
               </Bar>
             </BarChart>
@@ -149,7 +146,7 @@ export default function GroupsView() {
           <summary className="section-title min-h-11 cursor-pointer">Mostra i dati</summary>
           <table className="w-full text-small tabular-nums">
             <thead>
-              <tr className="text-steel">
+              <tr className="text-fumo">
                 <th scope="col" className="pl-4 text-left font-normal">
                   Settimana del
                 </th>
@@ -160,7 +157,7 @@ export default function GroupsView() {
             </thead>
             <tbody>
               {[...trend].reverse().map((t) => (
-                <tr key={t.weekStart} className="border-b border-steel/25">
+                <tr key={t.weekStart} className="rule-b">
                   <td className="py-2 pl-4">{formatShortDateYear(t.weekStart)}</td>
                   <td className="pr-4 text-right">{formatNumber(t.sets)}</td>
                 </tr>

@@ -25,7 +25,7 @@ export function ProgressScreen() {
   const tab = TABS.find(([key]) => key === params.get('tab'))?.[0] ?? 'exercises';
   return (
     <>
-      <Header title="Progressi" />
+      <Header large title="Progressi" />
       <div className="px-4 pb-2">
         <Segmented<Tab>
           options={TABS}
@@ -50,13 +50,13 @@ function ExerciseProgress() {
   if (!rows || latest === undefined) return null;
   return (
     <>
-      <Link to="/progress/bodyweight" className="row border-t border-steel/25">
+      <Link to="/progress/bodyweight" className="row rule-t">
         <span className="flex-1">Peso corporeo</span>
         {latest && <span className="num text-title">{formatNumber(latest.kg)} kg</span>}
-        <ChevronRight size={20} className="shrink-0 text-steel" />
+        <ChevronRight size={20} className="shrink-0 text-fumo" />
       </Link>
       {rows.length === 0 ? (
-        <p className="px-4 py-6 text-steel">
+        <p className="px-4 py-6 text-fumo">
           Nessun progresso da mostrare. Completa un allenamento e torna qui.
         </p>
       ) : (
@@ -72,7 +72,7 @@ function ExerciseProgress() {
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block truncate">{exercise.name}</span>
-                    <span className="block text-small text-steel">
+                    <span className="block text-small text-fumo">
                       Ultima volta {relativeDay(lastAt)}
                     </span>
                   </span>
@@ -81,12 +81,12 @@ function ExerciseProgress() {
                       <span className="num block text-title">
                         {formatRecord(headline.kind, headline.value)}
                       </span>
-                      <span className="block text-tiny text-steel">
+                      <span className="block label-text text-fumo">
                         {RECORD_LABELS[headline.kind]}
                       </span>
                     </span>
                   )}
-                  <ChevronRight size={20} className="shrink-0 text-steel" />
+                  <ChevronRight size={20} className="shrink-0 text-fumo" />
                 </Link>
               </li>
             );

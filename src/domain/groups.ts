@@ -10,6 +10,10 @@ export interface GroupEntry {
 /** Indicative weekly range shown on the charts (SPEC §8.2). */
 export const GROUP_BAND = { min: 10, max: 20 };
 
+/** Whether a weekly count sits inside the indicative band: those bars are drawn bright. */
+export const inGroupBand = (sets: number): boolean =>
+  sets >= GROUP_BAND.min && sets <= GROUP_BAND.max;
+
 /** SPEC §8.2: 1 for the main group, 0.5 for each secondary group. */
 export function setsByGroup(
   entries: Pick<GroupEntry, 'muscleGroup' | 'secondaryGroups'>[],

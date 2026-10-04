@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -72,12 +73,12 @@ export default function ExerciseCharts({
   const last = valued[valued.length - 1];
   const lastVolume = points[points.length - 1]?.volume ?? 0;
 
-  // Yellow means record and nothing else; the latest point gets a chalk end-dot; others none.
+  // Yellow means record and nothing else; the latest point gets a light end-dot; others none.
   const renderDot = ({ cx, cy, index, payload }: DotProps): ReactElement => {
     const fill = payload?.record
       ? CHART.yellow
       : index === valued.length - 1
-        ? CHART.chalk
+        ? CHART.luce
         : undefined;
     if (cx === undefined || cy === undefined || !fill) return <g key={`dot-${index}`} />;
     return (
@@ -101,15 +102,19 @@ export default function ExerciseCharts({
       </div>
 
       {points.length < 2 ? (
-        <p className="px-4 text-steel">{TOO_FEW}</p>
+        <p className="px-4 text-fumo">{TOO_FEW}</p>
       ) : (
         <>
           <div className="flex items-baseline justify-between px-4">
-            <h3 className="text-small text-steel">{metric.title} per sessione</h3>
-            {last && <p className="num text-title">{metric.format(last.value)}</p>}
+            <h3 className="text-small text-fumo">{metric.title} per sessione</h3>
+            {last && (
+              <p className={`num text-title ${last.record ? 'text-plate-yellow' : ''}`}>
+                {metric.format(last.value)}
+              </p>
+            )}
           </div>
           {!first || !last || valued.length < 2 ? (
-            <p className="px-4 pt-1 text-small text-steel">
+            <p className="px-4 pt-1 text-small text-fumo">
               {tracking === 'weight_reps'
                 ? 'Il massimale stimato si calcola su serie fino a 12 ripetizioni.'
                 : TOO_FEW}
@@ -139,7 +144,7 @@ export default function ExerciseCharts({
                     {...AXIS}
                   />
                   <Tooltip
-                    cursor={{ stroke: CHART.steel, strokeWidth: 1 }}
+                    cursor={{ stroke: CHART.fumo, strokeWidth: 1 }}
                     isAnimationActive={false}
                     content={({ active, payload }) => {
                       const p = pointOf(payload);
@@ -153,12 +158,12 @@ export default function ExerciseCharts({
                   />
                   <Line
                     dataKey="value"
-                    stroke={CHART.chalk}
+                    stroke={CHART.luce}
                     strokeWidth={2}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     dot={renderDot}
-                    activeDot={{ r: 5, fill: CHART.chalk, stroke: CHART.surface, strokeWidth: 2 }}
+                    activeDot={{ r: 5, fill: CHART.luce, stroke: CHART.surface, strokeWidth: 2 }}
                     isAnimationActive={false}
                   />
                 </LineChart>
@@ -169,7 +174,7 @@ export default function ExerciseCharts({
           {tracking === 'weight_reps' && (
             <>
               <div className="flex items-baseline justify-between px-4 pt-6">
-                <h3 className="text-small text-steel">Volume per sessione</h3>
+                <h3 className="text-small text-fumo">Volume per sessione</h3>
                 <p className="num text-title">{formatNumber(lastVolume)} kg</p>
               </div>
               <div
@@ -202,11 +207,17 @@ export default function ExerciseCharts({
                     />
                     <Bar
                       dataKey="volume"
-                      fill={CHART.steel}
                       maxBarSize={24}
-                      radius={[4, 4, 0, 0]}
+                      radius={[2, 2, 0, 0]}
                       isAnimationActive={false}
-                    />
+                    >
+                      {points.map((p, i) => (
+                        <Cell
+                          key={p.sessionId}
+                          fill={i === points.length - 1 ? CHART.luce : CHART.fumo}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -218,15 +229,17 @@ export default function ExerciseCharts({
       {records.length > 0 && (
         <>
           <h3 className="section-title">Record</h3>
-          <table className="w-full border-t border-steel/25">
+          <table className="w-full border-t border-luce">
             <tbody>
               {records.map((r) => (
-                <tr key={r.kind} className="border-b border-steel/25">
+                <tr key={r.kind} className="rule-b">
                   <th scope="row" className="py-3 pl-4 text-left font-normal">
                     {RECORD_LABELS[r.kind]}
                   </th>
-                  <td className="num text-right text-title">{formatRecord(r.kind, r.value)}</td>
-                  <td className="w-20 pr-4 pl-3 text-right text-small whitespace-nowrap text-steel">
+                  <td className="num text-right text-title text-plate-yellow">
+                    {formatRecord(r.kind, r.value)}
+                  </td>
+                  <td className="w-20 pr-4 pl-3 text-right text-small whitespace-nowrap text-fumo">
                     {formatShortDateYear(r.startedAt)}
                   </td>
                 </tr>
@@ -241,7 +254,7 @@ export default function ExerciseCharts({
           <summary className="section-title min-h-11 cursor-pointer">Mostra i dati</summary>
           <table className="w-full text-small tabular-nums">
             <thead>
-              <tr className="text-steel">
+              <tr className="text-fumo">
                 <th scope="col" className="pl-4 text-left font-normal">
                   Data
                 </th>
@@ -257,7 +270,7 @@ export default function ExerciseCharts({
             </thead>
             <tbody>
               {[...points].reverse().map((p) => (
-                <tr key={p.sessionId} className="border-b border-steel/25">
+                <tr key={p.sessionId} className="rule-b">
                   <td className="py-2 pl-4 whitespace-nowrap">
                     {formatShortDateYear(p.startedAt)}
                   </td>

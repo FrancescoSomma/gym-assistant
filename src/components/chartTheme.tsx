@@ -1,26 +1,35 @@
-// Recharts takes color strings, not classes: these mirror the @theme tokens in src/styles/index.css.
+import { Tab } from './Tab';
+
+// Recharts takes colour strings, not classes: these mirror the @theme tokens in src/styles/index.css.
 export const CHART = {
-  chalk: '#EDEBE6',
-  steel: '#9C978E',
-  yellow: '#F0C419', // records only
-  surface: '#1F1E1C',
-  grid: 'rgba(156, 151, 142, 0.25)',
-  hover: 'rgba(156, 151, 142, 0.15)',
+  luce: '#F2F1EC',
+  fumo: '#8F949B',
+  pedana: '#B8875A', // reference bands and goal lines
+  yellow: '#F6D43A', // records only
+  surface: '#0B0C0E',
+  grid: 'rgba(242, 241, 236, 0.14)',
+  hover: 'rgba(242, 241, 236, 0.08)',
+  band: 'rgba(184, 135, 90, 0.18)',
 } as const;
 
-/** Recessive axes: no lines, steel 13px ticks. */
+/** Recessive axes: no lines, fumo 13px ticks with tabular figures. */
 export const AXIS = {
-  tick: { fill: CHART.steel, fontSize: 13 },
+  tick: {
+    fill: CHART.fumo,
+    fontSize: 13,
+    fontFamily: 'Archivo, system-ui, sans-serif',
+    style: { fontVariantNumeric: 'tabular-nums' },
+  },
   tickLine: false,
   axisLine: false,
 } as const;
 
-/** Values lead, labels follow: the number is the strong element. */
+/** A small lower third: the label on the wood tab, the value on the scoreboard. */
 export function TooltipBox({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-control bg-iron px-3 py-2">
-      <p className="num text-title">{value}</p>
-      <p className="text-tiny text-steel">{label}</p>
+    <div className="bg-tribuna">
+      <Tab className="py-0.5 label-text">{label}</Tab>
+      <p className="num px-3 py-1.5 text-title">{value}</p>
     </div>
   );
 }
