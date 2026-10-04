@@ -18,7 +18,11 @@ interface Props {
 
 const SAFE_BOTTOM = 'pb-[env(safe-area-inset-bottom)]';
 
-/** SPEC §7.1. Remaining time always comes from endAt, recomputed every 250 ms and on visibility. */
+/**
+ * The competition clock (SPEC §7.1). Remaining time always comes from endAt, recomputed every
+ * 250 ms and on visibility. The wood line on top shortens as the rest runs out; at zero the whole
+ * band turns green and counts the extra time.
+ */
 export function TimerBar({ timer, sound, item }: Props) {
   const now = useNow(timer ? 250 : null);
   const beepedFor = useRef<number | null>(null);
@@ -40,8 +44,8 @@ export function TimerBar({ timer, sound, item }: Props) {
   if (!timer || !state) {
     if (!item) return <div className={SAFE_BOTTOM} />;
     return (
-      <div className={`flex min-h-18 items-center gap-3 bg-iron px-4 ${SAFE_BOTTOM}`}>
-        <span className="flex-1 text-small text-steel">
+      <div className={`flex min-h-16 items-center gap-3 bg-tribuna px-4 ${SAFE_BOTTOM}`}>
+        <span className="flex-1 text-small text-fumo">
           Recupero {formatSeconds(item.se.restSec)}
         </span>
         <button
@@ -60,28 +64,31 @@ export function TimerBar({ timer, sound, item }: Props) {
       <button
         type="button"
         onClick={stop}
-        className={`flex min-h-22 w-full items-center gap-3 bg-plate-green px-4 text-left text-rubber transition-colors ${SAFE_BOTTOM}`}
+        className={`flex min-h-24 w-full animate-[enter-fade_240ms_var(--ease-out)_backwards] items-center gap-3 bg-plate-green px-4 text-left text-arena ${SAFE_BOTTOM}`}
       >
-        <span className="flex-1 font-semibold">Recupero finito</span>
+        <span className="flex-1 text-body font-semibold">Recupero finito</span>
         <span className="num text-timer">+{formatClock(state.overtimeMs)}</span>
       </button>
     );
   }
 
   return (
-    <div className={`relative bg-iron ${SAFE_BOTTOM}`} role="timer">
+    <div className={`relative bg-tribuna ${SAFE_BOTTOM}`} role="timer">
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-1 origin-left bg-chalk transition-transform duration-250 ease-linear"
+        className="absolute inset-x-0 top-0 h-[3px] origin-left bg-pedana transition-transform duration-250 ease-linear"
         style={{ transform: `scaleX(${state.progress})` }}
       />
-      <div className="flex min-h-22 items-center gap-1 px-4">
-        <span className="text-small text-steel">Recupero</span>
-        <span className="num flex-1 pl-3 text-timer">
-          {formatClock(Math.ceil(state.remainingMs / 1000) * 1000)}
+      <div className="flex min-h-24 items-center gap-1 px-4">
+        {/* Label above the time: "10:00" at 72px still fits a 375pt screen with both buttons. */}
+        <span className="flex flex-1 flex-col">
+          <span className="label-text text-fumo">Recupero</span>
+          <span className="num text-timer">
+            {formatClock(Math.ceil(state.remainingMs / 1000) * 1000)}
+          </span>
         </span>
         {timer.pushFailed && (
-          <span role="img" aria-label="Notifica non programmata" className="text-steel">
+          <span role="img" aria-label="Notifica non programmata" className="text-fumo">
             <BellOff size={20} />
           </span>
         )}
