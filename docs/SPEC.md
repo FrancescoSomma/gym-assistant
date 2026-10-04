@@ -618,7 +618,7 @@ Il design "Pedana di gara" è descritto per intero in `DESIGN.md` (token e compo
 - [x] Oggi, riepilogo, programmi, libreria, storico, progressi, impostazioni
 - [x] Icone, dati dimostrativi e screenshot di revisione
 - [x] Revisione finale impeccable e `DESIGN.md`
-- [ ] Criteri sul telefono: allenamento completo in modalità aereo, ripresa dopo chiusura forzata, notifica del recupero a schermo bloccato, reduced motion
+- [x] Criteri sul telefono: allenamento completo in modalità aereo, ripresa dopo chiusura forzata, notifica del recupero a schermo bloccato, reduced motion
 
 ## 13. Libreria esercizi iniziale
 
