@@ -2,17 +2,24 @@ import { writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 
 type Rgb = [number, number, number];
-const RUBBER: Rgb = [0x1f, 0x1e, 0x1c];
-const BLUE: Rgb = [0x2b, 0x5d, 0xd8];
-const CHALK: Rgb = [0xed, 0xeb, 0xe6];
+// Pedana di gara palette (src/styles/index.css).
+const ARENA: Rgb = [0x0b, 0x0c, 0x0e];
+const BLUE: Rgb = [0x24, 0x53, 0xd6];
+const LUCE: Rgb = [0xf2, 0xf1, 0xec];
+const PEDANA: Rgb = [0xb8, 0x87, 0x5a];
 
-// r is the distance from the centre, 1 = edge of the plate.
-function plate(r: number): Rgb {
-  if (r > 1) return RUBBER;
-  if (r > 0.8 && r <= 0.84) return RUBBER; // groove near the rim
+/**
+ * The 20 kg plate: blue disc, light hub, thin wood ring on the rim, on the arena ground.
+ * x and y go from -1 to 1 across the icon; scale < 1 shrinks the artwork into the safe zone
+ * of maskable and Apple icons.
+ */
+function pixel(x: number, y: number, scale: number): Rgb {
+  const r = Math.hypot(x / scale, y / scale) / 0.62; // 1 = edge of the plate
+  if (r > 1) return ARENA;
+  if (r > 0.88) return PEDANA; // the thin ring on the rim
   if (r > 0.3) return BLUE;
-  if (r > 0.17) return CHALK;
-  return RUBBER;
+  if (r > 0.17) return LUCE; // the hub
+  return ARENA;
 }
 
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
@@ -36,25 +43,23 @@ function chunk(type: string, data: Buffer): Buffer {
   return Buffer.concat([length, body, crc]);
 }
 
-/** radius: plate radius as a fraction of half the icon size. */
-function png(size: number, radius: number): Buffer {
+function png(size: number, scale: number): Buffer {
   const SS = 4; // 4×4 supersampling for smooth edges
   const stride = size * 3 + 1;
   const raw = Buffer.alloc(stride * size);
-  const half = size / 2;
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
       const sum = [0, 0, 0];
       for (let sy = 0; sy < SS; sy++) {
         for (let sx = 0; sx < SS; sx++) {
-          const dx = x + (sx + 0.5) / SS - half;
-          const dy = y + (sy + 0.5) / SS - half;
-          const c = plate(Math.hypot(dx, dy) / (half * radius));
+          const x = ((col + (sx + 0.5) / SS) / size) * 2 - 1;
+          const y = ((row + (sy + 0.5) / SS) / size) * 2 - 1;
+          const c = pixel(x, y, scale);
           for (let i = 0; i < 3; i++) sum[i] = (sum[i] as number) + c[i];
         }
       }
       for (let i = 0; i < 3; i++)
-        raw[y * stride + 1 + x * 3 + i] = Math.round((sum[i] as number) / (SS * SS));
+        raw[row * stride + 1 + col * 3 + i] = Math.round((sum[i] as number) / (SS * SS));
     }
   }
   const header = Buffer.alloc(13);
@@ -70,8 +75,8 @@ function png(size: number, radius: number): Buffer {
   ]);
 }
 
-writeFileSync('public/icon-192.png', png(192, 0.86));
-writeFileSync('public/icon-512.png', png(512, 0.86));
-// Maskable icons are cropped to a circle of 80% diameter: keep the plate inside it.
-writeFileSync('public/icon-maskable-512.png', png(512, 0.72));
-writeFileSync('public/apple-touch-icon.png', png(180, 0.8));
+writeFileSync('public/icon-192.png', png(192, 1));
+writeFileSync('public/icon-512.png', png(512, 1));
+// Maskable icons are cropped to a circle of 80% diameter: keep the artwork inside it.
+writeFileSync('public/icon-maskable-512.png', png(512, 0.8));
+writeFileSync('public/apple-touch-icon.png', png(180, 0.92));
