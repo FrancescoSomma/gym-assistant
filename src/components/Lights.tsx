@@ -9,11 +9,14 @@ interface Props {
   sequence?: boolean;
   /** Accessible name; without it the lights are decorative. */
   label?: string;
+  /** Use luce instead of green and fumo, for lights on a blue row. */
+  tone?: 'luce';
 }
 
 /** The judges' lights: green once done (green means completed), outlined while to do. */
-export function Lights({ total, lit, muted = false, sequence = false, label }: Props) {
-  const on = muted ? 'bg-fumo' : 'bg-plate-green';
+export function Lights({ total, lit, muted = false, sequence = false, label, tone }: Props) {
+  const on = tone === 'luce' ? 'bg-luce' : muted ? 'bg-fumo' : 'bg-plate-green';
+  const off = tone === 'luce' ? 'border-luce/70' : 'border-fumo/70';
   return (
     // biome-ignore lint/a11y/useAriaPropsSupportedByRole: role is "img" exactly when label is set, which supports aria-label
     <span
@@ -25,7 +28,7 @@ export function Lights({ total, lit, muted = false, sequence = false, label }: P
       {Array.from({ length: total }, (_, i) => i).map((n) => (
         <span
           key={n}
-          className={`size-2.5 rounded-full ${n < lit ? `${on} ${sequence ? 'animate-light-on' : ''}` : 'border-[1.5px] border-fumo/70'}`}
+          className={`size-2.5 rounded-full ${n < lit ? `${on} ${sequence ? 'animate-light-on' : ''}` : `border-[1.5px] ${off}`}`}
           style={sequence && n < lit ? { animationDelay: `${n * 70}ms` } : undefined}
         />
       ))}

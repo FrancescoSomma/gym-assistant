@@ -34,14 +34,19 @@ export function SessionSheet({ open, onClose, items, current, onJump, children }
                   {i + 1}
                 </span>
                 <span
-                  className={`min-w-0 flex-1 ${isCurrent ? 'font-semibold' : ''} ${se.status === 'skipped' ? 'text-fumo line-through' : ''}`}
+                  className={`min-w-0 flex-1 ${isCurrent ? 'font-semibold' : ''} ${se.status === 'skipped' ? `line-through ${isCurrent ? '' : 'text-fumo'}` : ''}`}
                 >
                   {exercise.name}
                 </span>
                 {se.status === 'skipped' ? (
-                  <span className="text-small text-fumo">Saltato</span>
+                  <span className={`text-small ${isCurrent ? '' : 'text-fumo'}`}>Saltato</span>
                 ) : se.status === 'done' ? (
-                  <Lights total={3} lit={3} label="Completato" />
+                  <Lights
+                    total={3}
+                    lit={3}
+                    label="Completato"
+                    tone={isCurrent ? 'luce' : undefined}
+                  />
                 ) : (
                   <span className="num text-title">
                     {done}/{work.length}
