@@ -56,3 +56,14 @@ export const hasWorkLeft = (
   status: SessionExercise['status'],
   sets: Pick<SetLog, 'isWarmup' | 'completedAt'>[],
 ): boolean => status !== 'skipped' && sets.some((s) => !s.isWarmup && s.completedAt === undefined);
+
+/** Where item `index` sits in its superset, for the bracket; undefined outside supersets. */
+export function supersetPosition(
+  keys: (string | undefined)[],
+  index: number,
+): 'first' | 'middle' | 'last' | undefined {
+  const run = supersetRun(keys, index);
+  if (run.length < 2) return undefined;
+  if (index === run[0]) return 'first';
+  return index === run[run.length - 1] ? 'last' : 'middle';
+}

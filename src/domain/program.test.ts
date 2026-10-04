@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { moveInList, nextDay, nextDayLabel } from './program';
+import { moveInList, nextDay, nextDayLabel, planTotals } from './program';
 
 const days = [
   { id: 'c', order: 2 },
@@ -42,5 +42,15 @@ describe('moveInList', () => {
   it('does nothing at the edges', () => {
     expect(moveInList(days, 'a', -1)).toEqual([]);
     expect(moveInList(days, 'c', 1)).toEqual([]);
+  });
+});
+
+describe('planTotals', () => {
+  it('counts the exercises and the planned work sets of a day', () => {
+    expect(planTotals([{ de: { sets: 4 } }, { de: { sets: 3 } }])).toEqual({
+      exercises: 2,
+      sets: 7,
+    });
+    expect(planTotals([])).toEqual({ exercises: 0, sets: 0 });
   });
 });

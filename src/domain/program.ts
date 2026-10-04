@@ -32,3 +32,8 @@ export function moveInList<T extends { id: string; order: number }>(
   [list[i], list[j]] = [list[j], list[i]];
   return list.map((x, order) => ({ id: x.id, order }));
 }
+
+/** "6 esercizi, 22 serie": the size of a day, under its start list on Today. */
+export function planTotals(items: { de: { sets: number } }[]): { exercises: number; sets: number } {
+  return { exercises: items.length, sets: items.reduce((n, item) => n + item.de.sets, 0) };
+}

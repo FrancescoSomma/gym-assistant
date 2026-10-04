@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { supersetNext, supersetRun, toggleSupersetLink } from './superset';
+import { supersetNext, supersetPosition, supersetRun, toggleSupersetLink } from './superset';
 
 describe('supersetRun', () => {
   it('returns the contiguous run with the same key', () => {
@@ -48,5 +48,20 @@ describe('toggleSupersetLink', () => {
   });
   it('splitting a run gives each part its own key', () => {
     expect(toggleSupersetLink(['x', 'x', 'x', 'x'], 1, counter())).toEqual(['x', 'x', 'k1', 'k1']);
+  });
+});
+
+describe('supersetPosition (the bracket on Today and in the day editor)', () => {
+  const keys = [undefined, 'x', 'x', 'x', undefined, 'y', 'y'];
+  it('places each member of a run', () => {
+    expect(supersetPosition(keys, 1)).toBe('first');
+    expect(supersetPosition(keys, 2)).toBe('middle');
+    expect(supersetPosition(keys, 3)).toBe('last');
+    expect(supersetPosition(keys, 5)).toBe('first');
+    expect(supersetPosition(keys, 6)).toBe('last');
+  });
+  it('is undefined outside supersets', () => {
+    expect(supersetPosition(keys, 0)).toBeUndefined();
+    expect(supersetPosition(keys, 4)).toBeUndefined();
   });
 });
