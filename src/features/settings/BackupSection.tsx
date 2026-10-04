@@ -44,7 +44,7 @@ export function BackupSection({ lastBackupAt }: { lastBackupAt: number | null })
   return (
     <>
       <h2 className="section-title">Backup</h2>
-      <p className="px-4 pb-3 text-small text-steel">
+      <p className="px-4 pb-3 text-small text-fumo">
         {lastBackupAt ? `Ultimo backup ${relativeDay(lastBackupAt)}.` : 'Nessun backup esportato.'}{' '}
         I dati sono solo su questo iPhone e spariscono se rimuovi l'app dalla Home.
       </p>
@@ -77,7 +77,7 @@ export function BackupSection({ lastBackupAt }: { lastBackupAt: number | null })
                 `, l'ultimo ${formatDate(preview.lastSessionAt)}`}
               .
             </p>
-            <p className="text-small text-steel">
+            <p className="text-small text-fumo">
               Tutti i dati di questo iPhone verranno sostituiti da quelli del backup.
             </p>
             <button type="button" className="btn-danger" onClick={replace}>

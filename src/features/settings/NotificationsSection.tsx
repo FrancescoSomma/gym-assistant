@@ -31,7 +31,7 @@ export function NotificationsSection({ enabled }: { enabled: boolean }) {
     <>
       <h2 className="section-title">Notifiche del timer</h2>
       {!standalone ? (
-        <p className="px-4 text-small text-steel">
+        <p className="px-4 text-small text-fumo">
           Le notifiche funzionano solo con Palestra aperta dalla schermata Home. In Safari tocca
           Condividi, poi “Aggiungi alla schermata Home”, e apri l'app da lì.
         </p>
@@ -53,7 +53,7 @@ export function NotificationsSection({ enabled }: { enabled: boolean }) {
         </div>
       ) : (
         <div className="space-y-2 px-4">
-          <p className="text-small text-steel">
+          <p className="text-small text-fumo">
             Ricevi un avviso a fine recupero anche con lo schermo bloccato.
           </p>
           <button type="button" className="btn-secondary" onClick={enable}>

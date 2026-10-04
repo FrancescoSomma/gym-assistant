@@ -38,7 +38,7 @@ export function SettingsScreen() {
           />
         </div>
       </div>
-      <div className="border-b border-steel/25 px-4 py-3">
+      <div className="px-4 py-3 rule-b">
         <p className="mb-2">Recupero predefinito</p>
         <RestPicker
           value={settings.defaultRestSec}
@@ -69,7 +69,7 @@ export function SettingsScreen() {
         <label key={key} className="row">
           <span className="flex-1">{label}</span>
           <input
-            className="field w-24 text-right"
+            className="field num w-24 text-right text-title"
             inputMode="decimal"
             defaultValue={formatNumber(settings.weightSteps[key])}
             onBlur={(e) => {
@@ -81,7 +81,7 @@ export function SettingsScreen() {
               }
             }}
           />
-          <span className="text-steel">kg</span>
+          <span className="label-text text-fumo">kg</span>
         </label>
       ))}
 
@@ -92,7 +92,7 @@ export function SettingsScreen() {
       <h2 className="section-title">Archiviazione</h2>
       <div className="row">
         <span className="flex-1">Spazio usato</span>
-        <span className="tabular-nums">
+        <span className="num text-title">
           {storage?.usage === undefined ? '–' : formatMegabytes(storage.usage)}
         </span>
       </div>
@@ -101,14 +101,16 @@ export function SettingsScreen() {
         <span>{storage?.persisted ? 'Attiva' : 'Non attiva'}</span>
       </div>
       {storage && !storage.persisted && (
-        <p className="px-4 pt-2 text-small text-steel">
+        <p className="px-4 pt-2 text-small text-fumo">
           Senza archiviazione persistente iOS può cancellare i dati. Apri Palestra dalla schermata
           Home ed esporta un backup ogni settimana.
         </p>
       )}
 
       <h2 className="section-title">Versione</h2>
-      <p className="px-4 pb-8 tabular-nums">Palestra {__APP_VERSION__}</p>
+      <p className="px-4 pb-8">
+        Palestra <span className="num text-title">{__APP_VERSION__}</span>
+      </p>
     </>
   );
 }
