@@ -197,7 +197,7 @@ function Form({ exercise, trackingLocked, defaultGroup, onDone }: FormProps) {
           ))}
         </select>
         {trackingLocked && (
-          <span className="mt-1 block text-small text-steel">
+          <span className="mt-1 block text-small text-fumo">
             Non modificabile: l'esercizio è già in un programma o in un allenamento.
           </span>
         )}

@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { Search } from 'lucide-react';
 import { useState } from 'react';
 import { listExercises } from '../../db/exercises';
 import { EQUIPMENT, type Exercise, MUSCLE_GROUPS, type MuscleGroup } from '../../types';
@@ -32,14 +33,21 @@ export function ExerciseList({ onSelect, initialGroup = 'all' }: Props) {
   return (
     <div>
       <div className="space-y-3 px-4 pb-2">
-        <input
-          type="search"
-          className="field"
-          placeholder="Cerca esercizio"
-          aria-label="Cerca esercizio"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        <label className="relative block">
+          <span className="sr-only">Cerca esercizio</span>
+          <Search
+            size={20}
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fumo"
+          />
+          <input
+            type="search"
+            className="field pl-10"
+            placeholder="Cerca esercizio"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           <button
             type="button"
@@ -63,7 +71,7 @@ export function ExerciseList({ onSelect, initialGroup = 'all' }: Props) {
         </div>
       </div>
       {visible.length === 0 && (
-        <p className="px-4 py-6 text-steel">
+        <p className="px-4 py-6 text-fumo">
           Nessun esercizio trovato. Crealo con "Nuovo esercizio".
         </p>
       )}
@@ -72,13 +80,17 @@ export function ExerciseList({ onSelect, initialGroup = 'all' }: Props) {
         if (items.length === 0) return null;
         return (
           <section key={key}>
-            <h3 className="section-title">{label}</h3>
-            <ul>
+            {/* Sticky under the status bar in a page, at the top inside a sheet (--sticky-top). */}
+            <h3 className="sticky top-(--sticky-top) z-[1] flex items-baseline justify-between bg-(--surface) px-4 pt-5 pb-2">
+              <span className="plate text-title">{label}</span>
+              <span className="num text-small text-fumo">{items.length}</span>
+            </h3>
+            <ul className="rule-t">
               {items.map((e) => (
                 <li key={e.id}>
                   <button type="button" className="row" onClick={() => onSelect(e)}>
-                    <span className="flex-1">{e.name}</span>
-                    <span className="text-small text-steel">{EQUIPMENT[e.equipment]}</span>
+                    <span className="min-w-0 flex-1">{e.name}</span>
+                    <span className="shrink-0 text-small text-fumo">{EQUIPMENT[e.equipment]}</span>
                   </button>
                 </li>
               ))}

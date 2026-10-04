@@ -56,7 +56,7 @@ export function ExerciseDetail() {
           </button>
         }
       />
-      <dl className="border-t border-steel/25">
+      <dl className="rule-t">
         <Info label="Gruppo muscolare" value={MUSCLE_GROUPS[exercise.muscleGroup]} />
         <Info label="Attrezzo" value={EQUIPMENT[exercise.equipment]} />
         <Info label="Registrazione" value={TRACKING_TYPES[trackingType]} />
@@ -103,14 +103,14 @@ export function ExerciseDetail() {
 
       <h2 className="section-title">Ultime sessioni</h2>
       {history.length === 0 ? (
-        <p className="px-4 text-steel">
+        <p className="px-4 text-fumo">
           Nessuna serie registrata. Aggiungi l'esercizio a una giornata per iniziare.
         </p>
       ) : (
         <ul>
           {history.slice(0, 5).map((h) => (
             <li key={h.sessionId} className="row">
-              <span className="w-28 shrink-0 text-small text-steel">
+              <span className="w-28 shrink-0 text-small text-fumo first-letter:uppercase">
                 {relativeDay(h.startedAt)}
               </span>
               <span className="num flex-1 text-right text-title">
@@ -150,7 +150,7 @@ export function ExerciseDetail() {
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="row">
-      <dt className="flex-1 text-steel">{label}</dt>
+      <dt className="flex-1 text-fumo">{label}</dt>
       <dd>{value}</dd>
     </div>
   );
