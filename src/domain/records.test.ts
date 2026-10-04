@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   beatenRecords,
   computeRecords,
+  flashBaseline,
   formatRecord,
   headlineRecord,
   isRecordSet,
@@ -72,6 +73,28 @@ describe('setRecord (the on-screen record flash)', () => {
       value: 65,
     });
     expect(setRecord(set(100, 10, { isWarmup: true }), 'weight_reps', before)).toBeUndefined();
+  });
+});
+
+describe('flashBaseline', () => {
+  const history = [[set(80, 10)]];
+  it('does not flash again for a set equal to one that just set a record', () => {
+    const first = set(82.5, 8);
+    expect(
+      setRecord(first, 'weight_reps', flashBaseline(history, [], 'weight_reps')),
+    ).toBeDefined();
+    const again = flashBaseline(history, [first], 'weight_reps');
+    expect(setRecord(set(82.5, 8), 'weight_reps', again)).toBeUndefined();
+    expect(setRecord(set(82.5, 9), 'weight_reps', again)?.kind).toBe('e1rm');
+  });
+  it('ignores pending sets and warmups of this session', () => {
+    const current = [{ ...set(100, 10), completedAt: undefined }, set(100, 10, { isWarmup: true })];
+    expect(flashBaseline(history, current, 'weight_reps')).toEqual(
+      computeRecords(history, 'weight_reps'),
+    );
+  });
+  it('keeps "no history, no records" even after a set in this session', () => {
+    expect(flashBaseline([], [set(80, 10)], 'weight_reps')).toEqual({});
   });
 });
 

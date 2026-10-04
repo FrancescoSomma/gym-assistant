@@ -14,7 +14,13 @@ import {
   formatTarget,
   relativeDay,
 } from '../../domain/format';
-import { computeRecords, isRecordSet, type RecordKind, setRecord } from '../../domain/records';
+import {
+  computeRecords,
+  flashBaseline,
+  isRecordSet,
+  type RecordKind,
+  setRecord,
+} from '../../domain/records';
 import {
   firstPending,
   offeredWeight,
@@ -74,7 +80,17 @@ export function ExerciseView({
     void syncRestPush(result.timer);
     setSelectedId(null);
     // Values were saved live while typing, so the set read before completing is the one confirmed.
-    const record = set && setRecord({ ...set, completedAt: Date.now() }, tracking, before);
+    const record =
+      set &&
+      setRecord(
+        { ...set, completedAt: Date.now() },
+        tracking,
+        flashBaseline(
+          history.map((h) => h.sets),
+          sets,
+          tracking,
+        ),
+      );
     if (record) onRecord?.(record);
     onSetCompleted(result);
   };

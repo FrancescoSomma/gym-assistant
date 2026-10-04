@@ -82,6 +82,21 @@ export function setRecord(
     : undefined;
 }
 
+/**
+ * What the record flash compares against: earlier sessions plus the sets already completed in this
+ * one, so a set equal to one that just set a record does not flash again. No history, no records.
+ */
+export function flashBaseline(
+  history: LoggedSet[][],
+  current: LoggedSet[],
+  tracking: TrackingType,
+): Records {
+  const earlier = computeRecords(history, tracking);
+  return Object.keys(earlier).length === 0
+    ? earlier
+    : computeRecords([...history, current], tracking);
+}
+
 /** A completed work set beating the history before this session. No history means no records. */
 export function isRecordSet(set: LoggedSet, tracking: TrackingType, before: Records): boolean {
   return setRecord(set, tracking, before) !== undefined;
