@@ -126,7 +126,7 @@ export function WorkoutScreen() {
       </main>
 
       <footer className="sticky bottom-0 z-10 bg-arena">
-        <nav className="flex items-center px-2 rule-t">
+        <nav className="relative flex items-center px-2 rule-t">
           <button
             type="button"
             className="btn-text min-h-14"
@@ -139,7 +139,7 @@ export function WorkoutScreen() {
           {isLast ? (
             <button
               type="button"
-              className="my-1 inline-flex min-h-14 items-center rounded-control bg-plate-blue px-4 font-semibold text-luce transition-transform duration-120 ease-out active:scale-[0.97]"
+              className="inline-flex min-h-14 items-center rounded-control bg-plate-blue px-4 font-semibold text-luce transition-transform duration-120 ease-out active:scale-[0.97]"
               onClick={() => finishWorkout(session.id, navigate)}
             >
               Termina allenamento
@@ -149,11 +149,10 @@ export function WorkoutScreen() {
               Successivo <ChevronRight />
             </button>
           )}
+          <RecordFlash flash={flash} onDone={clearFlash} />
         </nav>
         <TimerBar timer={settings.activeTimer} sound={settings.timerSound} item={item} />
       </footer>
-
-      <RecordFlash flash={flash} onDone={clearFlash} />
 
       <SessionSheet
         open={sheet === 'list'}

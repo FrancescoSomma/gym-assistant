@@ -36,7 +36,7 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col pt-[env(safe-area-inset-top)]">
-      <main className="flex flex-1 flex-col">
+      <main className="flex flex-1 flex-col overflow-x-clip">
         {/* Keyed by path: each screen plays its entrance once, query changes (tabs) do not. */}
         <div key={location.pathname} className={`flex flex-1 flex-col ${ENTER[motion]}`}>
           <Outlet />

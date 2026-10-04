@@ -70,7 +70,6 @@
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* backwards fill: once over, no transform stays behind to break sticky or fixed children. */
   --animate-wipe: wipe 240ms var(--ease-out) backwards;

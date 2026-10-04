@@ -43,6 +43,7 @@ Valgono per ogni task.
 9. **Marcatore della tab attiva:** inclinato con `skew` invece che tagliato, perché a 3 px di altezza il taglio non si vede.
 10. **Progressi (spec §8.5):** il valore più recente resta nell'intestazione del grafico, giallo se è un record, invece che come etichetta sul punto. È la stessa informazione, senza rischio di taglio ai bordi.
 11. **Archiviazione (spec §7.9):** niente barra dello spazio, perché `getStorageInfo` non legge la quota e su iOS la quota vale gigabyte, quindi la barra resterebbe sempre vuota. Si mostra il numero sul tabellone.
+13. **Flash del record (spec §8.2):** compare dentro la barra di navigazione dell'allenamento (Precedente, Successivo, Termina), non come terzo inferiore fisso sopra il tabellone. Un pannello fisso tagliava il contenuto scorrevole a metà riga, da quando la pagina porta il tasto di conferma in vista. Il pannello copre la barra per 2,5 s al massimo e un tocco lo chiude; senza flash la barra riceve ogni tocco. Dentro la barra non occupa altezza: la regione `aria-live` resta sempre montata.
 
 ## Review Focus
 

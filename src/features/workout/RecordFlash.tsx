@@ -14,8 +14,10 @@ export interface Flash {
 const SHOW_MS = 2500;
 
 /**
- * Yellow lower third over the set board when a confirmed set is a personal record (spec §8.2).
- * It never takes a tap and is announced politely. onDone must be stable (useCallback).
+ * Yellow lower third over the workout nav when a confirmed set is a personal record (spec §8.2).
+ * Render it inside a `relative` nav. The always-mounted live wrapper lets taps through, so the
+ * nav buttons stay usable when nothing shows; the panel covers them for 2,5 s and a tap on it
+ * dismisses it. Announced politely. onDone must be stable (useCallback).
  */
 export function RecordFlash({ flash, onDone }: { flash: Flash | null; onDone: () => void }) {
   const reduced = useReducedMotion();
@@ -25,35 +27,32 @@ export function RecordFlash({ flash, onDone }: { flash: Flash | null; onDone: ()
     return () => clearTimeout(timer);
   }, [flash, onDone]);
   return (
-    <div
-      aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+56px)] z-20"
-    >
+    <div aria-live="polite" className="pointer-events-none absolute inset-0 z-20">
       <AnimatePresence>
         {flash && (
-          <m.div
+          <m.button
+            type="button"
             key={flash.id}
+            onClick={onDone}
             initial={reduced ? false : { clipPath: 'inset(0 100% 0 0)' }}
             animate={{ clipPath: 'inset(0 0% 0 0)' }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduced ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-x-0 top-0 bg-arena rule-b"
+            className="pointer-events-auto absolute inset-0 flex items-stretch bg-tribuna text-left"
           >
-            <div className="flex min-h-[73px] items-stretch bg-tribuna">
-              <Tab tone="record" className="py-2">
-                <Trophy size={20} aria-hidden="true" />
-              </Tab>
-              <p className="flex flex-1 items-center justify-between gap-3 px-3 py-2">
-                <span className="leading-tight">
-                  <span className="block font-semibold">Record</span>
-                  <span className="block text-small text-fumo">{RECORD_LABELS[flash.kind]}</span>
-                </span>
-                <span className="num text-score text-plate-yellow">
-                  {formatRecord(flash.kind, flash.value)}
-                </span>
-              </p>
-            </div>
-          </m.div>
+            <Tab tone="record">
+              <Trophy size={20} aria-hidden="true" />
+            </Tab>
+            <span className="flex flex-1 items-center justify-between gap-3 px-3 py-1">
+              <span className="leading-tight">
+                <span className="block font-semibold">Record</span>
+                <span className="block text-small text-fumo">{RECORD_LABELS[flash.kind]}</span>
+              </span>
+              <span className="num text-score text-plate-yellow">
+                {formatRecord(flash.kind, flash.value)}
+              </span>
+            </span>
+          </m.button>
         )}
       </AnimatePresence>
     </div>

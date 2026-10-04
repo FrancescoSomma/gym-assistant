@@ -251,6 +251,7 @@ Almost square. Wood and record tabs have a 2px left radius and the right edge cu
 
 ### Lower third (name plate + wood tab)
 - A wood tab (arena text, cut right edge) paired with a luce plate (arena text, name face 26px, 2.5/2 padding, two-line clamp). Record variant of the tab is yellow.
+- Record flash: when a confirmed set beats a personal record, a tribuna panel with the yellow tab, "Record", the record name and the value in yellow covers the workout footer nav (not the rest bar) for 2.5s, wiping in from the left in 240ms. A tap on it dismisses it; while nothing shows, the nav buttons take every tap. The wrapper is an always-mounted `aria-live="polite"` region, so the record is announced. A set equal to one that already set a record in the same session does not flash again.
 
 ### Judges' lights
 - Three 10px circles per set: green when lit, fumo (muted) for warm-ups, luce on a blue row; unlit ones are 1.5px outlines. On confirm they light in sequence, 70ms apart, `light-on` 180ms (scale from 0.4).
@@ -265,7 +266,7 @@ Almost square. Wood and record tabs have a 2px left radius and the right edge cu
 - Native `<dialog>`, tribuna, 16px top radius, max 92dvh; in 320ms ease-out, out 200ms ease-in; backdrop fades.
 
 ### Motion
-- Curves: ease-out cubic-bezier(0.22, 1, 0.36, 1) (default), ease-in cubic-bezier(0.5, 0, 0.75, 0), ease-in-out cubic-bezier(0.65, 0, 0.35, 1). Durations: wipe 240ms (clip-path from the left, the world's native motion), enter-forward/back 240ms, enter-fade 160ms, enter-rise 320ms, light-on 180ms, press 120ms, switch 180ms, rolling digits 180ms, count-up 600ms. Fills are `backwards` so no transform stays behind.
+- Curves: ease-out cubic-bezier(0.22, 1, 0.36, 1) (default), ease-in cubic-bezier(0.5, 0, 0.75, 0). Durations: wipe 240ms (clip-path from the left, the world's native motion), enter-forward/back 240ms, enter-fade 160ms, enter-rise 320ms, light-on 180ms, press 120ms, switch 180ms, rolling digits 180ms, count-up 600ms. Fills are `backwards` so no transform stays behind.
 - Reduced motion: under `prefers-reduced-motion` all CSS transition and animation durations and delays are forced to 0s, and the motion library runs with `reducedMotion: "user"`.
 
 ## Do's and Don'ts
