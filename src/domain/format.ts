@@ -103,6 +103,14 @@ export function relativeDay(ts: number, now = Date.now()): string {
 const monthYear = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' });
 export const formatMonth = (ts: number): string => monthYear.format(ts);
 
+const weekdayShort = new Intl.DateTimeFormat('it-IT', { weekday: 'short' });
+
+/** { day: "3", weekday: "sab" }: the date block at the start of a history row. */
+export const formatDayParts = (ts: number): { day: string; weekday: string } => ({
+  day: String(new Date(ts).getDate()),
+  weekday: weekdayShort.format(ts),
+});
+
 const shortDate = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'short' });
 export const formatShortDate = (ts: number): string => shortDate.format(ts);
 

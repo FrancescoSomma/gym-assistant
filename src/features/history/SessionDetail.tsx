@@ -6,19 +6,13 @@ import { Header } from '../../components/Header';
 import { getWorkout } from '../../db/sessions';
 import { getSettings } from '../../db/settings';
 import { discardSession, setSessionNotes, toggleWarmup } from '../../db/workout';
-import {
-  countLabel,
-  formatClock,
-  formatDateYear,
-  formatNumber,
-  formatTime,
-} from '../../domain/format';
+import { formatClock, formatDateYear, formatNumber, formatTime } from '../../domain/format';
 import { summarize } from '../../domain/stats';
 import { setLabel, weightStep } from '../../domain/workout';
 import { confirmAction } from '../../platform/confirm';
 import { SetEditor, SetRow } from '../workout/SetRows';
 
-/** SPEC §5.4: every value of a past session can be corrected. */
+/** Every value of a past session can be corrected. */
 export function SessionDetail() {
   const { sessionId = '' } = useParams();
   const navigate = useNavigate();
@@ -48,22 +42,38 @@ export function SessionDetail() {
   return (
     <>
       <Header title={`Giornata ${session.dayLabel}`} back="/history" />
-      <p className="px-4 text-small text-steel first-letter:uppercase">
+      <p className="-mt-1 px-4 text-small text-fumo first-letter:uppercase">
         {formatDateYear(session.startedAt)}, alle {formatTime(session.startedAt)}
       </p>
-      <p className="px-4 text-small text-steel tabular-nums">
-        Durata {formatClock((session.endedAt ?? session.startedAt) - session.startedAt)},{' '}
-        {countLabel(totals.sets, 'serie', 'serie')}
-        {totals.volume > 0 && `, ${formatNumber(totals.volume)} kg`}
-      </p>
+      <dl
+        className={`mx-4 mt-4 grid border-t border-luce ${totals.volume > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}
+      >
+        <SmallStat
+          label="Durata"
+          value={formatClock((session.endedAt ?? session.startedAt) - session.startedAt)}
+        />
+        <SmallStat
+          label="Serie"
+          value={formatNumber(totals.sets)}
+          className="border-l-[0.5px] border-filetto pl-3"
+        />
+        {totals.volume > 0 && (
+          <SmallStat
+            label="Volume"
+            value={formatNumber(totals.volume)}
+            unit="kg"
+            className="border-l-[0.5px] border-filetto pl-3"
+          />
+        )}
+      </dl>
 
       {items.map(({ se, exercise, sets }) => (
         <section key={se.id}>
-          <h2 className="px-4 pt-6 pb-2 font-semibold">{exercise.name}</h2>
+          <h2 className="plate px-4 pt-6 pb-2 text-title">{exercise.name}</h2>
           {sets.length === 0 ? (
-            <p className="px-4 text-small text-steel">Nessuna serie</p>
+            <p className="px-4 text-small text-fumo">Nessuna serie</p>
           ) : (
-            <ul className="border-t border-steel/25">
+            <ul className="border-t border-luce">
               {sets.map((set) => (
                 <li key={set.id}>
                   {set.id === selectedId ? (
@@ -107,5 +117,27 @@ export function SessionDetail() {
         </button>
       </div>
     </>
+  );
+}
+
+function SmallStat({
+  label,
+  value,
+  unit,
+  className = '',
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  className?: string;
+}) {
+  return (
+    <div className={`min-w-0 py-2 ${className}`}>
+      <dt className="label-text text-fumo">{label}</dt>
+      <dd className="flex items-baseline gap-1 whitespace-nowrap">
+        <span className="num text-title">{value}</span>
+        {unit && <span className="label-text text-fumo">{unit}</span>}
+      </dd>
+    </div>
   );
 }

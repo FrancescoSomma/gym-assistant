@@ -4,6 +4,7 @@ import {
   formatChange,
   formatClock,
   formatDateYear,
+  formatDayParts,
   formatList,
   formatMegabytes,
   formatMonth,
@@ -154,5 +155,14 @@ describe('formatChange', () => {
   });
   it('is undefined without a previous value', () => {
     expect(formatChange(500, 0)).toBeUndefined();
+  });
+});
+
+describe('formatDayParts (history date block)', () => {
+  it('splits a date into the day of the month and the short weekday', () => {
+    expect(formatDayParts(new Date(2026, 9, 3, 18, 30).getTime())).toEqual({
+      day: '3',
+      weekday: 'sab',
+    });
   });
 });
