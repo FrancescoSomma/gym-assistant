@@ -1,7 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Trophy } from 'lucide-react';
 import { Link, Navigate, useParams } from 'react-router';
+import { CountUp } from '../../components/CountUp';
 import { Header } from '../../components/Header';
+import { Tab } from '../../components/Tab';
 import { getSummaryContext } from '../../db/history';
 import { getWorkout } from '../../db/sessions';
 import { setSessionNotes } from '../../db/workout';
@@ -9,7 +11,11 @@ import { formatChange, formatClock, formatNumber, formatSet } from '../../domain
 import { beatenRecords, formatRecord, RECORD_LABELS } from '../../domain/records';
 import { bestSet, summarize } from '../../domain/stats';
 
-/** SPEC §6.8: totals, records beaten and the comparison with the last session of the same day. */
+const whole = (n: number) => formatNumber(Math.round(n));
+/** The records wipe in after the totals have counted up. */
+const RECORDS_DELAY_MS = 600;
+
+/** Totals, records beaten and the comparison with the last session of the same day. */
 export function SummaryScreen() {
   const { sessionId = '' } = useParams();
   const workout = useLiveQuery(async () => (await getWorkout(sessionId)) ?? null, [sessionId]);
@@ -34,48 +40,79 @@ export function SummaryScreen() {
       }),
     ),
   );
+  const duration = (session.endedAt ?? session.startedAt) - session.startedAt;
 
   return (
-    <div className="flex min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      <Header title="Allenamento terminato" />
-      <p className="px-4 text-small text-steel">
+    <div className="flex min-h-dvh animate-enter-fade flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      <Header large title="Allenamento terminato" />
+      <p className="-mt-1 px-4 text-small text-fumo">
         Giornata {session.dayLabel}
         {session.dayName && `, ${session.dayName}`}
       </p>
-      <dl className="grid grid-cols-3 gap-2 px-4 pt-6 pb-2">
+
+      {/* The results scoreboard: duration and sets side by side, the volume on its own row. */}
+      <dl className="mx-4 mt-6 grid grid-cols-2 border-t border-luce">
+        <Stat label="Durata" value={duration} format={formatClock} />
         <Stat
-          label="Durata"
-          value={formatClock((session.endedAt ?? session.startedAt) - session.startedAt)}
+          label="Serie"
+          value={totals.sets}
+          format={whole}
+          className="border-l-[0.5px] border-filetto pl-4"
         />
-        <Stat label="Serie" value={formatNumber(totals.sets)} />
-        <Stat label="Volume" value={formatNumber(totals.volume)} unit="kg" />
+        <div className="col-span-2 py-3 rule-t">
+          <dt className="label-text text-fumo">Volume</dt>
+          <dd className="flex items-baseline gap-1.5">
+            <span className="sr-only">{whole(totals.volume)} kg</span>
+            <span className="num text-value">
+              <CountUp value={totals.volume} format={whole} />
+            </span>
+            <span aria-hidden="true" className="label-text text-fumo">
+              kg
+            </span>
+          </dd>
+          {change && (
+            <dd className="mt-1 text-small text-fumo">
+              Volume <span className="num text-luce">{change}</span> rispetto all'ultima giornata{' '}
+              {session.dayLabel}
+            </dd>
+          )}
+        </div>
       </dl>
-      {change && (
-        <p className="px-4 pb-2 text-small text-steel">
-          Volume {change} rispetto all'ultima giornata {session.dayLabel}
-        </p>
-      )}
 
       {beaten.length > 0 && (
-        <>
-          <h2 className="section-title">Record battuti</h2>
-          <ul className="border-t border-steel/25">
-            {beaten.map(({ key, name, kind, value }) => (
-              <li key={key} className="row">
-                <Trophy size={20} className="shrink-0 text-plate-yellow" />
-                <span className="flex-1">
-                  <span className="block">{name}</span>
-                  <span className="block text-small text-steel">{RECORD_LABELS[kind]}</span>
+        <section>
+          <h2 className="section-title">
+            <span>Record battuti</span>
+            <span className="num text-small text-luce">{beaten.length}</span>
+          </h2>
+          <ul className="border-t border-luce">
+            {beaten.map(({ key, name, kind, value }, i) => (
+              <li
+                key={key}
+                className="flex min-h-16 animate-wipe items-stretch rule-b"
+                style={{ animationDelay: `${RECORDS_DELAY_MS + i * 120}ms` }}
+              >
+                <Tab tone="record">
+                  <Trophy size={18} aria-hidden="true" />
+                </Tab>
+                <span className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2">
+                  <span className="truncate">{name}</span>
+                  <span className="text-small text-fumo">{RECORD_LABELS[kind]}</span>
                 </span>
-                <span className="num text-title">{formatRecord(kind, value)}</span>
+                <span className="num flex shrink-0 items-center pr-4 text-step text-plate-yellow">
+                  {formatRecord(kind, value)}
+                </span>
               </li>
             ))}
           </ul>
-        </>
+        </section>
       )}
 
-      <h2 className="section-title">Esercizi</h2>
-      <ul className="border-t border-steel/25">
+      <h2 className="section-title">
+        <span>Esercizi</span>
+        <span className="num text-small text-luce">{items.length}</span>
+      </h2>
+      <ul className="rule-t">
         {items.map(({ se, exercise, sets }) => {
           const tracking = exercise.trackingType;
           const best = bestSet(sets, tracking);
@@ -83,18 +120,18 @@ export function SummaryScreen() {
           const previousBest = previousItem && bestSet(previousItem.sets, tracking);
           return (
             <li key={se.id} className="row">
-              <span className="flex-1">
-                <span className="block">{exercise.name}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate">{exercise.name}</span>
                 {best && previousBest && (
-                  <span className="block text-small text-steel tabular-nums">
-                    l'ultima volta {formatSet(previousBest, tracking)}
+                  <span className="block text-small text-fumo">
+                    l'ultima volta <span className="num">{formatSet(previousBest, tracking)}</span>
                   </span>
                 )}
               </span>
               {best ? (
-                <span className="num text-title">{formatSet(best, tracking)}</span>
+                <span className="num shrink-0 text-title">{formatSet(best, tracking)}</span>
               ) : (
-                <span className="text-small text-steel">Nessuna serie</span>
+                <span className="text-small text-fumo">Nessuna serie</span>
               )}
             </li>
           );
@@ -120,13 +157,23 @@ export function SummaryScreen() {
   );
 }
 
-function Stat({ label, value, unit }: { label: string; value: string; unit?: string }) {
+function Stat({
+  label,
+  value,
+  format,
+  className = '',
+}: {
+  label: string;
+  value: number;
+  format: (n: number) => string;
+  className?: string;
+}) {
   return (
-    <div>
-      <dt className="text-tiny text-steel">{label}</dt>
-      <dd className="num text-value">
-        {value}
-        {unit && <span className="pl-1 font-sans text-small font-normal text-steel">{unit}</span>}
+    <div className={`py-3 ${className}`}>
+      <dt className="label-text text-fumo">{label}</dt>
+      <dd className="num text-score">
+        <span className="sr-only">{format(value)}</span>
+        <CountUp value={value} format={format} />
       </dd>
     </div>
   );
