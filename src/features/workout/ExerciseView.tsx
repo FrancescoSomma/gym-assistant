@@ -118,12 +118,12 @@ export function ExerciseView({
         {se.status === 'skipped' && (
           <p className="text-small text-fumo">Saltato: completa una serie per riprenderlo.</p>
         )}
-        <label className="mt-1 block">
+        <label className="mt-1 flex min-h-11 items-center">
           <span className="sr-only">Nota permanente</span>
           <textarea
             key={exercise.id}
             rows={1}
-            className="field-sizing-content w-full resize-none bg-transparent outline-none placeholder:text-fumo"
+            className="field-sizing-content w-full resize-none bg-transparent placeholder:text-fumo"
             defaultValue={exercise.notes}
             placeholder="Aggiungi una nota, es. sedile al 4"
             onChange={(e) => void updateExercise(exercise.id, { notes: e.target.value })}

@@ -102,7 +102,7 @@ export function TodayScreen() {
       {active ? (
         <ActiveSummary session={active} workout={workout ?? null} now={now} />
       ) : !plan ? (
-        <p className="px-4 pt-6">
+        <p className="px-4 pt-6 text-fumo">
           Nessun programma attivo. Crea il primo per iniziare ad allenarti.
         </p>
       ) : !plan.day ? (

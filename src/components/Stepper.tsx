@@ -96,7 +96,7 @@ export function Stepper({
             <input
               inputMode={decimal ? 'decimal' : 'numeric'}
               enterKeyHint="done"
-              className={`num w-full bg-transparent outline-none placeholder:text-fumo ${unit ? 'text-right' : 'text-center'} ${text} ${rolling ? 'text-transparent' : ''}`}
+              className={`num w-full bg-transparent placeholder:text-fumo ${unit ? 'text-right' : 'text-center'} ${text} ${rolling ? 'text-transparent' : ''}`}
               value={draft ?? shown}
               placeholder={placeholder}
               onFocus={(e) => {

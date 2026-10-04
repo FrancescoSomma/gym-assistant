@@ -3,10 +3,12 @@ import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { Header } from '../../components/Header';
+import { getSummaryContext } from '../../db/history';
 import { getWorkout } from '../../db/sessions';
 import { getSettings } from '../../db/settings';
 import { discardSession, setSessionNotes, toggleWarmup } from '../../db/workout';
 import { formatClock, formatDateYear, formatNumber, formatTime } from '../../domain/format';
+import { isRecordSet } from '../../domain/records';
 import { summarize } from '../../domain/stats';
 import { setLabel, weightStep } from '../../domain/workout';
 import { confirmAction } from '../../platform/confirm';
@@ -18,6 +20,7 @@ export function SessionDetail() {
   const navigate = useNavigate();
   const workout = useLiveQuery(async () => (await getWorkout(sessionId)) ?? null, [sessionId]);
   const settings = useLiveQuery(getSettings);
+  const context = useLiveQuery(() => getSummaryContext(sessionId), [sessionId]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (workout === undefined || !settings) return null;
@@ -92,6 +95,11 @@ export function SessionDetail() {
                       set={set}
                       label={setLabel(sets, set)}
                       tracking={exercise.trackingType}
+                      record={isRecordSet(
+                        set,
+                        exercise.trackingType,
+                        context?.recordsBefore.get(exercise.id) ?? {},
+                      )}
                       onSelect={() => setSelectedId(set.id)}
                     />
                   )}

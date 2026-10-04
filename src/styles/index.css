@@ -36,11 +36,6 @@
   --color-plate-green: #2ba55b;
   --color-plate-red: #d93a2f;
   --color-plate-white: #f2f1ec;
-  /* Old names mapped to the new world; the cleanup task removes them. */
-  --color-rubber: #0b0c0e;
-  --color-iron: #17191d;
-  --color-chalk: #f2f1ec;
-  --color-steel: #8f949b;
 
   --font-sans: "Archivo", system-ui, -apple-system, sans-serif;
 

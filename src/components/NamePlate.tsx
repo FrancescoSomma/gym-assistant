@@ -12,7 +12,7 @@ export function NamePlate({
 }) {
   return (
     <Tag
-      className={`plate line-clamp-2 min-w-0 bg-luce px-2.5 py-1 text-name text-arena ${className}`}
+      className={`plate line-clamp-2 min-w-0 bg-luce px-2.5 py-2 text-name text-arena ${className}`}
     >
       {children}
     </Tag>
